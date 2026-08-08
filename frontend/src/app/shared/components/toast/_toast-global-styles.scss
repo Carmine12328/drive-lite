@@ -1,0 +1,16 @@
+// Toast panel classes for Angular Material Snackbar customization
+.toast-success .mat-mdc-snack-bar-container .mdc-snackbar__surface {
+  background-color: var(--color-success) !important;
+}
+
+.toast-error .mat-mdc-snack-bar-container .mdc-snackbar__surface {
+  background-color: var(--color-error) !important;
+}
+
+.toast-info .mat-mdc-snack-bar-container .mdc-snackbar__surface {
+  background-color: var(--color-info) !important;
+}
+
+.toast-warning .mat-mdc-snack-bar-container .mdc-snackbar__surface {
+  background-color: var(--color-warning) !important;
+}

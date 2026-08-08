@@ -1,0 +1,22 @@
+<nav class="breadcrumb-container">
+  @if (showMobileEllipsis()) {
+    <span class="mobile-ellipsis">...</span>
+    <mat-icon class="separator mobile-ellipsis">chevron_right</mat-icon>
+  }
+
+  @for (segment of allSegments(); track segment.id; let first = $first, last = $last, idx = $index) {
+    @if (!first) {
+      <mat-icon class="separator" [class.hide-on-mobile]="idx < allSegments().length - 2">chevron_right</mat-icon>
+    }
+
+    @if (!last) {
+      <a class="segment link"
+         [class.hide-on-mobile]="idx < allSegments().length - 2"
+         (click)="onNavigate(segment.id)">
+        {{ segment.name }}
+      </a>
+    } @else {
+      <span class="segment current">{{ segment.name }}</span>
+    }
+  }
+</nav>

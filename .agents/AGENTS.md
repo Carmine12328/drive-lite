@@ -206,7 +206,12 @@ following Angular and TypeScript best practices.
 - Use `computed()` for derived state.
 - Use `linkedSignal()` for state derived from multiple reactive sources that
   must stay synchronized.
-- Prefer inline templates for small components.
+- Prefer inline templates and styles when the combined template + styles total
+  **70 lines or fewer**. Beyond that threshold, extract into separate
+  `.component.html` and `.component.scss` files for better IDE support
+  (syntax highlighting, Emmet, autocompletion) and readability.
+- When using external templates/styles, use paths relative to the component TS
+  file (`templateUrl: './foo.component.html'`, `styleUrl: './foo.component.scss'`).
 - Prefer Signal Forms (`@angular/forms/signals`) for new forms. They are stable
   in Angular v22+ and provide signal-based state, type-safe field access, and
   schema-based validation.
@@ -214,8 +219,6 @@ following Angular and TypeScript best practices.
   ones.
 - Do NOT use `ngClass`, use `class` bindings instead.
 - Do NOT use `ngStyle`, use `style` bindings instead.
-- When using external templates/styles, use paths relative to the component TS
-  file.
 
 ### State Management
 

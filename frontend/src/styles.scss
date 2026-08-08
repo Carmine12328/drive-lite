@@ -9,12 +9,14 @@
 //   4. Utility classes (glassmorphism, gradients, animations)
 //   5. Custom scrollbar styling
 //   6. Responsive breakpoint variables
+//   7. Component-specific global overrides (toast notifications)
 // =============================================================================
 
 // ---------------------------------------------------------------------------
 // 1. Angular Material M3 Theme
 // ---------------------------------------------------------------------------
 @use '@angular/material' as mat;
+@use './app/shared/components/toast/toast-global-styles';
 
 // Dark theme (default)
 $dark-theme: mat.define-theme((
@@ -372,3 +374,9 @@ $breakpoint-lg: 1280px;
     @content;
   }
 }
+
+// ---------------------------------------------------------------------------
+// 7. Toast Notification Global Overrides
+// ---------------------------------------------------------------------------
+// Imported via @use at the top of this file (SCSS requires all @use rules
+// before any other statements). See: src/app/shared/components/toast/

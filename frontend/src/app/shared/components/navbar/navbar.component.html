@@ -1,0 +1,60 @@
+<mat-toolbar class="navbar">
+  <!-- Left section: Branding -->
+  <div class="navbar-left">
+    <button mat-icon-button class="mobile-menu-btn" aria-label="Toggle menu">
+      <mat-icon>menu</mat-icon>
+    </button>
+    <div class="brand">
+      <mat-icon class="brand-icon">cloud</mat-icon>
+      <span class="brand-text gradient-text">Drive Lite</span>
+    </div>
+  </div>
+
+  <!-- Center section: Search -->
+  <div class="navbar-center" [class.search-expanded]="isSearchExpanded()">
+    <button mat-icon-button class="mobile-search-btn" (click)="toggleSearch()" aria-label="Toggle search">
+      <mat-icon>search</mat-icon>
+    </button>
+    <div class="search-container">
+      <mat-icon class="search-icon">search</mat-icon>
+      <input
+        type="text"
+        class="search-input"
+        placeholder="Search in Drive..."
+        [ngModel]="searchText"
+        (input)="onSearchInput($event)"
+        aria-label="Search files and folders"
+      />
+    </div>
+  </div>
+
+  <!-- Right section: Actions and User -->
+  <div class="navbar-right">
+    <!-- View Toggle -->
+    <button mat-icon-button (click)="toggleViewMode()" [attr.aria-label]="'Switch to ' + (viewMode() === 'grid' ? 'list' : 'grid') + ' view'">
+      <mat-icon>{{ viewMode() === 'grid' ? 'view_list' : 'grid_view' }}</mat-icon>
+    </button>
+
+    <!-- Theme Toggle -->
+    <button mat-icon-button (click)="toggleTheme()" aria-label="Toggle theme">
+      <mat-icon>{{ isDarkMode() ? 'light_mode' : 'dark_mode' }}</mat-icon>
+    </button>
+
+    <!-- User Avatar & Menu -->
+    @if (authService.currentUser(); as user) {
+      <div class="user-avatar" [matMenuTriggerFor]="userMenu" tabindex="0" role="button" aria-label="User menu">
+        {{ user.email ? user.email[0].toUpperCase() : 'U' }}
+      </div>
+      <mat-menu #userMenu="matMenu" xPosition="before">
+        <div class="user-menu-header">
+          <span class="user-email">{{ user.email }}</span>
+        </div>
+        <mat-divider></mat-divider>
+        <button mat-menu-item (click)="signOut()">
+          <mat-icon>logout</mat-icon>
+          <span>Sign Out</span>
+        </button>
+      </mat-menu>
+    }
+  </div>
+</mat-toolbar>
