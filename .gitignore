@@ -1,0 +1,47 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+cdk.out/
+.angular/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test coverage
+coverage/
+
+# CDK
+cdk.context.json
+
+# Angular
+.angular/cache
+
+# LocalStack
+volume/
+.localstack/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Implementation plans (internal, not for repo)
+IMPLEMENTATION_PLAN.md
+FE_IMPLEMENTATION_PLAN.md
+
+# Misc
+*.tgz

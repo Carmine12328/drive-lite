@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  localstack:
+    container_name: drive-lite-localstack
+    image: localstack/localstack:latest
+    ports:
+      - "4566:4566"           # LocalStack Gateway
+      - "4510-4559:4510-4559" # External service port range
+    environment:
+      - SERVICES=s3,dynamodb,lambda,apigateway,cognito-idp,iam,cloudformation,sts
+      - DEBUG=0
+      - DOCKER_HOST=unix:///var/run/docker.sock
+      - AWS_DEFAULT_REGION=us-east-1
+      - LAMBDA_EXECUTOR=docker-reuse
+    volumes:
+      - "${LOCALSTACK_VOLUME_DIR:-./volume}:/var/lib/localstack"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    networks:
+      - drive-lite
+
+networks:
+  drive-lite:
+    driver: bridge

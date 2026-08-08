@@ -1,0 +1,26 @@
+{
+  "name": "@drive-lite/infra",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "AWS CDK Infrastructure for Drive Lite",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "test": "vitest run",
+    "cdk": "cdk",
+    "synth": "cdk synth",
+    "deploy": "cdk deploy",
+    "deploy:local": "cdklocal deploy"
+  },
+  "dependencies": {
+    "aws-cdk-lib": "^2.150.0",
+    "constructs": "^10.3.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "aws-cdk": "^2.150.0",
+    "typescript": "^5.5.0",
+    "vitest": "^2.0.0"
+  }
+}

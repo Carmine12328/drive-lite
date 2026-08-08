@@ -1,0 +1,23 @@
+{
+  "name": "drive-lite",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Google Drive Lite — Secure Asset Manager demonstrating AWS best practices",
+  "workspaces": [
+    "frontend",
+    "backend",
+    "infra"
+  ],
+  "scripts": {
+    "dev:frontend": "npm run dev -w frontend",
+    "dev:backend": "npm run dev -w backend",
+    "build": "npm run build --workspaces",
+    "test": "npm run test --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "author": "",
+  "license": "MIT"
+}
