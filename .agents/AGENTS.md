@@ -164,6 +164,373 @@ AWS blog, Angular changelog, etc.) when the practice is non-obvious.
 
 ---
 
+## 8. Frontend (Angular / TypeScript)
+
+You are an expert in TypeScript, Angular, and scalable web application
+development. You write functional, maintainable, performant, and accessible code
+following Angular and TypeScript best practices.
+
+### TypeScript Best Practices
+
+- Use strict type checking.
+- Prefer type inference when the type is obvious.
+- Avoid the `any` type; use `unknown` when type is uncertain.
+
+### Angular Best Practices
+
+- Always use standalone components over NgModules.
+- Must NOT set `standalone: true` inside Angular decorators. It's the default in
+  Angular v20+.
+- Do NOT set `changeDetection: ChangeDetectionStrategy.OnPush` explicitly.
+  `OnPush` is the default in Angular v22+.
+- Use signals for state management.
+- Implement lazy loading for feature routes.
+- Do NOT use the `@HostBinding` and `@HostListener` decorators. Put host
+  bindings inside the `host` object of the `@Component` or `@Directive`
+  decorator instead.
+- Use `NgOptimizedImage` for all static images.
+  - `NgOptimizedImage` does not work for inline base64 images.
+
+### Accessibility Requirements
+
+- It MUST pass all AXE checks.
+- It MUST follow all WCAG AA minimums, including focus management, color
+  contrast, and ARIA attributes.
+
+### Components
+
+- Keep components small and focused on a single responsibility.
+- Use `input()` and `output()` functions instead of decorators.
+- Use `model()` for two-way bound properties with `[(prop)]` syntax instead of
+  pairing `input()` with `output()`.
+- Use `computed()` for derived state.
+- Use `linkedSignal()` for state derived from multiple reactive sources that
+  must stay synchronized.
+- Prefer inline templates for small components.
+- Prefer Signal Forms (`@angular/forms/signals`) for new forms. They are stable
+  in Angular v22+ and provide signal-based state, type-safe field access, and
+  schema-based validation.
+- When not using Signal Forms, prefer Reactive forms instead of Template-driven
+  ones.
+- Do NOT use `ngClass`, use `class` bindings instead.
+- Do NOT use `ngStyle`, use `style` bindings instead.
+- When using external templates/styles, use paths relative to the component TS
+  file.
+
+### State Management
+
+- Use signals for local component state.
+- Use `computed()` for derived state.
+- Keep state transformations pure and predictable.
+- Do NOT use `mutate` on signals, use `update` or `set` instead.
+
+### Templates
+
+- Keep templates simple and avoid complex logic.
+- Use native control flow (`@if`, `@for`, `@switch`) instead of `*ngIf`,
+  `*ngFor`, `*ngSwitch`.
+- Use the async pipe to handle observables.
+- Do not assume globals like (`new Date()`) are available.
+
+### Services
+
+- Design services around a single responsibility.
+- Use the `providedIn: 'root'` option for singleton services.
+- Prefer the `@Service` decorator over `@Injectable({providedIn: 'root'})` for
+  new singleton services (Angular v22+).
+- Use the `inject()` function instead of constructor injection.
+
+---
+
+## 9. Backend (AWS Lambda / TypeScript)
+
+You are an expert in AWS serverless development with Lambda, API Gateway,
+DynamoDB, S3, and Cognito. You write secure, performant, and cost-efficient
+backend code following AWS Well-Architected Framework principles.
+
+### General
+
+- All backend code is **ESM** (`"type": "module"` in `package.json`). Use
+  `import`/`export` exclusively — never `require()`.
+- Target **ES2022** to match the `tsconfig.json` and Node.js 20 runtime.
+- Use strict TypeScript. The same rules from §8 (no `any`, prefer inference,
+  strict checking) apply here.
+
+### Lambda Handlers
+
+- **One handler per file.** Each Lambda function lives in its own file under
+  `src/handlers/<domain>/`. Do not bundle multiple handlers into a single file.
+- Export the handler as a **named export** (`export const handler = ...`), not a
+  default export, for clarity and tree-shaking.
+- Keep handlers thin — extract business logic into `src/lib/` utilities.
+  Handlers should only: parse input → call logic → return response.
+- Always type handler parameters with `@types/aws-lambda` event types
+  (e.g., `APIGatewayProxyEventV2`, `PostConfirmationTriggerEvent`). Never use
+  `any` for events or context.
+- Return responses using a shared response builder (`src/lib/response.ts`) for
+  consistent status codes, headers, and CORS configuration.
+
+### AWS SDK v3
+
+- Use **AWS SDK v3** modular clients (`@aws-sdk/client-*`). Never import from
+  the monolithic `aws-sdk` v2 package.
+- **Instantiate SDK clients outside the handler** (module scope) so they are
+  reused across warm invocations. Create shared client singletons in
+  `src/lib/` (e.g., `dynamo-client.ts`, `s3-client.ts`).
+- Use the **DynamoDB Document Client** (`@aws-sdk/lib-dynamodb`) with the
+  `DynamoDBDocumentClient.from()` pattern for automatic marshalling.
+- Use `@aws-sdk/s3-request-presigner` for generating presigned URLs. Never
+  stream file contents through Lambda — always use presigned URLs for direct
+  S3 upload/download.
+
+### DynamoDB
+
+- Follow the project's **single-table design**. All entities (files, folders,
+  user metadata) share one table with composite keys (`PK`, `SK`).
+- Use **consistent key naming**: `PK` and `SK` for the base table, `GSI1PK` and
+  `GSI1SK` for global secondary indexes.
+- Use `ulid` (already installed) for generating sortable unique IDs. Do not use
+  `uuid` — ULIDs are lexicographically sortable, which benefits DynamoDB range
+  queries.
+- Always scope queries to the authenticated user's `sub` (from the JWT
+  authorizer context) to enforce tenant isolation.
+- Prefer `Query` over `Scan`. A `Scan` on a production table is almost always
+  wrong — flag it and propose a GSI or query-based alternative.
+- Use `ConditionExpression` for idempotent writes (e.g., `attribute_not_exists`
+  on `PutItem` to prevent overwrites).
+- Use `BatchWriteItem` for bulk operations (e.g., recursive folder deletion),
+  and handle `UnprocessedItems` with exponential backoff.
+
+### Error Handling
+
+- **Never swallow errors.** Every `try/catch` must either handle the error
+  meaningfully or re-throw it.
+- Return structured error responses with appropriate HTTP status codes:
+  - `400` — validation failures, malformed input
+  - `403` — authorization failures (user doesn't own the resource)
+  - `404` — resource not found
+  - `409` — conflict (e.g., duplicate name)
+  - `500` — unexpected server errors (log the full error, return a generic
+    message to the client)
+- Log errors with `console.error()` including the error object. CloudWatch
+  captures Lambda `stdout`/`stderr` automatically — no external logger needed.
+- Include request context in error logs (handler name, user sub, relevant IDs)
+  to make CloudWatch debugging feasible.
+
+### Input Validation
+
+- Validate **all** input at the handler boundary using `src/lib/validators.ts`.
+  Never trust API Gateway to validate beyond basic schema matching.
+- Validate path parameters, query parameters, and request body fields. Check
+  for required fields, correct types, and sane ranges (e.g., file name length,
+  allowed characters).
+- Sanitize file and folder names to prevent path traversal and injection
+  attacks. Strip or reject names containing `..`, `/`, `\`, null bytes, or
+  control characters.
+- Return `400` with a descriptive error message for validation failures. Never
+  let invalid data reach DynamoDB or S3.
+
+### Environment Variables & Configuration
+
+- All runtime configuration (table names, bucket names, region, Cognito pool
+  IDs) must come from **environment variables** set by CDK. Never hardcode ARNs,
+  table names, or bucket names.
+- Access environment variables through a typed config object or validated
+  accessor, not raw `process.env` scattered throughout handler code.
+- Fail fast at module load time if a required environment variable is missing.
+  A clear error at cold start is better than a cryptic runtime failure.
+
+### Security
+
+- **Always extract the user identity** from the API Gateway JWT authorizer
+  context (`event.requestContext.authorizer.jwt.claims.sub`). Never trust a
+  user ID sent in the request body or query parameters.
+- Presigned URLs must be **scoped to the user's S3 prefix**
+  (`users/{sub}/files/{fileId}`). Never generate a presigned URL for a path the
+  user doesn't own.
+- Set presigned URL expiration to the **shortest viable duration** (e.g., 5–15
+  minutes for uploads, 1 hour for downloads).
+- Never return raw AWS error details to the client. Map SDK exceptions to
+  user-friendly messages.
+
+### Testing (Vitest)
+
+- Use **Vitest** for all backend tests. Test files live alongside source files
+  or in a `__tests__/` directory, with the `.test.ts` extension.
+- Mock AWS SDK clients using Vitest's `vi.mock()`. Do not make real AWS calls in
+  unit tests.
+- Test handler logic through the handler function directly — pass in typed mock
+  events and assert on the response shape, status code, and body.
+- Cover: happy paths, validation failures, authorization checks, not-found
+  cases, and SDK error propagation.
+- Run `npm run test` (which executes `vitest run`) to validate changes.
+
+### Code Organization
+
+```
+backend/src/
+├── handlers/           # One file per Lambda — thin request/response layer
+│   ├── folders/        # CRUD operations for folders
+│   ├── files/          # CRUD + presigned URL operations for files
+│   └── auth/           # Cognito trigger handlers
+├── lib/                # Shared utilities (SDK clients, response builder, validators)
+└── types/              # Shared TypeScript types and interfaces
+```
+
+- Do not create deeply nested abstractions. The backend is intentionally flat:
+  handlers call `lib/` utilities directly.
+- Shared types go in `src/types/index.ts`. Handler-specific types can live in
+  the handler file if they are not reused.
+
+---
+
+## 10. Infrastructure (AWS CDK)
+
+You are an expert in AWS CDK (TypeScript) and Infrastructure as Code. You write
+secure, maintainable, and least-privilege infrastructure definitions following
+AWS Well-Architected Framework principles.
+
+### General
+
+- All infra code is **ESM** (`"type": "module"` in `package.json`). Same rules
+  as §9 apply — `import`/`export` only, target **ES2022**, strict TypeScript.
+- Use **CDK v2** (`aws-cdk-lib`). Never import from individual `@aws-cdk/*` v1
+  packages.
+- The CDK app entry point uses `npx tsx bin/app.ts` (see `cdk.json`). Do not
+  change this to `ts-node` or a compiled `.js` entry point.
+
+### Construct Design
+
+- **One construct per file.** Each logical resource group (auth, storage, API,
+  frontend hosting) lives in its own file under `infra/lib/`.
+- Name constructs descriptively: `AuthConstruct`, `StorageConstruct`,
+  `ApiConstruct`, `FrontendConstruct`. The main stack
+  (`drive-lite-stack.ts`) composes them.
+- Keep constructs focused on a **single responsibility**. Do not put Cognito,
+  DynamoDB, and S3 in the same construct.
+- Expose only what downstream constructs need via **public readonly
+  properties** (e.g., `table`, `bucket`, `userPool`). Keep internal resources
+  private.
+- Accept configuration through construct **props interfaces**, not hardcoded
+  values. Define a typed `*Props` interface for each construct.
+
+### L2 Constructs & Defaults
+
+- **Prefer L2 constructs** (`aws_s3.Bucket`, `aws_dynamodb.TableV2`) over L1
+  (`CfnBucket`). Use L1 only when L2 does not expose a required property.
+- Enable **encryption by default**: SSE-S3 for S3 buckets, encryption at rest
+  for DynamoDB.
+- Enable **`removalPolicy: RemovalPolicy.DESTROY`** for dev/LocalStack stacks
+  only. Production stacks should use `RETAIN` or `SNAPSHOT`.
+- Block public access on all S3 buckets. Use CloudFront OAI/OAC for frontend
+  hosting, presigned URLs for file access.
+
+### Security & IAM
+
+- Follow **least-privilege IAM**. Use CDK's `grant*` methods
+  (`bucket.grantReadWrite(lambda)`, `table.grantReadWriteData(lambda)`) instead
+  of writing inline IAM policies.
+- Never use `iam.PolicyStatement` with `actions: ['*']` or
+  `resources: ['*']`. Scope every permission to the specific resource ARN.
+- Cognito User Pool Client must **not** have a client secret (required for SPA
+  auth flows). Explicitly set `generateSecret: false`.
+- JWT Authorizer on API Gateway must validate the `aud` and `iss` claims.
+
+### Lambda Integration
+
+- Use `NodejsFunction` from `aws-cdk-lib/aws-lambda-nodejs` for automatic
+  esbuild bundling, or reference pre-compiled `.js` entry points in
+  `backend/dist/`.
+- Set **runtime** to `Runtime.NODEJS_20_X`. Do not use deprecated runtimes.
+- Set reasonable **memory** (256–512 MB) and **timeout** (10–30 seconds) values.
+  Do not use defaults (128 MB / 3 seconds) — they are almost always too low for
+  SDK calls.
+- Pass all runtime configuration (table name, bucket name, Cognito pool ID)
+  as **environment variables** on the Lambda function. This is how backend
+  handlers (§9) consume configuration.
+
+### API Gateway
+
+- Use **HTTP API** (`HttpApi`), not REST API (`RestApi`). HTTP API is cheaper,
+  faster, and supports JWT authorizers natively.
+- Attach a **Cognito JWT Authorizer** to all routes except health checks.
+- Configure **CORS** to allow `localhost:4200` (dev) and the CloudFront domain
+  (prod). Do not use `*` for allowed origins in production.
+
+### DynamoDB
+
+- Use **single-table design** with `TableV2` (preferred) or `Table`.
+- Define the partition key as `PK` (string) and sort key as `SK` (string).
+- Define GSIs (`GSI1PK`/`GSI1SK`) as needed by access patterns. Do not create
+  indexes speculatively — add them when a query pattern requires it.
+- Set **billing mode** to `PAY_PER_REQUEST` for development. Switch to
+  provisioned with auto-scaling for production if cost optimization is needed.
+
+### S3
+
+- Configure **CORS** on the bucket to allow presigned URL uploads from Angular
+  origins. Include `PUT` and `GET` methods, and the required headers
+  (`Content-Type`, `x-amz-meta-*`).
+- Add a lifecycle rule to **abort incomplete multipart uploads** after 7 days.
+- Use the object key pattern `users/{userId}/files/{fileId}/{filename}` to
+  enforce per-user isolation.
+
+### CloudFront & Frontend Hosting
+
+- Serve the Angular SPA from an S3 bucket behind **CloudFront**.
+- Use **OAI** (Origin Access Identity) or **OAC** (Origin Access Control) to
+  keep the S3 bucket private.
+- Configure **custom error responses** to redirect 403/404 to `/index.html`
+  with a 200 status code for SPA client-side routing.
+
+### LocalStack Compatibility
+
+- All constructs must work with **LocalStack** for local development. Avoid CDK
+  features that LocalStack does not support (check LocalStack docs when
+  uncertain).
+- Use `cdklocal deploy` (via `npm run deploy:local`) for LocalStack
+  deployments. The standard `cdk deploy` targets real AWS.
+- Do not hardcode `us-east-1` or account IDs. Use `Stack.of(this).region` and
+  `Stack.of(this).account` for dynamic references.
+
+### Testing (Vitest)
+
+- Use **Vitest** for CDK tests. Test files use the `.test.ts` extension.
+- Write **snapshot tests** for each construct: synthesize the stack and compare
+  the CloudFormation template against a stored snapshot.
+- Write **fine-grained assertion tests** for critical security properties (e.g.,
+  "S3 bucket blocks public access", "Lambda has least-privilege IAM role",
+  "API Gateway has JWT authorizer").
+- Use `Template.fromStack(stack)` from `aws-cdk-lib/assertions` for template
+  assertions.
+- Run `npm run test` (which executes `vitest run`) to validate changes.
+
+### Code Organization
+
+```
+infra/
+├── bin/
+│   └── app.ts              # CDK app entry point — instantiates the stack
+├── lib/
+│   ├── drive-lite-stack.ts  # Main stack — composes all constructs
+│   ├── auth-construct.ts    # Cognito User Pool, User Pool Client
+│   ├── api-construct.ts     # API Gateway, Lambda functions, JWT Authorizer
+│   ├── storage-construct.ts # S3 bucket, DynamoDB table
+│   └── frontend-construct.ts# S3 static hosting, CloudFront distribution
+├── cdk.json                 # CDK app config (uses tsx, feature flags)
+├── package.json
+└── tsconfig.json
+```
+
+- The main stack (`drive-lite-stack.ts`) is the only file that instantiates
+  constructs. Constructs do not instantiate other constructs — they receive
+  dependencies via props.
+- Cross-construct references (e.g., API construct needs the DynamoDB table)
+  flow through the main stack: `storageConstruct.table` → passed as a prop to
+  `ApiConstruct`.
+
+---
+
 ## Summary
 
 The core philosophy is: **think critically, verify everything, and be honest.**

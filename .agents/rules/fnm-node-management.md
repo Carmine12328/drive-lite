@@ -1,33 +1,32 @@
-# fnm — Node.js Version Management
+# fnm Node Version Management
 
-This project uses **fnm** (Fast Node Manager) for Node.js version management.
-nvm-windows is installed but must NOT be used — it hangs in non-interactive
-shells and requires admin elevation.
+This workspace uses **fnm** (Fast Node Manager) for Node.js version management.
+**Never use nvm** — it is not installed.
 
-## Shell Initialization
+## fnm Location
 
-Before running any `node`, `npm`, `npx`, or `ng` command, initialize fnm
-in the current shell:
+fnm is installed via winget at:
+```
+C:\Users\User\AppData\Local\Microsoft\WinGet\Packages\Schniz.fnm_Microsoft.Winget.Source_8wekyb3d8bbwe
+```
+
+This path is NOT on the shell PATH by default in this tool's context.
+
+## Required Preamble for Node/Angular Commands
+
+Before running any command that depends on Node.js (e.g., `ng serve`, `ng build`,
+`npm run`, `npx`), prepend this activation block:
 
 ```powershell
-# Refresh PATH (needed if fnm was recently installed via winget)
-$env:PATH = [System.Environment]::GetEnvironmentVariable("PATH", "User") + ";" + [System.Environment]::GetEnvironmentVariable("PATH", "Machine")
-
-# Activate fnm with auto-switching on directory change
+$fnmDir = "C:\Users\User\AppData\Local\Microsoft\WinGet\Packages\Schniz.fnm_Microsoft.Winget.Source_8wekyb3d8bbwe"
+$env:PATH = "$fnmDir;$env:PATH"
+fnm use 22.22.3
 fnm env --use-on-cd | Out-String | Invoke-Expression
 ```
 
-After initialization, fnm reads `.nvmrc` and activates the correct Node.js
-version automatically.
+## Key Facts
 
-## Rules
-
-1. **Never call `nvm` directly** — it hangs in non-interactive PowerShell.
-   Use `fnm` for all version management.
-2. **Always initialize fnm env** before running Node.js commands. Without it,
-   the shell falls back to the system Node.js (which may be the wrong version).
-3. **Check `.nvmrc`** in the project root for the required version (currently
-   `22.22.3`).
-4. **If a version isn't installed**, run `fnm install <version>` — fnm does
-   not require admin elevation.
-5. **After `winget install`**, refresh `$env:PATH` before using the new tool.
+- The `.nvmrc` file pins Node **22.22.3**.
+- The system default Node is **v22.16.0**, which is too old for Angular 22.
+- Angular CLI will refuse to run on Node < 22.22.3 with a hard error.
+- fnm already has Node 22.22.3 installed — no download needed.
