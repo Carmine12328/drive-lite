@@ -1,5 +1,6 @@
 import { Component, inject } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { RouterOutlet, ChildrenOutletContexts } from '@angular/router';
+import { routeAnimations } from '../../core/animations/route.animations';
 import { NavbarComponent } from '../../shared/components/navbar/navbar.component';
 import { ViewStateService } from '../../core/services/view-state.service';
 
@@ -19,10 +20,14 @@ import { ViewStateService } from '../../core/services/view-state.service';
   imports: [RouterOutlet, NavbarComponent],
   template: `
     <app-navbar />
-    <main class="shell-content">
+    <main class="shell-content" [@routeAnimations]="getRouteAnimationData()">
       <router-outlet />
     </main>
   `,
+  animations: [routeAnimations],
+  host: {
+    '(document:contextmenu)': '$event.preventDefault()'
+  },
   styles: [`
     :host {
       display: flex;
@@ -32,8 +37,17 @@ import { ViewStateService } from '../../core/services/view-state.service';
 
     .shell-content {
       flex: 1;
+      display: flex;
+      flex-direction: column;
       padding: var(--space-6);
-      overflow-y: auto;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    @media (max-width: 767px) {
+      .shell-content {
+        padding: var(--space-3);
+      }
     }
   `],
 })
@@ -44,4 +58,16 @@ export class ShellComponent {
    * The navbar writes to it; child routes (e.g. FileBrowserComponent) read from it.
    */
   private readonly viewState = inject(ViewStateService);
+
+  /**
+   * Router contexts for animations.
+   */
+  private readonly contexts = inject(ChildrenOutletContexts);
+
+  /**
+   * Gets animation data from the active route.
+   */
+  getRouteAnimationData(): string {
+    return this.contexts.getContext('primary')?.route?.snapshot?.data?.['animation'];
+  }
 }

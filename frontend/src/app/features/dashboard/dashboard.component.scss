@@ -26,6 +26,7 @@
 
 .quick-actions {
   display: flex;
+  flex-wrap: wrap;
   gap: var(--space-md, 16px);
   
   .action-btn {
@@ -149,10 +150,14 @@
     
     .file-details {
       flex: 1;
+      min-width: 0;
       
       .file-name {
         font-weight: 500;
         color: var(--text-primary, #333);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
     }
     
@@ -161,10 +166,18 @@
       gap: var(--space-lg, 24px);
       color: var(--text-secondary, #666);
       font-size: 0.875rem;
+
+      @media (max-width: 767px) {
+        gap: 12px;
+      }
       
       .file-date, .file-size {
         min-width: 80px;
         text-align: right;
+
+        @media (max-width: 767px) {
+          min-width: 60px;
+        }
       }
     }
   }
