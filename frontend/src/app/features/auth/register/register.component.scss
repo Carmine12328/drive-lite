@@ -1,0 +1,255 @@
+.auth-container {
+  display: block;
+  min-height: 100vh;
+}
+
+.background {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--bg-primary);
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle at center, var(--accent-glow) 0%, transparent 40%);
+    opacity: 0.15;
+    z-index: 0;
+    pointer-events: none;
+  }
+}
+
+.theme-toggle {
+  position: absolute;
+  top: var(--space-4);
+  right: var(--space-4);
+  z-index: var(--z-sticky);
+  color: var(--text-primary);
+}
+
+.register-card {
+  width: 100%;
+  max-width: 440px;
+  padding: var(--space-8);
+  margin: var(--space-4);
+  position: relative;
+  z-index: 1;
+  border-radius: var(--radius-xl);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.card-header {
+  text-align: center;
+  
+  h1 {
+    margin: 0 0 var(--space-2) 0;
+    font-size: 2rem;
+    font-weight: 700;
+  }
+  
+  .subtitle {
+    margin: 0;
+    color: var(--text-secondary);
+  }
+}
+
+.steps-container {
+  /* `clip` instead of `hidden` — clip doesn't create a scroll container,
+     so it only clips the inline (horizontal) overflow for the slide animation
+     without forcing overflow-y to `auto` (which would clip the Material
+     floating labels and bottom content). */
+  overflow: clip;
+  position: relative;
+  width: 100%;
+}
+
+.steps-slider {
+  display: flex;
+  width: 200%;
+  transition: transform var(--transition-base) cubic-bezier(0.4, 0, 0.2, 1);
+  align-items: flex-start;
+}
+
+.step {
+  width: 50%;
+  flex-shrink: 0;
+  padding: var(--space-2) var(--space-1) 0;
+}
+
+.register-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.full-width {
+  width: 100%;
+}
+
+.submit-btn {
+  width: 100%;
+  height: 48px;
+  font-size: 1.1rem;
+  margin-top: var(--space-4);
+}
+
+.password-strength {
+  margin-bottom: var(--space-2);
+  padding: var(--space-2) var(--space-1);
+  
+  .strength-bars {
+    display: flex;
+    gap: 4px;
+    height: 6px;
+    margin-bottom: var(--space-2);
+    
+    .bar {
+      flex: 1;
+      border-radius: var(--radius-full);
+      background-color: var(--border-color);
+      transition: background-color var(--transition-fast) ease;
+      
+      &.active.weak { background-color: var(--color-error); }
+      &.active.fair { background-color: var(--color-warning); }
+      &.active.good { background-color: var(--color-info); }
+      &.active.strong { background-color: var(--color-success); }
+    }
+  }
+
+  .strength-text {
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: var(--space-3);
+    
+    .weak-text { color: var(--color-error); }
+    .fair-text { color: var(--color-warning); }
+    .good-text { color: var(--color-info); }
+    .strong-text { color: var(--color-success); }
+    span { color: var(--text-muted); }
+  }
+
+  .criteria-checklist {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    
+    .criterion {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      transition: color var(--transition-fast) ease;
+      
+      mat-icon {
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+        flex-shrink: 0;
+      }
+      
+      &.met {
+        color: var(--color-success);
+      }
+    }
+  }
+}
+
+.verification-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-6);
+  padding: var(--space-4) 0;
+}
+
+.verification-header {
+  text-align: center;
+  
+  h3 {
+    margin: 0 0 var(--space-2) 0;
+    font-size: 1.5rem;
+    color: var(--text-primary);
+  }
+  
+  p {
+    margin: 0;
+    color: var(--text-secondary);
+    line-height: 1.5;
+  }
+}
+
+.code-inputs-container {
+  display: flex;
+  gap: var(--space-2);
+  justify-content: center;
+  width: 100%;
+}
+
+.code-digit {
+  width: 48px;
+  height: 56px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-surface);
+  color: var(--text-primary);
+  font-size: 1.5rem;
+  font-weight: 600;
+  text-align: center;
+  transition: all var(--transition-fast) ease;
+  
+  &:focus {
+    outline: none;
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 2px var(--accent-glow);
+  }
+  
+  &.ng-invalid.ng-touched {
+    border-color: var(--color-error);
+  }
+}
+
+.resend-container {
+  text-align: center;
+  margin-top: var(--space-2);
+  
+  button {
+    color: var(--text-secondary);
+    
+    &:hover:not([disabled]) {
+      color: var(--accent-primary);
+    }
+  }
+}
+
+.card-footer {
+  text-align: center;
+  margin-top: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border-color);
+  
+  p {
+    margin: 0;
+    color: var(--text-secondary);
+  }
+  
+  .link {
+    color: var(--accent-primary);
+    text-decoration: none;
+    font-weight: 600;
+    transition: color var(--transition-fast) ease;
+    
+    &:hover {
+      color: var(--accent-secondary);
+    }
+  }
+}

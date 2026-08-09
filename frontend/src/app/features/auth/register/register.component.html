@@ -1,0 +1,144 @@
+<div class="background">
+  <button mat-icon-button class="theme-toggle" (click)="toggleTheme()" aria-label="Toggle theme">
+    <mat-icon>{{ isDarkMode() ? 'light_mode' : 'dark_mode' }}</mat-icon>
+  </button>
+
+  <div class="glass-panel register-card fade-in">
+    <div class="card-header">
+      <h1 class="gradient-text">Create Account</h1>
+      <p class="subtitle">Join Drive Lite today</p>
+    </div>
+
+    <div class="steps-container">
+      <div class="steps-slider" [style.transform]="'translateX(' + (currentStep() === 1 ? '0' : '-50%') + ')'">
+        
+        <!-- Step 1: Registration Form -->
+        <div class="step">
+          <form [formGroup]="registerForm" (ngSubmit)="onRegisterSubmit()" class="register-form">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Email</mat-label>
+              <input matInput type="email" formControlName="email" placeholder="name@example.com">
+              @if (registerForm.controls.email.hasError('required')) {
+                <mat-error>Email is required</mat-error>
+              }
+              @if (registerForm.controls.email.hasError('email')) {
+                <mat-error>Please enter a valid email</mat-error>
+              }
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Password</mat-label>
+              <input matInput [type]="hidePassword() ? 'password' : 'text'" formControlName="password">
+              <button mat-icon-button matSuffix type="button" (click)="togglePasswordVisibility()">
+                <mat-icon>{{ hidePassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
+              </button>
+              @if (registerForm.controls.password.hasError('required')) {
+                <mat-error>Password is required</mat-error>
+              }
+            </mat-form-field>
+
+            <!-- Password Strength Indicator -->
+            <div class="password-strength">
+              <div class="strength-bars">
+                <div class="bar" [class.active]="passwordStrength() >= 1" [class.weak]="passwordStrength() === 1" [class.fair]="passwordStrength() === 2" [class.good]="passwordStrength() === 3" [class.strong]="passwordStrength() === 4"></div>
+                <div class="bar" [class.active]="passwordStrength() >= 2" [class.fair]="passwordStrength() === 2" [class.good]="passwordStrength() === 3" [class.strong]="passwordStrength() === 4"></div>
+                <div class="bar" [class.active]="passwordStrength() >= 3" [class.good]="passwordStrength() === 3" [class.strong]="passwordStrength() === 4"></div>
+                <div class="bar" [class.active]="passwordStrength() >= 4" [class.strong]="passwordStrength() === 4"></div>
+              </div>
+              <div class="strength-text">
+                @switch (passwordStrength()) {
+                  @case (0) { <span>Enter a password</span> }
+                  @case (1) { <span class="weak-text">Weak</span> }
+                  @case (2) { <span class="fair-text">Fair</span> }
+                  @case (3) { <span class="good-text">Good</span> }
+                  @case (4) { <span class="strong-text">Strong</span> }
+                }
+              </div>
+              <div class="criteria-checklist">
+                <div class="criterion" [class.met]="passwordCriteria().length">
+                  <mat-icon>{{ passwordCriteria().length ? 'check_circle' : 'cancel' }}</mat-icon> 8+ characters
+                </div>
+                <div class="criterion" [class.met]="passwordCriteria().uppercase">
+                  <mat-icon>{{ passwordCriteria().uppercase ? 'check_circle' : 'cancel' }}</mat-icon> Uppercase letter
+                </div>
+                <div class="criterion" [class.met]="passwordCriteria().lowercase">
+                  <mat-icon>{{ passwordCriteria().lowercase ? 'check_circle' : 'cancel' }}</mat-icon> Lowercase letter
+                </div>
+                <div class="criterion" [class.met]="passwordCriteria().number">
+                  <mat-icon>{{ passwordCriteria().number ? 'check_circle' : 'cancel' }}</mat-icon> Number
+                </div>
+                <div class="criterion" [class.met]="passwordCriteria().special">
+                  <mat-icon>{{ passwordCriteria().special ? 'check_circle' : 'cancel' }}</mat-icon> Special character
+                </div>
+              </div>
+            </div>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Confirm Password</mat-label>
+              <input matInput [type]="hideConfirmPassword() ? 'password' : 'text'" formControlName="confirmPassword" [errorStateMatcher]="confirmPasswordMatcher">
+              <button mat-icon-button matSuffix type="button" (click)="toggleConfirmPasswordVisibility()">
+                <mat-icon>{{ hideConfirmPassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
+              </button>
+              @if (registerForm.hasError('mismatch') && registerForm.controls.confirmPassword.touched) {
+                <mat-error>Passwords do not match</mat-error>
+              }
+              @if (registerForm.controls.confirmPassword.hasError('required')) {
+                <mat-error>Please confirm your password</mat-error>
+              }
+            </mat-form-field>
+
+            <button mat-flat-button class="btn-accent submit-btn" type="submit" [disabled]="isLoading()">
+              @if (isLoading()) {
+                <mat-spinner diameter="24"></mat-spinner>
+              } @else {
+                Continue
+              }
+            </button>
+          </form>
+        </div>
+
+        <!-- Step 2: Verification Code -->
+        <div class="step verification-step">
+          <div class="verification-header">
+            <h3>Verify your email</h3>
+            <p>We've sent a 6-digit code to <br> <strong>{{ registerForm.value.email || 'your email' }}</strong></p>
+          </div>
+
+          <div class="code-inputs-container">
+            @for (i of [0,1,2,3,4,5]; track i) {
+              <input 
+                #digitInput
+                type="text" 
+                maxlength="1" 
+                class="code-digit" 
+                [formControl]="codeControls[i]"
+                (input)="onCodeInput($event, i)"
+                (keydown)="onCodeKeydown($event, i)"
+                (paste)="onCodePaste($event)"
+              >
+            }
+          </div>
+          
+          <button mat-flat-button class="btn-accent submit-btn" (click)="onCodeSubmit()" [disabled]="isLoading()">
+            @if (isLoading()) {
+              <mat-spinner diameter="24"></mat-spinner>
+            } @else {
+              Verify & Register
+            }
+          </button>
+
+          <div class="resend-container">
+            <button mat-button type="button" (click)="resendCode()" [disabled]="resendCooldown() > 0 || isLoading()">
+              Resend Code {{ resendCooldown() > 0 ? '(' + resendCooldown() + 's)' : '' }}
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="card-footer">
+      <p>Already have an account? <a routerLink="/auth/login" class="link">Sign In</a></p>
+    </div>
+  </div>
+</div>

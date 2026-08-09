@@ -1,0 +1,74 @@
+<div class="login-container fade-in">
+  <!-- Theme Toggle -->
+  <button mat-icon-button class="theme-toggle" (click)="toggleTheme()" aria-label="Toggle theme">
+    <mat-icon>{{ isDarkTheme() ? 'light_mode' : 'dark_mode' }}</mat-icon>
+  </button>
+
+  <div class="glass-panel login-card slide-up">
+    <div class="login-header">
+      <div class="logo-placeholder">
+        <span class="gradient-text logo-text">Drive Lite</span>
+      </div>
+      <h2>Welcome Back</h2>
+      <p class="subtitle">Enter your credentials to access your files</p>
+    </div>
+
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
+      <mat-form-field appearance="outline" class="form-field">
+        <mat-label>Email Address</mat-label>
+        <input matInput formControlName="email" type="email" placeholder="name@example.com" autocomplete="email">
+        @if (loginForm.get('email')?.hasError('required') && loginForm.get('email')?.touched) {
+          <mat-error>Email is required</mat-error>
+        }
+        @if (loginForm.get('email')?.hasError('email') && loginForm.get('email')?.touched) {
+          <mat-error>Please enter a valid email</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="form-field">
+        <mat-label>Password</mat-label>
+        <input matInput formControlName="password" type="password" placeholder="••••••••" autocomplete="current-password">
+        @if (loginForm.get('password')?.hasError('required') && loginForm.get('password')?.touched) {
+          <mat-error>Password is required</mat-error>
+        }
+        @if (loginForm.get('password')?.hasError('minlength') && loginForm.get('password')?.touched) {
+          <mat-error>Password must be at least 8 characters</mat-error>
+        }
+      </mat-form-field>
+
+      <div class="form-options">
+        <mat-checkbox formControlName="rememberMe">Remember me</mat-checkbox>
+        <a href="javascript:void(0)" class="forgot-link">Forgot Password?</a>
+      </div>
+
+      @if (errorMessage()) {
+        <div class="error-message">
+          <mat-icon>error_outline</mat-icon>
+          <span>{{ errorMessage() }}</span>
+        </div>
+      }
+
+      <div class="actions">
+        <button mat-flat-button class="btn-accent submit-btn" type="submit" [disabled]="loginForm.invalid || isLoading()">
+          @if (isLoading()) {
+            <mat-spinner diameter="24" class="spinner"></mat-spinner>
+          } @else {
+            Sign In
+          }
+        </button>
+        
+        <div class="divider">
+          <span>OR</span>
+        </div>
+
+        <button mat-stroked-button class="cognito-btn" type="button" (click)="signInWithCognito()" [disabled]="isLoading()">
+          Use Cognito Hosted UI
+        </button>
+      </div>
+
+      <div class="register-prompt">
+        Don't have an account? <a routerLink="/auth/register">Sign Up</a>
+      </div>
+    </form>
+  </div>
+</div>

@@ -1,0 +1,183 @@
+.login-container {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: radial-gradient(circle at 15% 50%, rgba(var(--accent-primary-rgb, 98, 0, 234), 0.15), transparent 25%),
+              radial-gradient(circle at 85% 30%, rgba(var(--accent-secondary-rgb, 3, 218, 198), 0.15), transparent 25%),
+              var(--bg-primary);
+  background-size: 200% 200%;
+  animation: gradientFlow 15s ease infinite;
+  position: relative;
+  padding: var(--space-4);
+}
+
+.theme-toggle {
+  position: absolute;
+  top: var(--space-4);
+  right: var(--space-4);
+  color: var(--text-primary);
+}
+
+.login-card {
+  width: 100%;
+  max-width: 440px;
+  padding: var(--space-8) var(--space-6);
+  border-radius: var(--radius-xl);
+}
+
+.login-header {
+  text-align: center;
+  margin-bottom: var(--space-8);
+  
+  .logo-placeholder {
+    margin-bottom: var(--space-4);
+    
+    .logo-text {
+      font-size: 2rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+  }
+
+  h2 {
+    color: var(--text-primary);
+    font-size: 1.75rem;
+    font-weight: 600;
+    margin: 0 0 var(--space-2) 0;
+  }
+
+  .subtitle {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    margin: 0;
+  }
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.form-field {
+  width: 100%;
+  
+  ::ng-deep .mat-mdc-text-field-wrapper {
+    background: var(--bg-surface);
+    border-radius: var(--radius-md);
+  }
+}
+
+.form-options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-4);
+  margin-top: calc(var(--space-2) * -1);
+
+  ::ng-deep .mdc-form-field {
+    color: var(--text-primary);
+  }
+
+  .forgot-link {
+    color: var(--accent-primary);
+    text-decoration: none;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: color var(--transition-fast) ease;
+
+    &:hover {
+      color: var(--accent-secondary);
+    }
+  }
+}
+
+.error-message {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-error);
+  background: rgba(var(--color-error-rgb, 211, 47, 47), 0.1);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-4);
+  font-size: 0.875rem;
+  
+  mat-icon {
+    font-size: 20px;
+    height: 20px;
+    width: 20px;
+  }
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+
+  .submit-btn {
+    height: 48px;
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: var(--radius-md);
+    
+    .spinner {
+      margin: 0 auto;
+    }
+  }
+
+  .divider {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.875rem;
+    
+    &::before,
+    &::after {
+      content: '';
+      flex: 1;
+      border-bottom: 1px solid var(--border-color);
+    }
+    
+    span {
+      padding: 0 var(--space-3);
+    }
+  }
+
+  .cognito-btn {
+    height: 48px;
+    font-size: 1rem;
+    font-weight: 500;
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    border-color: var(--border-color);
+  }
+}
+
+.register-prompt {
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+
+  a {
+    color: var(--accent-primary);
+    text-decoration: none;
+    font-weight: 600;
+    margin-left: var(--space-1);
+    transition: color var(--transition-fast) ease;
+
+    &:hover {
+      color: var(--accent-secondary);
+      text-decoration: underline;
+    }
+  }
+}
+
+@keyframes gradientFlow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
