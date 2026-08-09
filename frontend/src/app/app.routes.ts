@@ -1,17 +1,18 @@
 import { Routes } from '@angular/router';
+import { authGuard } from './core/auth/auth.guard';
 
 /**
  * Top-level route definitions for the Drive Lite application.
  *
  * Auth routes are defined first (no guard) so unauthenticated users can
- * access landing, login, register, and callback pages. Authenticated
- * routes (dashboard, file-browser) will be added in Step 5 behind
- * the authGuard.
+ * access landing, login, register, and callback pages. The shell route
+ * wraps all authenticated child routes behind `authGuard`.
  *
  * All feature routes use lazy loading via `loadComponent` to keep
  * the initial bundle small.
  */
 export const routes: Routes = [
+  // --- Public auth routes (no guard) ---
   {
     path: 'auth',
     children: [
@@ -46,5 +47,48 @@ export const routes: Routes = [
       },
     ],
   },
-  { path: '', redirectTo: 'auth/landing', pathMatch: 'full' },
+
+  // --- Authenticated routes (guarded, wrapped in ShellComponent) ---
+  {
+    path: '',
+    loadComponent: () =>
+      import('./features/shell/shell.component').then(
+        (m) => m.ShellComponent,
+      ),
+    canActivate: [authGuard],
+    children: [
+      {
+        path: 'dashboard',
+        loadComponent: () =>
+          import('./features/dashboard/dashboard.component').then(
+            (m) => m.DashboardComponent,
+          ),
+      },
+      // Step 6 routes — uncomment when FileBrowserComponent and TrashComponent are created:
+      // {
+      //   path: 'drive',
+      //   loadComponent: () =>
+      //     import('./features/file-browser/file-browser.component').then(
+      //       (m) => m.FileBrowserComponent,
+      //     ),
+      // },
+      // {
+      //   path: 'drive/folder/:folderId',
+      //   loadComponent: () =>
+      //     import('./features/file-browser/file-browser.component').then(
+      //       (m) => m.FileBrowserComponent,
+      //     ),
+      // },
+      // {
+      //   path: 'drive/trash',
+      //   loadComponent: () =>
+      //     import('./features/file-browser/trash/trash.component').then(
+      //       (m) => m.TrashComponent,
+      //     ),
+      // },
+    ],
+  },
+
+  // --- Fallback ---
+  { path: '**', redirectTo: 'auth/landing' },
 ];
