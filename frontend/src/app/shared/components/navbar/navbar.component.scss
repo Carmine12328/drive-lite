@@ -59,7 +59,8 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 12px;
+  padding: 10px 12px;
+  min-height: 44px;
   border-radius: 8px;
   font-size: 0.875rem;
   font-weight: 500;
@@ -112,6 +113,7 @@
   border-radius: 24px;
   padding: 4px 16px;
   transition: all var(--transition-fast, 0.2s);
+  position: relative;
 }
 
 .search-container:focus-within {
@@ -139,6 +141,83 @@
   color: var(--text-muted, #757575);
 }
 
+.search-clear {
+  color: var(--text-muted, #757575);
+  margin-left: 8px;
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.search-results-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  background-color: var(--bg-surface, #ffffff);
+  border: 1px solid var(--border-color, #e0e0e0);
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  max-height: 360px;
+  overflow-y: auto;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  padding: 8px 0;
+}
+
+.search-loading,
+.search-no-results {
+  padding: 16px;
+  text-align: center;
+  color: var(--text-secondary, #666666);
+  font-size: 0.9rem;
+}
+
+.search-result-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  width: 100%;
+  border: none;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color var(--transition-fast, 0.2s);
+}
+
+.search-result-item:hover {
+  background-color: var(--bg-hover, rgba(0, 0, 0, 0.04));
+}
+
+.result-icon {
+  color: var(--text-secondary, #666666);
+}
+
+.result-name {
+  flex: 1;
+  color: var(--text-primary, #333333);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  
+  mark {
+    background-color: color-mix(in srgb, var(--accent-primary, #3b82f6) 20%, transparent);
+    color: var(--accent-primary, #3b82f6);
+    padding: 0 2px;
+    border-radius: 2px;
+  }
+}
+
+.result-type {
+  font-size: 0.75rem;
+  color: var(--text-muted, #757575);
+  text-transform: capitalize;
+}
+
 .navbar-right {
   display: flex;
   align-items: center;
@@ -146,8 +225,8 @@
 }
 
 .user-avatar {
-  width: 36px;
-  height: 36px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   background: var(--accent-gradient, linear-gradient(45deg, #1976d2, #9c27b0));
   color: white;
@@ -174,6 +253,10 @@
 .user-email {
   font-weight: 500;
   color: var(--text-primary, #333333);
+  max-width: 200px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 mat-divider {

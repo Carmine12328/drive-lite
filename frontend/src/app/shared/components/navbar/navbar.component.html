@@ -33,8 +33,39 @@
         placeholder="Search in Drive..."
         [ngModel]="searchText"
         (input)="onSearchInput($event)"
+        (focus)="searchFocused.set(true)"
+        (blur)="onSearchBlur()"
+        role="combobox"
+        aria-autocomplete="list"
+        [attr.aria-expanded]="showResults()"
         aria-label="Search files and folders"
       />
+      @if (searchText.length > 0) {
+        <button class="search-clear" mat-icon-button (click)="clearSearch()" aria-label="Clear search">
+          <mat-icon>close</mat-icon>
+        </button>
+      }
+
+      <!-- Search Results Dropdown -->
+      @if (showResults()) {
+        <div class="search-results-dropdown" role="listbox">
+          @if (searchService.isSearching()) {
+            <div class="search-loading">Searching...</div>
+          } @else if (searchService.searchResults().length === 0) {
+            <div class="search-no-results">No results found</div>
+          } @else {
+            @for (result of searchService.searchResults(); track resultId(result)) {
+              <button class="search-result-item" role="option" (click)="onResultClick(result)">
+                <mat-icon class="result-icon">
+                  {{ resultIcon(result) }}
+                </mat-icon>
+                <span class="result-name" [innerHTML]="highlightMatch(resultName(result))"></span>
+                <span class="result-type">{{ result.resultType }}</span>
+              </button>
+            }
+          }
+        </div>
+      }
     </div>
   </div>
 
