@@ -39,7 +39,7 @@ export class NavbarComponent {
   readonly authService = inject(AuthService);
 
   /** Shared view state service for cross-component communication. */
-  private readonly viewState = inject(ViewStateService);
+  readonly viewState = inject(ViewStateService);
 
   /** Current view mode — reads from the shared service. */
   readonly viewMode = this.viewState.viewMode;

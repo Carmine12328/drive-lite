@@ -1,8 +1,8 @@
 <mat-toolbar class="navbar">
   <!-- Left section: Branding + Navigation -->
   <div class="navbar-left">
-    <button mat-icon-button class="mobile-menu-btn" aria-label="Toggle menu">
-      <mat-icon>menu</mat-icon>
+    <button mat-icon-button class="mobile-menu-btn" (click)="viewState.toggleSidebar()" aria-label="Toggle sidebar">
+      <mat-icon>{{ viewState.sidebarOpen() ? 'menu_open' : 'menu' }}</mat-icon>
     </button>
     <a class="brand" routerLink="/dashboard">
       <mat-icon class="brand-icon">cloud</mat-icon>

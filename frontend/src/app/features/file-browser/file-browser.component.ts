@@ -62,8 +62,8 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
   /** Current folder ID from route params. Defaults to ROOT. */
   readonly currentFolderId = signal<string>('ROOT');
 
-  /** Whether the sidebar is visible (toggled on mobile). */
-  readonly sidebarOpen = signal<boolean>(true);
+  /** Whether the sidebar is visible (toggled on mobile). Delegates to ViewStateService. */
+  readonly sidebarOpen = this.viewState.sidebarOpen;
 
   /** Drag-and-drop overlay visibility. */
   readonly showDropOverlay = signal<boolean>(false);
@@ -177,6 +177,10 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
    * @param folderId The selected folder ID.
    */
   onFolderSelect(folderId: string): void {
+    // Close the sidebar on mobile after selecting a folder so the user
+    // sees the main content area with the newly loaded folder.
+    this.closeSidebarOnMobile();
+
     if (folderId === 'TRASH') {
       this.router.navigate(['/drive/trash']);
       return;
@@ -318,9 +322,17 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
     this.contextTarget = null;
   }
 
-  /** Toggles the sidebar visibility (mobile). */
+  /** Toggles the sidebar visibility (mobile). Delegates to shared ViewStateService. */
   toggleSidebar(): void {
-    this.sidebarOpen.update(open => !open);
+    this.viewState.toggleSidebar();
+  }
+
+  /**
+   * Closes the sidebar when the viewport is at or below the mobile
+   * breakpoint (768px). Delegates to shared ViewStateService.
+   */
+  private closeSidebarOnMobile(): void {
+    this.viewState.closeSidebarOnMobile();
   }
 
   // --- Dialog methods ---

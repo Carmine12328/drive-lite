@@ -18,6 +18,11 @@
     />
   </aside>
 
+  <!-- Backdrop overlay (mobile only) — closes sidebar when tapped -->
+  @if (sidebarOpen()) {
+    <div class="sidebar-backdrop" (click)="toggleSidebar()"></div>
+  }
+
   <!-- Resize handle -->
   <div class="resize-handle"
        (pointerdown)="onResizeStart($event)"

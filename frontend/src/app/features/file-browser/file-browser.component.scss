@@ -60,6 +60,8 @@
     transform: translateX(-100%);
     opacity: 0;
     pointer-events: none;
+    // Smooth slide-in / slide-out animation
+    transition: transform 250ms ease, opacity 200ms ease;
 
     &.sidebar-open {
       transform: translateX(0);
@@ -68,6 +70,27 @@
       box-shadow: var(--shadow-lg);
     }
   }
+}
+
+// --- Mobile sidebar backdrop ---
+// Translucent scrim behind the sidebar; tapping it closes the drawer.
+.sidebar-backdrop {
+  display: none;
+
+  @media (max-width: 768px) {
+    display: block;
+    position: fixed;
+    inset: 0;
+    top: 64px; // Same offset as sidebar — sits below the navbar
+    z-index: calc(var(--z-overlay) - 1); // Below the sidebar, above content
+    background: rgba(0, 0, 0, 0.4);
+    animation: backdrop-fade-in 200ms ease-out;
+  }
+}
+
+@keyframes backdrop-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 // --- Resize handle ---
