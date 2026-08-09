@@ -127,12 +127,22 @@ export class FileService {
   public error: WritableSignal<string | null> = signal<string | null>(null);
 
   /**
+   * Version counter that increments on every trash mutation.
+   * Read by `getDeletedFiles()` to create a signal dependency so
+   * consumers using `computed(() => getDeletedFiles())` re-evaluate.
+   */
+  private readonly trashVersion: WritableSignal<number> = signal<number>(0);
+
+  /**
    * Filters the files by the specified folder ID and updates the files signal.
+   * Excludes soft-deleted files (those with a `deletedAt` timestamp).
    * @param folderId The ID of the folder to list files for.
    */
   public listFiles(folderId: string): void {
     this.isLoading.set(true);
-    const filteredFiles = this.ALL_MOCK_FILES.filter((file) => file.folderId === folderId);
+    const filteredFiles = this.ALL_MOCK_FILES.filter(
+      (file) => file.folderId === folderId && !file.deletedAt,
+    );
     this.files.set(filteredFiles);
     this.isLoading.set(false);
   }
@@ -149,19 +159,33 @@ export class FileService {
   /**
    * Initiates a download for the specified file.
    *
-   * STUB: Shows a toast notification. No actual download occurs.
-   * Replace with: POST /files/{id}/download-url → create hidden <a> → click
+   * STUB: Generates a placeholder blob and triggers a real browser download.
+   * Replace with: POST /files/{id}/download-url → presigned GET → hidden <a> → click
    *
    * @param fileId The ID of the file to download
    */
   public downloadFile(fileId: string): void {
-    // STUB: replace with real presigned URL download flow
     const file = this.ALL_MOCK_FILES.find(f => f.fileId === fileId);
-    if (file) {
-      this.toastService.info(`Download started: ${file.fileName}`);
-    } else {
+    if (!file) {
       this.toastService.error('File not found.');
+      return;
     }
+
+    // Generate a stub blob with placeholder content
+    const content = `[Drive Lite stub download]\n\nFile: ${file.fileName}\nSize: ${file.fileSize} bytes\nType: ${file.mimeType}\nCreated: ${file.createdAt}\n\nThis is a placeholder download. Real file content will be served via presigned S3 URLs once the backend is connected.`;
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+
+    // Create a hidden anchor, trigger click, then clean up
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = file.fileName;
+    document.body.appendChild(anchor);
+    anchor.click();
+    document.body.removeChild(anchor);
+    URL.revokeObjectURL(url);
+
+    this.toastService.info(`Download started: ${file.fileName}`);
   }
 
   /**
@@ -188,16 +212,25 @@ export class FileService {
   }
 
   /**
-   * Deletes a file from the mock data and updates the files signal.
-   * @param fileId The ID of the file to delete.
+   * Soft-deletes a file by setting its `deletedAt` timestamp.
+   * The file is removed from the current files signal but remains
+   * in the mock data array for restoration from the Trash view.
+   *
+   * STUB: replace with real API call (PATCH /files/{id} with deletedAt)
+   *
+   * @param fileId The ID of the file to soft-delete.
    */
   public deleteFile(fileId: string): void {
     const index = this.ALL_MOCK_FILES.findIndex((file) => file.fileId === fileId);
     if (index !== -1) {
-      this.ALL_MOCK_FILES.splice(index, 1);
-      
-      // Update the signal to reflect changes
+      this.ALL_MOCK_FILES[index] = {
+        ...this.ALL_MOCK_FILES[index],
+        deletedAt: new Date().toISOString(),
+      };
+
+      // Remove from current files signal (active view excludes deleted files)
       this.files.update((currentFiles) => currentFiles.filter((file) => file.fileId !== fileId));
+      this.trashVersion.update(v => v + 1);
     }
   }
 
@@ -206,15 +239,91 @@ export class FileService {
    * @returns The total size in bytes.
    */
   public getTotalSize(): number {
-    return this.ALL_MOCK_FILES.reduce((total, file) => total + file.fileSize, 0);
+    return this.ALL_MOCK_FILES
+      .filter((file) => !file.deletedAt)
+      .reduce((total, file) => total + file.fileSize, 0);
   }
 
   /**
-   * Retrieves the total count of files in the mock data.
-   * @returns The total number of files.
+   * Retrieves the total count of non-deleted files.
+   * @returns The total number of active files.
    */
   public getTotalCount(): number {
-    return this.ALL_MOCK_FILES.length;
+    return this.ALL_MOCK_FILES.filter((file) => !file.deletedAt).length;
+  }
+
+  /**
+   * Returns all non-deleted files regardless of folder.
+   * Used by SearchService and Dashboard for cross-folder queries.
+   *
+   * @returns Array of all active (non-deleted) FileItems.
+   */
+  public getAllFiles(): FileItem[] {
+    return this.ALL_MOCK_FILES.filter((file) => !file.deletedAt);
+  }
+
+  // --- Trash operations ---
+
+  /**
+   * Returns all soft-deleted files (those with a `deletedAt` timestamp).
+   * Used by the Trash view to display deleted items.
+   *
+   * @returns Array of soft-deleted FileItems.
+   */
+  public getDeletedFiles(): FileItem[] {
+    // Read trashVersion to establish a signal dependency — when trash
+    // mutations bump this counter, any computed() calling this method re-runs.
+    this.trashVersion();
+    return this.ALL_MOCK_FILES.filter((file) => !!file.deletedAt);
+  }
+
+  /**
+   * Restores a soft-deleted file by clearing its `deletedAt` timestamp.
+   * The file becomes visible again in its original folder.
+   *
+   * STUB: replace with real API call (PATCH /files/{id} remove deletedAt)
+   *
+   * @param fileId The ID of the file to restore.
+   */
+  public restoreFile(fileId: string): void {
+    const index = this.ALL_MOCK_FILES.findIndex((file) => file.fileId === fileId);
+    if (index !== -1) {
+      const { deletedAt, ...restored } = this.ALL_MOCK_FILES[index];
+      this.ALL_MOCK_FILES[index] = restored as FileItem;
+      this.trashVersion.update(v => v + 1);
+    }
+  }
+
+  /**
+   * Permanently removes a file from the mock data array.
+   * This cannot be undone — the file is fully removed.
+   *
+   * STUB: replace with real API call (DELETE /files/{id})
+   *
+   * @param fileId The ID of the file to permanently delete.
+   */
+  public permanentlyDeleteFile(fileId: string): void {
+    const index = this.ALL_MOCK_FILES.findIndex((file) => file.fileId === fileId);
+    if (index !== -1) {
+      this.ALL_MOCK_FILES.splice(index, 1);
+      this.trashVersion.update(v => v + 1);
+    }
+  }
+
+  /**
+   * Permanently removes all soft-deleted files from the mock data.
+   * Called by the "Empty Trash" action.
+   *
+   * STUB: replace with real API call (DELETE /files/trash)
+   */
+  public emptyTrash(): void {
+    // Remove all files with deletedAt set — iterate in reverse to avoid index shifting
+    for (let i = this.ALL_MOCK_FILES.length - 1; i >= 0; i--) {
+      if (this.ALL_MOCK_FILES[i].deletedAt) {
+        this.ALL_MOCK_FILES.splice(i, 1);
+      }
+    }
+    this.trashVersion.update(v => v + 1);
   }
 
   /**

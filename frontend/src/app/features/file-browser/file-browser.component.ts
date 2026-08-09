@@ -19,6 +19,7 @@ import { Folder } from '../../core/models/folder.model';
 import { UploadDialog, UploadDialogData } from './upload-dialog/upload-dialog';
 import { ConfirmDialog, ConfirmDialogData } from '../../shared/components/confirm-dialog/confirm-dialog';
 import { InputDialog, InputDialogData } from '../../shared/components/input-dialog/input-dialog';
+import { FilePreviewComponent, FilePreviewDialogData } from './file-preview/file-preview.component';
 
 /**
  * Main file browser component providing a Google Drive–like experience.
@@ -43,6 +44,9 @@ import { InputDialog, InputDialogData } from '../../shared/components/input-dial
   ],
   templateUrl: './file-browser.component.html',
   styleUrl: './file-browser.component.scss',
+  host: {
+    '(contextmenu)': 'onHostContextMenu($event)'
+  }
 })
 export class FileBrowserComponent implements OnInit, OnDestroy {
   private readonly route = inject(ActivatedRoute);
@@ -70,6 +74,20 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
   /** Sort direction for the file list. */
   readonly sortDirection = signal<'asc' | 'desc'>('asc');
 
+  /** localStorage key for persisting sidebar width. */
+  private readonly SIDEBAR_WIDTH_KEY = 'drive-lite:sidebar-width';
+
+  /** Sidebar width in pixels, restored from localStorage or defaulting to 260. */
+  readonly sidebarWidth = signal<number>(
+    parseInt(localStorage.getItem('drive-lite:sidebar-width') ?? '', 10) || 260
+  );
+
+  /** Minimum sidebar width in pixels. */
+  private readonly SIDEBAR_MIN_WIDTH = 180;
+
+  /** Maximum sidebar width in pixels. */
+  private readonly SIDEBAR_MAX_WIDTH = 500;
+
   /** Tracks nested drag events to prevent premature overlay hide. */
   private dragCounter = 0;
 
@@ -78,6 +96,11 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
 
   /** All folders for the tree sidebar. */
   readonly allFolders = computed(() => this.folderService.getAllFolders());
+
+  /** Child folders of the current folder — shown at the top of the file list. */
+  readonly subFolders = computed(() =>
+    this.allFolders().filter(f => f.parentFolderId === this.currentFolderId())
+  );
 
   /** Files for the current folder. */
   readonly files = this.fileService.files;
@@ -92,7 +115,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
 
   /** Context menu items for files. */
   readonly fileContextMenuItems: ContextMenuItem[] = [
-    { label: 'Preview', icon: 'visibility', action: 'preview' },
+    { label: 'Open', icon: 'visibility', action: 'preview' },
     { label: 'Download', icon: 'download', action: 'download' },
     { label: 'Rename', icon: 'edit', action: 'rename' },
     { label: 'Delete', icon: 'delete_outline', action: 'delete' },
@@ -106,11 +129,20 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
     { label: 'Delete', icon: 'delete_outline', action: 'delete' },
   ];
 
-  /** Tracks the file or folder targeted by the context menu. */
-  private contextTarget: { type: 'file'; item: FileItem } | { type: 'folder'; item: Folder } | null = null;
+  /** Context menu items for right-clicking empty space in main content. */
+  readonly backgroundContextMenuItems: ContextMenuItem[] = [
+    { label: 'New Folder', icon: 'create_new_folder', action: 'new-folder' },
+    { label: 'Upload Files', icon: 'upload_file', action: 'upload' },
+  ];
+
+  /** Tracks the file, folder, or background targeted by the context menu. */
+  private contextTarget: { type: 'file'; item: FileItem } | { type: 'folder'; item: Folder } | { type: 'background' } | null = null;
 
   /** Reference to the shared context menu component. */
   private readonly contextMenu = viewChild.required<ContextMenuComponent>('contextMenu');
+
+  /** Reference to the folder tree component for programmatic expansion. */
+  private readonly folderTree = viewChild<FolderTreeComponent>('folderTree');
 
   ngOnInit(): void {
     // Subscribe to route param changes to update the current folder.
@@ -118,6 +150,10 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
       const folderId = params.get('folderId') ?? 'ROOT';
       this.currentFolderId.set(folderId);
       this.loadFolderContents(folderId);
+
+      // Expand the sidebar tree to reveal the navigated folder
+      // Use setTimeout to let the tree re-render with updated data first
+      setTimeout(() => this.folderTree()?.expandToFolder(folderId));
     });
   }
 
@@ -167,8 +203,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
   onFileAction(event: { action: string; file: FileItem }): void {
     switch (event.action) {
       case 'preview':
-        // Step 8: open preview dialog
-        console.debug('[FileBrowser] Preview stub:', event.file.fileName);
+        this.openPreviewDialog(event.file);
         break;
       case 'download':
         this.fileService.downloadFile(event.file.fileId);
@@ -178,6 +213,21 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
         break;
       case 'delete':
         this.openDeleteFileDialog(event.file);
+        break;
+    }
+  }
+
+  /**
+   * Handles folder actions dispatched from the file list component.
+   * @param event The action descriptor with target folder.
+   */
+  onFolderAction(event: { action: string; folder: Folder }): void {
+    switch (event.action) {
+      case 'rename':
+        this.openRenameFolderDialog(event.folder);
+        break;
+      case 'delete':
+        this.openDeleteFolderDialog(event.folder);
         break;
     }
   }
@@ -196,6 +246,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
    * @param event The context menu event descriptor.
    */
   onFileContextMenu(event: { event: MouseEvent; file: FileItem }): void {
+    event.event.stopPropagation();
     this.contextTarget = { type: 'file', item: event.file };
     this.contextMenu().open(event.event, this.fileContextMenuItems);
   }
@@ -205,8 +256,28 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
    * @param event The context menu event descriptor.
    */
   onFolderContextMenu(event: { event: MouseEvent; folder: Folder }): void {
+    event.event.stopPropagation();
     this.contextTarget = { type: 'folder', item: event.folder };
     this.contextMenu().open(event.event, this.folderContextMenuItems);
+  }
+
+  /**
+   * Opens a context menu for empty space in the main content area.
+   * Shows "New Folder" and "Upload Files" options.
+   */
+  onBackgroundContextMenu(event: MouseEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.contextTarget = { type: 'background' };
+    this.contextMenu().open(event, this.backgroundContextMenuItems);
+  }
+
+  /**
+   * Prevents the browser default context menu on the host element.
+   * Custom context menus are handled by specific child handlers.
+   */
+  onHostContextMenu(event: MouseEvent): void {
+    event.preventDefault();
   }
 
   /**
@@ -218,7 +289,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
 
     if (this.contextTarget.type === 'file') {
       this.onFileAction({ action, file: this.contextTarget.item as FileItem });
-    } else {
+    } else if (this.contextTarget.type === 'folder') {
       const folder = this.contextTarget.item as Folder;
       switch (action) {
         case 'open':
@@ -234,6 +305,15 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
           this.openDeleteFolderDialog(folder);
           break;
       }
+    } else if (this.contextTarget.type === 'background') {
+      switch (action) {
+        case 'new-folder':
+          this.openNewFolderDialog();
+          break;
+        case 'upload':
+          this.openUploadDialog();
+          break;
+      }
     }
     this.contextTarget = null;
   }
@@ -244,6 +324,27 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
   }
 
   // --- Dialog methods ---
+
+  /**
+   * Opens the file preview dialog.
+   * @param file The file to preview.
+   */
+  private openPreviewDialog(file: FileItem): void {
+    const data: FilePreviewDialogData = {
+      file,
+      allFiles: this.files(),
+    };
+
+    this.dialog.open(FilePreviewComponent, {
+      width: '95vw',
+      maxWidth: '95vw',
+      height: '90vh',
+      maxHeight: '95vh',
+      panelClass: 'file-preview-dialog-panel',
+      autoFocus: false,
+      data,
+    });
+  }
 
   /**
    * Opens the upload dialog.
@@ -448,5 +549,44 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
   /** Handles upload request from the empty state CTA or toolbar button. */
   onUploadRequest(): void {
     this.openUploadDialog();
+  }
+
+  // --- Sidebar resize ---
+
+  /** Bound references for add/removeEventListener identity. */
+  private resizeMoveFn = (e: PointerEvent) => this.onResizeMove(e);
+  private resizeEndFn = (e: PointerEvent) => this.onResizeEnd(e);
+
+  /**
+   * Starts the sidebar resize operation.
+   * Captures the pointer so all move/up events are routed to us
+   * even if the cursor leaves the handle element.
+   */
+  onResizeStart(event: PointerEvent): void {
+    event.preventDefault();
+    (event.target as HTMLElement).setPointerCapture(event.pointerId);
+    document.addEventListener('pointermove', this.resizeMoveFn);
+    document.addEventListener('pointerup', this.resizeEndFn);
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+  }
+
+  /** Updates sidebar width, clamped between min and max. */
+  private onResizeMove(event: PointerEvent): void {
+    const newWidth = Math.min(
+      this.SIDEBAR_MAX_WIDTH,
+      Math.max(this.SIDEBAR_MIN_WIDTH, event.clientX)
+    );
+    this.sidebarWidth.set(newWidth);
+  }
+
+  /** Ends the resize operation, cleans up listeners, and persists width. */
+  private onResizeEnd(event: PointerEvent): void {
+    (event.target as HTMLElement).releasePointerCapture?.(event.pointerId);
+    document.removeEventListener('pointermove', this.resizeMoveFn);
+    document.removeEventListener('pointerup', this.resizeEndFn);
+    document.body.style.cursor = '';
+    document.body.style.userSelect = '';
+    localStorage.setItem(this.SIDEBAR_WIDTH_KEY, String(this.sidebarWidth()));
   }
 }

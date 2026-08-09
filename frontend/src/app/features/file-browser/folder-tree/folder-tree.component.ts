@@ -1,8 +1,10 @@
-import { Component, input, output, computed } from '@angular/core';
+import { Component, computed, inject, input, output, viewChild } from '@angular/core';
 import { MatTree, MatTreeNode, MatTreeNodeToggle, MatTreeNodePadding, MatTreeNodeDef } from '@angular/material/tree';
 import { MatIcon } from '@angular/material/icon';
 import { MatIconButton } from '@angular/material/button';
+import { MatBadge } from '@angular/material/badge';
 import { Folder } from '../../../core/models/folder.model';
+import { FileService } from '../../../core/services/file.service';
 
 /**
  * Interface representing a node in the folder tree.
@@ -27,9 +29,12 @@ export interface FolderTreeNode {
     MatTreeNodeDef,
     MatIcon,
     MatIconButton,
+    MatBadge,
   ]
 })
 export class FolderTreeComponent {
+  private readonly fileService = inject(FileService);
+
   /** Flat array of all folders */
   folders = input<Folder[]>([]);
 
@@ -42,8 +47,17 @@ export class FolderTreeComponent {
   /** Emits context menu event and the corresponding folder */
   folderContextMenu = output<{ event: MouseEvent; folder: Folder }>();
 
+  /** Count of soft-deleted files for the Trash badge. */
+  readonly trashCount = computed(() => this.fileService.getDeletedFiles().length);
+
   /** Transforms flat folders into a nested tree */
   treeData = computed<FolderTreeNode[]>(() => this.buildTree(this.folders()));
+
+  /** Reference to the MatTree for programmatic expand/collapse. */
+  private readonly matTree = viewChild<MatTree<FolderTreeNode>>('tree');
+
+  /** Flat lookup from folderId → FolderTreeNode, rebuilt each time treeData changes. */
+  private nodeMap = new Map<string, FolderTreeNode>();
 
   /** Accessor for node children */
   childrenAccessor = (node: FolderTreeNode) => node.children;
@@ -88,7 +102,44 @@ export class FolderTreeComponent {
     };
 
     sortNodes(rootNodes);
+
+    // Store for programmatic expansion in expandToFolder()
+    this.nodeMap = nodeMap;
+
     return rootNodes;
+  }
+
+  /**
+   * Expands the tree path from root down to the given folder.
+   * Call this when the user navigates to a folder from outside
+   * the sidebar (e.g. clicking a folder card in the content area).
+   *
+   * @param folderId The target folder ID to reveal in the tree.
+   */
+  expandToFolder(folderId: string): void {
+    const tree = this.matTree();
+    if (!tree || folderId === 'ROOT' || folderId === 'TRASH') return;
+
+    // Walk up the parent chain to collect ancestor folder IDs
+    const ancestorIds: string[] = [];
+    let currentId = folderId;
+    let iterations = 0;
+
+    while (currentId !== 'ROOT' && iterations < 20) {
+      const node = this.nodeMap.get(currentId);
+      if (!node) break;
+      ancestorIds.unshift(currentId);
+      currentId = node.folder.parentFolderId;
+      iterations++;
+    }
+
+    // Expand each ancestor node (the last one is the target itself)
+    for (const id of ancestorIds) {
+      const node = this.nodeMap.get(id);
+      if (node && node.children.length > 0) {
+        tree.expand(node);
+      }
+    }
   }
 
   /** Handles folder click event */

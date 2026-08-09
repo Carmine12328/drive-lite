@@ -64,6 +64,13 @@ export class FolderService {
   error: WritableSignal<string | null> = signal<string | null>(null);
 
   /**
+   * Version counter bumped on every folder mutation.
+   * Read by `getAllFolders()` to create a signal dependency so
+   * consumers using `computed(() => getAllFolders())` re-evaluate.
+   */
+  private readonly folderVersion: WritableSignal<number> = signal<number>(0);
+
+  /**
    * Lists folders, optionally filtering by parent folder ID.
    * Updates the `folders` signal with the result.
    * 
@@ -110,6 +117,7 @@ export class FolderService {
 
     this.mockFolders.push(newFolder);
     this.folders.update(current => [...current, newFolder]);
+    this.folderVersion.update(v => v + 1);
   }
 
   /**
@@ -124,6 +132,7 @@ export class FolderService {
       folder.folderName = newName;
       folder.updatedAt = new Date().toISOString();
       this.folders.update(currentFolders => [...currentFolders]);
+      this.folderVersion.update(v => v + 1);
     } else {
       this.error.set('Folder not found during rename operation.');
     }
@@ -142,6 +151,7 @@ export class FolderService {
       this.folders.update((currentFolders: Folder[]) => 
         currentFolders.filter((folder: Folder) => folder.folderId !== folderId)
       );
+      this.folderVersion.update(v => v + 1);
     } else {
       this.error.set('Folder not found during delete operation.');
     }
@@ -162,6 +172,7 @@ export class FolderService {
    * @returns An array of all Folder objects.
    */
   getAllFolders(): Folder[] {
+    this.folderVersion();
     return [...this.mockFolders];
   }
 

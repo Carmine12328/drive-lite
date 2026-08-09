@@ -117,8 +117,8 @@
   }
   
   button {
-    width: 32px;
-    height: 32px;
+    min-width: 44px;
+    min-height: 44px;
     
     mat-icon {
       font-size: 18px;
@@ -213,7 +213,38 @@
   }
 }
 
+// --- Folder items ---
+.folder-card {
+  .folder-icon {
+    color: var(--accent-primary, #5c6bc0);
+  }
+}
+
+.folder-table-row {
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+  
+  &:hover {
+    background-color: var(--bg-hover, rgba(255, 255, 255, 0.05));
+  }
+
+  .folder-icon {
+    color: var(--accent-primary, #5c6bc0) !important;
+  }
+}
+
+.folder-row-title {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
 // --- Responsive ---
+@media (min-width: 768px) and (max-width: 1024px) {
+  .file-grid {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  }
+}
+
 @media (max-width: 768px) {
   .file-grid {
     grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));

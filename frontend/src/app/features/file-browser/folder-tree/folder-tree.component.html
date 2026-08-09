@@ -1,47 +1,55 @@
-<!-- My Drive root node -->
-<div class="tree-root" [class.active]="activeFolderId() === 'ROOT'" (click)="onRootClick()" (keydown.enter)="onRootClick()" tabindex="0">
-  <mat-icon>cloud</mat-icon>
-  <span>My Drive</span>
+<!-- Scrollable folder tree area -->
+<div class="tree-scroll-area">
+  <!-- My Drive root node -->
+  <div class="tree-root" [class.active]="activeFolderId() === 'ROOT'" (click)="onRootClick()" (keydown.enter)="onRootClick()" tabindex="0">
+    <mat-icon>cloud</mat-icon>
+    <span>My Drive</span>
+  </div>
+
+  <!-- Material tree -->
+  <mat-tree #tree [dataSource]="treeData()" [childrenAccessor]="childrenAccessor">
+    <!-- Leaf node (no children) -->
+    <mat-tree-node *matTreeNodeDef="let node" matTreeNodePadding>
+      <div class="tree-node" 
+           [class.active]="activeFolderId() === node.folder.folderId"
+           (click)="onFolderClick(node.folder.folderId)"
+           (keydown.enter)="onFolderClick(node.folder.folderId)"
+           tabindex="0"
+           (contextmenu)="onContextMenu($event, node.folder)">
+        <button mat-icon-button disabled class="toggle-placeholder" aria-label="Toggle folder placeholder"></button>
+        <mat-icon class="folder-icon">folder</mat-icon>
+        <span class="folder-name">{{ node.folder.folderName }}</span>
+      </div>
+    </mat-tree-node>
+
+    <!-- Expandable node (has children) -->
+    <mat-tree-node *matTreeNodeDef="let node; when: hasChild" matTreeNodePadding>
+      <div class="tree-node"
+           [class.active]="activeFolderId() === node.folder.folderId"
+           (click)="onFolderClick(node.folder.folderId)"
+           (keydown.enter)="onFolderClick(node.folder.folderId)"
+           tabindex="0"
+           (contextmenu)="onContextMenu($event, node.folder)">
+        <button mat-icon-button matTreeNodeToggle class="toggle-btn">
+          <mat-icon>{{ tree.isExpanded(node) ? 'expand_more' : 'chevron_right' }}</mat-icon>
+        </button>
+        <mat-icon class="folder-icon">folder</mat-icon>
+        <span class="folder-name">{{ node.folder.folderName }}</span>
+      </div>
+    </mat-tree-node>
+  </mat-tree>
 </div>
 
-<!-- Material tree -->
-<mat-tree [dataSource]="treeData()" [childrenAccessor]="childrenAccessor">
-  <!-- Leaf node (no children) -->
-  <mat-tree-node *matTreeNodeDef="let node" matTreeNodePadding>
-    <div class="tree-node" 
-         [class.active]="activeFolderId() === node.folder.folderId"
-         (click)="onFolderClick(node.folder.folderId)"
-         (keydown.enter)="onFolderClick(node.folder.folderId)"
-         tabindex="0"
-         (contextmenu)="onContextMenu($event, node.folder)">
-      <button mat-icon-button disabled class="toggle-placeholder" aria-label="Toggle folder placeholder"></button>
-      <mat-icon class="folder-icon">folder</mat-icon>
-      <span class="folder-name">{{ node.folder.folderName }}</span>
-    </div>
-  </mat-tree-node>
-
-  <!-- Expandable node (has children) -->
-  <mat-tree-node *matTreeNodeDef="let node; when: hasChild" matTreeNodePadding>
-    <div class="tree-node"
-         [class.active]="activeFolderId() === node.folder.folderId"
-         (click)="onFolderClick(node.folder.folderId)"
-         (keydown.enter)="onFolderClick(node.folder.folderId)"
-         tabindex="0"
-         (contextmenu)="onContextMenu($event, node.folder)">
-      <button mat-icon-button matTreeNodeToggle class="toggle-btn">
-        <mat-icon>expand_more</mat-icon>
-      </button>
-      <mat-icon class="folder-icon">folder</mat-icon>
-      <span class="folder-name">{{ node.folder.folderName }}</span>
-    </div>
-  </mat-tree-node>
-</mat-tree>
-
-<!-- Divider -->
-<div class="tree-divider"></div>
-
-<!-- Trash entry -->
-<div class="tree-node trash-node" [class.active]="activeFolderId() === 'TRASH'" (click)="onTrashClick()" (keydown.enter)="onTrashClick()" tabindex="0">
-  <mat-icon>delete</mat-icon>
-  <span>Trash</span>
+<!-- Pinned trash footer -->
+<div class="trash-footer">
+  <div class="tree-divider"></div>
+  <div class="tree-node trash-node" [class.active]="activeFolderId() === 'TRASH'" (click)="onTrashClick()" (keydown.enter)="onTrashClick()" tabindex="0">
+    <mat-icon
+      [matBadge]="trashCount()"
+      [matBadgeHidden]="trashCount() === 0"
+      matBadgeSize="small"
+      matBadgeColor="warn">delete</mat-icon>
+    <span>Trash</span>
+  </div>
 </div>
+

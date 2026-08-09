@@ -8,8 +8,9 @@
 
 <div class="browser-layout">
   <!-- Sidebar -->
-  <aside class="sidebar" [class.sidebar-open]="sidebarOpen()">
+  <aside class="sidebar" [class.sidebar-open]="sidebarOpen()" [style.width.px]="sidebarWidth()">
     <app-folder-tree
+      #folderTree
       [folders]="allFolders()"
       [activeFolderId]="currentFolderId()"
       (folderSelect)="onFolderSelect($event)"
@@ -17,8 +18,17 @@
     />
   </aside>
 
+  <!-- Resize handle -->
+  <div class="resize-handle"
+       (pointerdown)="onResizeStart($event)"
+       role="separator"
+       aria-label="Resize sidebar"
+       tabindex="0">
+  </div>
+
   <!-- Main content area -->
   <section class="main-content"
+           (contextmenu)="onBackgroundContextMenu($event)"
            (dragenter)="onDragEnter($event)"
            (dragleave)="onDragLeave($event)"
            (dragover)="onDragOver($event)"
@@ -51,13 +61,18 @@
     <!-- File list -->
     <app-file-list
       [files]="files()"
+      [folders]="subFolders()"
+      [isLoading]="isLoading()"
       [viewMode]="viewMode()"
       [sortField]="sortField()"
       [sortDirection]="sortDirection()"
       (fileAction)="onFileAction($event)"
       (sortChange)="onSortChange($event)"
       (fileContextMenu)="onFileContextMenu($event)"
+      (folderContextMenu)="onFolderContextMenu($event)"
       (uploadRequest)="onUploadRequest()"
+      (folderClick)="onFolderSelect($event)"
+      (folderAction)="onFolderAction($event)"
     />
 
     <!-- Drag-and-drop overlay -->

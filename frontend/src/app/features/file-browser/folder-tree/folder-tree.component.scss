@@ -2,15 +2,28 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  overflow-y: auto;
+  overflow: hidden;
   padding: 8px;
+}
+
+// Scrollable area for root + folder tree — fills remaining space
+.tree-scroll-area {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0; // Required for flex child to shrink below content height
+}
+
+// Pinned trash section at the bottom
+.trash-footer {
+  flex-shrink: 0;
 }
 
 .tree-root, .tree-node {
   display: flex;
   flex-direction: row;
   align-items: center;
-  padding: 8px 12px;
+  padding: 10px 12px;
+  min-height: 44px;
   cursor: pointer;
   border-radius: 8px;
   transition: background-color 0.2s, color 0.2s;
@@ -81,11 +94,10 @@ mat-tree {
 }
 
 mat-tree-node {
-  min-height: 40px;
-  padding-left: 0 !important;
+  min-height: 44px;
 
   .tree-node {
     width: 100%;
-    padding: 2px 12px 2px 0; /* Adjust padding to fit the toggle button */
+    padding: 2px 12px 2px 0;
   }
 }

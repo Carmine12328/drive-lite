@@ -19,6 +19,7 @@ import { MatTooltip } from '@angular/material/tooltip';
 import { FileIconPipe } from '../../../shared/pipes/file-icon.pipe';
 import { FileSizePipe } from '../../../shared/pipes/file-size.pipe';
 import { FileItem } from '../../../core/models/file-item.model';
+import { Folder } from '../../../core/models/folder.model';
 
 /**
  * FileListComponent displays a list of files in either grid or list view.
@@ -50,6 +51,12 @@ import { FileItem } from '../../../core/models/file-item.model';
 export class FileListComponent {
   /** Array of files to display */
   files = input<FileItem[]>([]);
+
+  /** Array of child folders to display at the top of the list */
+  folders = input<Folder[]>([]);
+
+  /** Whether the file list is currently loading */
+  isLoading = input<boolean>(false);
   
   /** Current view mode: 'grid' or 'list' */
   viewMode = input<'grid' | 'list'>('grid');
@@ -72,8 +79,17 @@ export class FileListComponent {
   /** Emits when the upload action is clicked from empty state */
   uploadRequest = output<void>();
 
-  /** Computed signal determining if the file list is empty */
-  isEmpty = computed(() => this.files().length === 0);
+  /** Emits when a folder card is clicked to navigate into it */
+  folderClick = output<string>();
+
+  /** Emits when a context menu is requested on a folder */
+  folderContextMenu = output<{ event: MouseEvent; folder: Folder }>();
+
+  /** Emits when a folder action (rename, delete) is triggered */
+  folderAction = output<{ action: string; folder: Folder }>();
+
+  /** Computed signal determining if both files and folders are empty */
+  isEmpty = computed(() => this.files().length === 0 && this.folders().length === 0);
 
   /** Computed signal containing sorted files based on sortField and sortDirection */
   sortedFiles = computed(() => {
@@ -98,6 +114,46 @@ export class FileListComponent {
       if (valA > valB) return 1 * dir;
       return 0;
     });
+  });
+
+  /** Combined and sorted folders and files for list view */
+  combinedItems = computed(() => {
+    const field = this.sortField();
+    const dir = this.sortDirection() === 'asc' ? 1 : -1;
+
+    // 1. Map and sort folders
+    const foldersList = this.folders().map(f => ({
+      id: f.folderId,
+      name: f.folderName,
+      type: 'folder' as const,
+      updatedAt: f.updatedAt,
+      raw: f
+    }));
+
+    foldersList.sort((a, b) => {
+      if (field === 'updatedAt') {
+        return (new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime()) * dir;
+      }
+      // Default: alphabetical sorting for folders
+      const valA = a.name.toLowerCase();
+      const valB = b.name.toLowerCase();
+      if (valA < valB) return -1 * dir;
+      if (valA > valB) return 1 * dir;
+      return 0;
+    });
+
+    // 2. Map files (which are already sorted in sortedFiles computed)
+    const filesList = this.sortedFiles().map(f => ({
+      id: f.fileId,
+      name: f.fileName,
+      type: 'file' as const,
+      size: f.fileSize,
+      updatedAt: f.updatedAt,
+      mimeType: f.mimeType,
+      raw: f
+    }));
+
+    return [...foldersList, ...filesList];
   });
 
   /** Columns to display in the list view */
@@ -130,6 +186,55 @@ export class FileListComponent {
   onContextMenu(event: MouseEvent, file: FileItem): void {
     event.preventDefault();
     this.fileContextMenu.emit({ event, file });
+  }
+
+  /** Handles clicking on a folder to navigate into it */
+  onFolderNavigate(folderId: string): void {
+    this.folderClick.emit(folderId);
+  }
+
+  /** Handles right click on a folder */
+  onFolderRightClick(event: MouseEvent, folder: Folder): void {
+    event.preventDefault();
+    this.folderContextMenu.emit({ event, folder });
+  }
+
+  /** Handles click on a row in list view */
+  onRowClick(row: any): void {
+    if (row.type === 'folder') {
+      this.onFolderNavigate(row.id);
+    } else {
+      this.onFileClick(row.raw);
+    }
+  }
+
+  /** Handles right-click / contextmenu on a row in list view */
+  onRowContextMenu(event: MouseEvent, row: any): void {
+    if (row.type === 'folder') {
+      this.onFolderRightClick(event, row.raw);
+    } else {
+      this.onContextMenu(event, row.raw);
+    }
+  }
+
+  /** Handles row-level rename action */
+  onRenameRow(event: Event, row: any): void {
+    event.stopPropagation();
+    if (row.type === 'file') {
+      this.fileAction.emit({ action: 'rename', file: row.raw });
+    } else {
+      this.folderAction.emit({ action: 'rename', folder: row.raw });
+    }
+  }
+
+  /** Handles row-level delete action */
+  onDeleteRow(event: Event, row: any): void {
+    event.stopPropagation();
+    if (row.type === 'file') {
+      this.fileAction.emit({ action: 'delete', file: row.raw });
+    } else {
+      this.folderAction.emit({ action: 'delete', folder: row.raw });
+    }
   }
 
   /** Handles column sort toggling */
