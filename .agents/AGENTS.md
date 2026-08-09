@@ -152,6 +152,13 @@ AWS blog, Angular changelog, etc.) when the practice is non-obvious.
   3. If not running, start one (`ng serve` / `npm run dev`) and keep it up.
   4. Never declare a step complete based solely on `ng build` — the live
      dev server is the source of truth.
+  5. Before committing, **start the dev server** and let the user manually
+     verify the changes. Do not commit or push until the user confirms the
+     result is correct. The only exception is when the user explicitly
+     requests an immediate commit without manual check.
+- **PowerShell syntax**: This workspace uses PowerShell. Use `;` (not
+  `&&`) for sequential command chaining. Use `; if ($?) { ... }` instead
+  of `&&` for conditional chaining.
 
 ---
 
