@@ -1,4 +1,4 @@
-import { inject, Injectable, signal, WritableSignal } from '@angular/core';
+import { inject, Service, signal, WritableSignal } from '@angular/core';
 import { Router } from '@angular/router';
 
 /** Authenticated user profile. */
@@ -11,9 +11,7 @@ export interface User {
  * Root authentication service for managing user sessions, login state, and authentication flows.
  * Uses localStorage stubs for development prior to AWS Amplify integration.
  */
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class AuthService {
   /** Signal indicating whether the current user is authenticated. */
   public readonly isAuthenticated: WritableSignal<boolean> = signal<boolean>(false);
@@ -36,7 +34,7 @@ export class AuthService {
    * @param email User's email address.
    * @param password User's password.
    */
-  public signUp(email: string, password: string): void {
+  public signUp(email: string, _password: string): void {
     // STUB: replace with Amplify call
     try {
       const userRecord = {
@@ -49,7 +47,7 @@ export class AuthService {
       console.error('[AuthService] signUp localStorage error:', error);
     }
     this.isAuthenticated.set(false);
-    console.debug('[AuthService] signUp stub:', email);
+    console.debug('[AuthService] signUp stub:', email, !!_password);
   }
 
   /**
@@ -59,7 +57,7 @@ export class AuthService {
    * @param email User's email address.
    * @param code Verification code sent to user's email.
    */
-  public confirmSignUp(email: string, code: string): void {
+  public confirmSignUp(email: string, _code: string): void {
     // STUB: replace with Amplify call
     try {
       const rawData = localStorage.getItem(this.STORAGE_KEY);
@@ -80,7 +78,7 @@ export class AuthService {
       console.error('[AuthService] confirmSignUp localStorage error:', error);
     }
     this.router.navigate(['/dashboard']);
-    console.debug('[AuthService] confirmSignUp stub:', email);
+    console.debug('[AuthService] confirmSignUp stub:', email, !!_code);
   }
 
   /**
@@ -90,7 +88,7 @@ export class AuthService {
    * @param email User's email address.
    * @param password User's password.
    */
-  public signIn(email: string, password: string): void {
+  public signIn(email: string, _password: string): void {
     // STUB: replace with Amplify call
     let user: User = { email, userId: crypto.randomUUID() };
     try {
@@ -108,7 +106,7 @@ export class AuthService {
     this.isAuthenticated.set(true);
     this.currentUser.set(user);
     this.router.navigate(['/dashboard']);
-    console.debug('[AuthService] signIn stub:', email);
+    console.debug('[AuthService] signIn stub:', email, !!_password);
   }
 
   /**

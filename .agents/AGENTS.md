@@ -132,33 +132,72 @@ AWS blog, Angular changelog, etc.) when the practice is non-obvious.
 
 - This is a monorepo with npm workspaces: `frontend/`, `backend/`, `infra/`.
 - Node.js >= 22.22.3 is required (Angular 22 minimum). See `.nvmrc` for the
-  pinned version.
+  pinned version. See `.agents/rules/fnm-node-management.md` for the
+  PowerShell preamble to activate the correct Node version via `fnm`.
 - Run `npm run lint` and `npm run test` before considering any change complete.
 - Respect the existing directory structure. Do not move or restructure files
   without explicit user approval.
 - All secrets and credentials must use environment variables or a secrets
   manager — never hardcoded.
-- After completing any task or implementation step, **always update docs
-  before committing**:
-  1. Mark completed tasks as `[x]` in `FE_IMPLEMENTATION_PLAN.md` (or the
-     relevant plan file).
-  2. Update the "Current state" header to reflect what is now built.
-  3. Create or update the walkthrough artifact summarizing changes, commits,
-     and verification results.
-  4. Only then commit and push.
-- After any code change, **always verify the dev server**:
-  1. Check if a dev server is already running (list background tasks).
-  2. If running, confirm it rebuilt successfully (check logs for errors).
-  3. If not running, start one (`ng serve` / `npm run dev`) and keep it up.
-  4. Never declare a step complete based solely on `ng build` — the live
-     dev server is the source of truth.
-  5. Before committing, **start the dev server** and let the user manually
-     verify the changes. Do not commit or push until the user confirms the
-     result is correct. The only exception is when the user explicitly
-     requests an immediate commit without manual check.
+- **Implementation plans**: The project tracks work in two plan files at the
+  repo root — `FE_IMPLEMENTATION_PLAN.md` (frontend) and
+  `IMPLEMENTATION_PLAN.md` (backend/infra). Always read the relevant plan
+  before starting work and update it when completing steps.
 - **PowerShell syntax**: This workspace uses PowerShell. Use `;` (not
   `&&`) for sequential command chaining. Use `; if ($?) { ... }` instead
   of `&&` for conditional chaining.
+
+### Step-Completion Workflow
+
+After completing any task or implementation step, execute this sequence **in
+order**. Do NOT skip steps. Do NOT auto-commit.
+
+#### 1. Build verification
+- Run `ng build --configuration development` and confirm zero errors, zero
+  warnings.
+
+#### 2. Dev server verification
+- Check if a dev server is already running (list background tasks).
+- If running, confirm it rebuilt successfully (check logs for errors).
+- If not running, start one (`ng serve`) and keep it running.
+- Never declare a step complete based solely on `ng build` — the live dev
+  server is the source of truth.
+
+#### 3. Documentation update
+- Mark completed tasks as `[x]` in `FE_IMPLEMENTATION_PLAN.md` (or the
+  relevant plan file).
+- Update the "Current state" header to reflect what is now built.
+- Create or update the walkthrough artifact summarizing changes and
+  verification results.
+
+#### 4. User verification gate
+- **Stop and let the user manually verify the changes.** Present a summary
+  of what changed and where to look.
+- Do NOT commit or push until the user explicitly confirms the result is
+  correct. The only exception is when the user explicitly requests an
+  immediate commit without manual check.
+
+#### 5. Git commit (only after user approval)
+- Stage all changes with `git add -A`.
+- Write a descriptive commit message following conventional commits format
+  (e.g., `feat(frontend): implement Step N — <summary>`).
+- Include a body listing what changed, grouped by sub-task.
+
+### Available Skills
+
+The `.agents/skills/` directory contains project-specific skills that agents
+should consult before implementing related features. Read a skill's `SKILL.md`
+before starting work in its domain:
+
+| Skill | Domain | Relevant Steps |
+|:------|:-------|:---------------|
+| `angular-material-dialogs` | Dialog creation, form dialogs, confirmation modals, fullscreen previews | Steps 7.2, 7.4, 8.1 |
+| `s3-presigned-upload` | 3-phase presigned upload flow, progress tracking, queue management | Steps 7.1, 7.3 |
+| `angular-drag-drop` | HTML5 DnD API, dropzone UX, file extraction, upload integration | Step 7.2 |
+| `angular-animations` | Route transitions, shimmer/pulse effects, skeleton loading, 60fps budget | Step 8.6 |
+| `responsive-layout-audit` | Breakpoint-based layouts, touch targets, sidebar behavior, device testing | Step 8.5 |
+| `file-preview-rendering` | MIME-type rendering, gallery navigation, presigned URL previews | Step 8.1 |
+| `search-debounce-patterns` | Debounced signal/RxJS search, autocomplete, result highlighting | Step 8.2 |
 
 ---
 
@@ -259,10 +298,29 @@ following Angular and TypeScript best practices.
 ### Services
 
 - Design services around a single responsibility.
-- Use the `providedIn: 'root'` option for singleton services.
-- Prefer the `@Service` decorator over `@Injectable({providedIn: 'root'})` for
-  new singleton services (Angular v22+).
+- Use the `@Service()` decorator for singleton services (Angular v22+). It
+  replaces `@Injectable({ providedIn: 'root' })` and automatically provisions
+  at the root level. Do NOT use `@Injectable` for new services.
 - Use the `inject()` function instead of constructor injection.
+
+### Scaffolding with `ng generate`
+
+- **Always use `ng generate`** (or its alias `ng g`) to scaffold new components,
+  services, pipes, guards, resolvers, and directives. Do not hand-write
+  boilerplate files.
+- The CLI generates correct defaults for Angular 22: `@Service()` for services,
+  standalone components with no explicit `standalone: true` or `OnPush`, proper
+  file naming conventions, and spec files.
+- Common commands:
+  - `ng g component <path>` — generates component with external template/styles
+  - `ng g service <path>` — generates service with `@Service()` decorator
+  - `ng g pipe <path>` — generates a pipe class
+  - `ng g guard <path>` — generates a route guard
+  - `ng g directive <path>` — generates a directive
+- Use `--dry-run` to preview generated files before committing.
+- Use `--skip-tests` only when explicitly told to skip test generation.
+- Specify the full path relative to `src/app/` (e.g.,
+  `ng g service core/services/upload` or `ng g component features/drive/components/file-preview`).
 
 ---
 

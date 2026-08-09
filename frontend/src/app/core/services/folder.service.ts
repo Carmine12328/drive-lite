@@ -1,12 +1,10 @@
-import { Injectable, signal, WritableSignal } from '@angular/core';
+import { Service, signal, WritableSignal } from '@angular/core';
 import { Folder } from '../models/folder.model';
 
 /**
  * Service responsible for managing folder data and state.
  */
-@Injectable({
-  providedIn: 'root'
-})
+@Service()
 export class FolderService {
   /**
    * Internal mock data representing the database of folders.
@@ -71,7 +69,7 @@ export class FolderService {
    * 
    * @param parentId The ID of the parent folder to filter by. Defaults to 'ROOT'.
    */
-  listFolders(parentId: string = 'ROOT'): void {
+  listFolders(parentId = 'ROOT'): void {
     this.isLoading.set(true);
     this.error.set(null);
 
@@ -99,7 +97,7 @@ export class FolderService {
    * @param name The name of the new folder.
    * @param parentId The ID of the parent folder. Defaults to 'ROOT'.
    */
-  createFolder(name: string, parentId: string = 'ROOT'): void {
+  createFolder(name: string, parentId = 'ROOT'): void {
     const newFolder: Folder = {
       folderId: `folder-${Date.now()}`,
       folderName: name,

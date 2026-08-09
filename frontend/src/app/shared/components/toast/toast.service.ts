@@ -15,16 +15,14 @@
  * }
  */
 
-import { inject, Injectable } from '@angular/core';
+import { inject, Service } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 /**
  * Service for displaying toast notification messages using Angular Material MatSnackBar.
  * Provides preset configurations for success, error, info, and warning notifications.
  */
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class ToastService {
   private readonly snackBar = inject(MatSnackBar);
 

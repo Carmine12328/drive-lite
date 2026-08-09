@@ -12,7 +12,10 @@
     @if (!last) {
       <a class="segment link"
          [class.hide-on-mobile]="idx < allSegments().length - 2"
-         (click)="onNavigate(segment.id)">
+         (click)="onNavigate(segment.id)"
+         (keydown.enter)="onNavigate(segment.id)"
+         tabindex="0"
+         role="button">
         {{ segment.name }}
       </a>
     } @else {

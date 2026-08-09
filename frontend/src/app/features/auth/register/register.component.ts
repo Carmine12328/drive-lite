@@ -103,6 +103,7 @@ export class RegisterComponent implements OnInit, OnDestroy {
   resendCooldown = signal(0);
   private timerInterval: ReturnType<typeof setInterval> | undefined;
 
+  /** Initializes the component and sets up the theme based on local storage or system preference. */
   ngOnInit() {
     const theme = localStorage.getItem('drive-lite-theme');
     if (theme) {
@@ -115,6 +116,7 @@ export class RegisterComponent implements OnInit, OnDestroy {
     }
   }
 
+  /** Cleans up the timer interval when the component is destroyed. */
   ngOnDestroy() {
     if (this.timerInterval) {
       clearInterval(this.timerInterval);

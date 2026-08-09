@@ -1,11 +1,9 @@
-import { Injectable, signal, WritableSignal } from '@angular/core';
+import { Service, signal, WritableSignal } from '@angular/core';
 
 /**
  * Service to manage global view state such as view mode and search query.
  */
-@Injectable({
-  providedIn: 'root'
-})
+@Service()
 export class ViewStateService {
   /**
    * The current view mode of the file browser ('grid' or 'list').

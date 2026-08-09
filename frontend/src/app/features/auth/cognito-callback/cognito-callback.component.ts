@@ -84,7 +84,7 @@ export class CognitoCallbackComponent implements OnInit {
   public toggleTheme(): void {
     const isDark = !this.isDarkMode();
     this.isDarkMode.set(isDark);
-    try { localStorage.setItem('drive-lite-theme', isDark ? 'dark' : 'light'); } catch {}
+    try { localStorage.setItem('drive-lite-theme', isDark ? 'dark' : 'light'); } catch { /* Ignore localStorage errors in SSR/private mode */ }
     document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
   }
 

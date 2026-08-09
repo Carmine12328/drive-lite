@@ -1,10 +1,10 @@
-import { Injectable, signal, WritableSignal } from '@angular/core';
+import { Service, signal, WritableSignal } from '@angular/core';
 import { FileItem } from '../models/file-item.model';
 
 /**
  * Service for managing file operations and state.
  */
-@Injectable({ providedIn: 'root' })
+@Service()
 export class FileService {
   /**
    * Internal mock data array containing all simulated files.

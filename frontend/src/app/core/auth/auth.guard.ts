@@ -12,7 +12,7 @@ import { AuthService } from './auth.service';
  * @param state The router state snapshot.
  * @returns `true` if the user is authenticated, otherwise `false`.
  */
-export const authGuard: CanActivateFn = (_route, _state) => {
+export const authGuard: CanActivateFn = () => {
   const authService = inject(AuthService);
   const router = inject(Router);
 

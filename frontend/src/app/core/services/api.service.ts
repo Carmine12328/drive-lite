@@ -1,4 +1,4 @@
-import { inject, Injectable } from '@angular/core';
+import { inject, Service } from '@angular/core';
 import { HttpClient, HttpParams, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
@@ -8,9 +8,7 @@ import { environment } from '../../../environments/environment';
  * Root-injectable API service providing generic HTTP request methods
  * with centralized error handling and environment-aware request logging.
  */
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class ApiService {
   private readonly http = inject(HttpClient);
   private readonly baseUrl = environment.apiUrl;

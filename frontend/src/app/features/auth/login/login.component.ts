@@ -51,6 +51,7 @@ export class LoginComponent implements OnInit {
   /** Loading state from auth service */
   isLoading = this.authService.isLoading;
 
+  /** Initializes the component and sets up the theme based on local storage or system preference. */
   ngOnInit() {
     const savedTheme = localStorage.getItem('drive-lite-theme');
     if (savedTheme) {
