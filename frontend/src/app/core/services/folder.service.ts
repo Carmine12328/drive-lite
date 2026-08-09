@@ -155,4 +155,43 @@ export class FolderService {
   getTotalCount(): number {
     return this.mockFolders.length;
   }
+
+  /**
+   * Retrieves all folders currently in the mock data.
+   * 
+   * @returns An array of all Folder objects.
+   */
+  getAllFolders(): Folder[] {
+    return [...this.mockFolders];
+  }
+
+  /**
+   * Builds the breadcrumb path from a specific folder up to ROOT.
+   * 
+   * @param folderId The ID of the current folder.
+   * @returns An array of path segments excluding ROOT.
+   */
+  buildBreadcrumbPath(folderId: string): { id: string; name: string }[] {
+    if (folderId === 'ROOT') {
+      return [];
+    }
+
+    const path: { id: string; name: string }[] = [];
+    let currentId = folderId;
+    let iterations = 0;
+    const MAX_ITERATIONS = 20;
+
+    while (currentId !== 'ROOT' && iterations < MAX_ITERATIONS) {
+      const folder = this.getFolder(currentId);
+      if (!folder) {
+        break;
+      }
+      
+      path.unshift({ id: folder.folderId, name: folder.folderName });
+      currentId = folder.parentFolderId;
+      iterations++;
+    }
+
+    return path;
+  }
 }

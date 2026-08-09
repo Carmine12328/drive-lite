@@ -1,0 +1,114 @@
+<!-- Empty state -->
+@if (isEmpty()) {
+  <div class="empty-state">
+    <mat-icon class="empty-icon">folder_open</mat-icon>
+    <h3>This folder is empty</h3>
+    <p>Upload files to get started</p>
+    <button mat-fab extended color="primary" (click)="onUploadClick()">
+      <mat-icon>upload_file</mat-icon>
+      Upload a file
+    </button>
+  </div>
+}
+
+<!-- Grid view -->
+@if (!isEmpty() && viewMode() === 'grid') {
+  <div class="file-grid">
+    @for (file of sortedFiles(); track file.fileId) {
+      <div class="file-card glass-panel" 
+           (click)="onFileClick(file)" 
+           (contextmenu)="onContextMenu($event, file)"
+           tabindex="0"
+           role="button"
+           [attr.aria-label]="file.fileName">
+        <div class="card-icon">
+          <mat-icon class="type-icon">{{ file.mimeType | fileIcon }}</mat-icon>
+        </div>
+        <div class="card-info">
+          <span class="file-name" [matTooltip]="file.fileName">{{ file.fileName }}</span>
+          <span class="file-meta">{{ file.fileSize | fileSize }} · {{ file.updatedAt | date:'mediumDate' }}</span>
+        </div>
+        <div class="card-actions">
+          <button mat-icon-button (click)="onDownload($event, file)" aria-label="Download" matTooltip="Download">
+            <mat-icon>download</mat-icon>
+          </button>
+          <button mat-icon-button (click)="onDelete($event, file)" aria-label="Delete" matTooltip="Delete">
+            <mat-icon>delete_outline</mat-icon>
+          </button>
+        </div>
+      </div>
+    }
+  </div>
+}
+
+<!-- List view -->
+@if (!isEmpty() && viewMode() === 'list') {
+  <div class="file-table-container">
+    <table mat-table [dataSource]="sortedFiles()" class="file-table">
+      <!-- Icon column -->
+      <ng-container matColumnDef="icon">
+        <th mat-header-cell *matHeaderCellDef class="icon-column"></th>
+        <td mat-cell *matCellDef="let file" class="icon-column">
+          <mat-icon class="type-icon">{{ file.mimeType | fileIcon }}</mat-icon>
+        </td>
+      </ng-container>
+
+      <!-- Name column -->
+      <ng-container matColumnDef="fileName">
+        <th mat-header-cell *matHeaderCellDef (click)="onSort('fileName')" class="sortable-header">
+          Name
+          @if (sortField() === 'fileName') {
+            <mat-icon class="sort-icon">{{ sortDirection() === 'asc' ? 'arrow_upward' : 'arrow_downward' }}</mat-icon>
+          }
+        </th>
+        <td mat-cell *matCellDef="let file">{{ file.fileName }}</td>
+      </ng-container>
+
+      <!-- Size column -->
+      <ng-container matColumnDef="fileSize">
+        <th mat-header-cell *matHeaderCellDef (click)="onSort('fileSize')" class="sortable-header">
+          Size
+          @if (sortField() === 'fileSize') {
+            <mat-icon class="sort-icon">{{ sortDirection() === 'asc' ? 'arrow_upward' : 'arrow_downward' }}</mat-icon>
+          }
+        </th>
+        <td mat-cell *matCellDef="let file">{{ file.fileSize | fileSize }}</td>
+      </ng-container>
+
+      <!-- Modified column -->
+      <ng-container matColumnDef="updatedAt">
+        <th mat-header-cell *matHeaderCellDef (click)="onSort('updatedAt')" class="sortable-header">
+          Modified
+          @if (sortField() === 'updatedAt') {
+            <mat-icon class="sort-icon">{{ sortDirection() === 'asc' ? 'arrow_upward' : 'arrow_downward' }}</mat-icon>
+          }
+        </th>
+        <td mat-cell *matCellDef="let file">{{ file.updatedAt | date:'mediumDate' }}</td>
+      </ng-container>
+
+      <!-- Actions column -->
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef class="actions-column"></th>
+        <td mat-cell *matCellDef="let file" class="actions-column">
+          <button mat-icon-button (click)="onDownload($event, file)" matTooltip="Download" aria-label="Download">
+            <mat-icon>download</mat-icon>
+          </button>
+          <button mat-icon-button (click)="onRename($event, file)" matTooltip="Rename" aria-label="Rename">
+            <mat-icon>edit</mat-icon>
+          </button>
+          <button mat-icon-button (click)="onDelete($event, file)" matTooltip="Delete" aria-label="Delete">
+            <mat-icon>delete_outline</mat-icon>
+          </button>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns" 
+          (click)="onFileClick(row)" 
+          (contextmenu)="onContextMenu($event, row)"
+          class="file-row"
+          tabindex="0">
+      </tr>
+    </table>
+  </div>
+}

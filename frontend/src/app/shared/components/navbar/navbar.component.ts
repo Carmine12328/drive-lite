@@ -1,4 +1,4 @@
-import { Component, inject, signal, output } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { MatToolbar } from '@angular/material/toolbar';
 import { MatIconButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
@@ -6,6 +6,7 @@ import { MatMenu, MatMenuItem, MatMenuTrigger } from '@angular/material/menu';
 import { MatDivider } from '@angular/material/divider';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../core/auth/auth.service';
+import { ViewStateService } from '../../../core/services/view-state.service';
 
 /**
  * Navbar component for the Drive Lite application.
@@ -27,28 +28,25 @@ import { AuthService } from '../../../core/auth/auth.service';
   styleUrl: './navbar.component.scss',
 })
 export class NavbarComponent {
-  /** Injected authentication service */
-  authService = inject(AuthService);
+  /** Injected authentication service. */
+  readonly authService = inject(AuthService);
 
-  /** Emits the search query after debouncing */
-  searchQuery = output<string>();
+  /** Shared view state service for cross-component communication. */
+  private readonly viewState = inject(ViewStateService);
 
-  /** Emits the view mode toggle */
-  viewChange = output<'grid' | 'list'>();
+  /** Current view mode — reads from the shared service. */
+  readonly viewMode = this.viewState.viewMode;
 
-  /** Current view mode state */
-  viewMode = signal<'grid' | 'list'>('grid');
+  /** Current theme state. */
+  readonly isDarkMode = signal<boolean>(true);
 
-  /** Current theme state */
-  isDarkMode = signal<boolean>(true);
-
-  /** Tracks search input for two-way binding */
+  /** Tracks search input for two-way binding. */
   searchText = '';
 
-  /** Tracks whether search is expanded on mobile */
-  isSearchExpanded = signal<boolean>(false);
+  /** Tracks whether search is expanded on mobile. */
+  readonly isSearchExpanded = signal<boolean>(false);
 
-  /** Timeout reference for search debouncing */
+  /** Timeout reference for search debouncing. */
   private searchTimeout: ReturnType<typeof setTimeout> | undefined;
 
   constructor() {
@@ -74,12 +72,10 @@ export class NavbarComponent {
   }
 
   /**
-   * Toggles the view mode between grid and list, and emits the change.
+   * Toggles the view mode between grid and list via the shared service.
    */
   toggleViewMode(): void {
-    const newMode = this.viewMode() === 'grid' ? 'list' : 'grid';
-    this.viewMode.set(newMode);
-    this.viewChange.emit(newMode);
+    this.viewState.toggleViewMode();
   }
 
   /**
@@ -116,7 +112,7 @@ export class NavbarComponent {
     }
 
     this.searchTimeout = setTimeout(() => {
-      this.searchQuery.emit(value);
+      this.viewState.searchQuery.set(value);
     }, 300);
   }
 

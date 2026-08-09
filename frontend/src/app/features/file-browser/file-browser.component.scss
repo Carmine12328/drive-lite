@@ -1,0 +1,168 @@
+// =============================================================================
+// File Browser Component — Styles
+// =============================================================================
+
+:host {
+  display: block;
+  height: 100%;
+  position: relative;
+}
+
+// --- Sidebar toggle (mobile) ---
+.sidebar-toggle {
+  display: none;
+  position: fixed;
+  bottom: var(--space-6);
+  right: var(--space-6);
+  z-index: var(--z-sticky);
+  background: var(--accent-primary);
+  color: #fff;
+  box-shadow: var(--shadow-lg);
+
+  &:hover {
+    background: var(--accent-secondary);
+  }
+
+  @media (max-width: 768px) {
+    display: flex;
+  }
+}
+
+// --- Layout ---
+.browser-layout {
+  display: flex;
+  height: 100%;
+  gap: 0;
+}
+
+// --- Sidebar ---
+.sidebar {
+  width: 260px;
+  min-width: 260px;
+  height: 100%;
+  overflow-y: auto;
+  padding: var(--space-4);
+  border-right: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md) 0 0 var(--radius-md);
+  transition: transform var(--transition-base), opacity var(--transition-base);
+
+  @media (max-width: 768px) {
+    position: fixed;
+    top: 64px; // Below navbar
+    left: 0;
+    bottom: 0;
+    z-index: var(--z-overlay);
+    border-radius: 0;
+    transform: translateX(-100%);
+    opacity: 0;
+    pointer-events: none;
+
+    &.sidebar-open {
+      transform: translateX(0);
+      opacity: 1;
+      pointer-events: auto;
+      box-shadow: var(--shadow-lg);
+    }
+  }
+
+  @media (min-width: 769px) and (max-width: 1024px) {
+    width: 220px;
+    min-width: 220px;
+  }
+}
+
+// --- Main content ---
+.main-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-4) var(--space-6);
+  position: relative;
+  min-width: 0; // Prevents flex child from overflowing
+
+  @media (max-width: 768px) {
+    padding: var(--space-3) var(--space-4);
+  }
+}
+
+// --- Loading bar ---
+.loading-bar {
+  height: 3px;
+  width: 100%;
+  background: var(--bg-surface);
+  border-radius: 2px;
+  overflow: hidden;
+  margin: var(--space-2) 0;
+
+  .loading-bar-fill {
+    height: 100%;
+    width: 30%;
+    background: var(--accent-gradient);
+    border-radius: 2px;
+    animation: loading-slide 1.5s ease-in-out infinite;
+  }
+}
+
+@keyframes loading-slide {
+  0% {
+    transform: translateX(-100%);
+  }
+  50% {
+    transform: translateX(250%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+// --- Drag-and-drop overlay ---
+.drop-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: var(--z-overlay);
+  background: rgba(59, 130, 246, 0.08);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 3px dashed var(--accent-primary);
+  border-radius: var(--radius-lg);
+  animation: drop-fade-in 200ms ease-out;
+}
+
+@keyframes drop-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.drop-overlay-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+  color: var(--accent-primary);
+
+  .drop-icon {
+    font-size: 64px;
+    width: 64px;
+    height: 64px;
+    opacity: 0.8;
+  }
+
+  p {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0;
+  }
+}
+
+// --- Responsive breakpoints ---
+@media (max-width: 768px) {
+  .browser-layout {
+    flex-direction: column;
+  }
+}

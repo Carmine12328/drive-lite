@@ -1,0 +1,68 @@
+<!-- Sidebar toggle button (mobile only) -->
+<button mat-icon-button
+        class="sidebar-toggle"
+        (click)="toggleSidebar()"
+        aria-label="Toggle sidebar">
+  <mat-icon>{{ sidebarOpen() ? 'menu_open' : 'menu' }}</mat-icon>
+</button>
+
+<div class="browser-layout">
+  <!-- Sidebar -->
+  <aside class="sidebar" [class.sidebar-open]="sidebarOpen()">
+    <app-folder-tree
+      [folders]="allFolders()"
+      [activeFolderId]="currentFolderId()"
+      (folderSelect)="onFolderSelect($event)"
+      (folderContextMenu)="onFolderContextMenu($event)"
+    />
+  </aside>
+
+  <!-- Main content area -->
+  <section class="main-content"
+           (dragenter)="onDragEnter($event)"
+           (dragleave)="onDragLeave($event)"
+           (dragover)="onDragOver($event)"
+           (drop)="onDrop($event)">
+
+    <!-- Breadcrumb -->
+    <app-breadcrumb
+      [path]="breadcrumbPath()"
+      (navigate)="onBreadcrumbNavigate($event)"
+    />
+
+    <!-- Loading indicator -->
+    @if (isLoading()) {
+      <div class="loading-bar">
+        <div class="loading-bar-fill"></div>
+      </div>
+    }
+
+    <!-- File list -->
+    <app-file-list
+      [files]="files()"
+      [viewMode]="viewMode()"
+      [sortField]="sortField()"
+      [sortDirection]="sortDirection()"
+      (fileAction)="onFileAction($event)"
+      (sortChange)="onSortChange($event)"
+      (fileContextMenu)="onFileContextMenu($event)"
+      (uploadRequest)="onUploadRequest()"
+    />
+
+    <!-- Drag-and-drop overlay -->
+    @if (showDropOverlay()) {
+      <div class="drop-overlay">
+        <div class="drop-overlay-content">
+          <mat-icon class="drop-icon">cloud_upload</mat-icon>
+          <p>Drop files to upload</p>
+        </div>
+      </div>
+    }
+  </section>
+</div>
+
+<!-- Context menu (shared instance for files and folders) -->
+<app-context-menu
+  (menuAction)="onContextMenuAction($event)"
+  #contextMenu
+/>

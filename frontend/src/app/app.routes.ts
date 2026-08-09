@@ -64,28 +64,27 @@ export const routes: Routes = [
             (m) => m.DashboardComponent,
           ),
       },
-      // Step 6 routes — uncomment when FileBrowserComponent and TrashComponent are created:
-      // {
-      //   path: 'drive',
-      //   loadComponent: () =>
-      //     import('./features/file-browser/file-browser.component').then(
-      //       (m) => m.FileBrowserComponent,
-      //     ),
-      // },
-      // {
-      //   path: 'drive/folder/:folderId',
-      //   loadComponent: () =>
-      //     import('./features/file-browser/file-browser.component').then(
-      //       (m) => m.FileBrowserComponent,
-      //     ),
-      // },
-      // {
-      //   path: 'drive/trash',
-      //   loadComponent: () =>
-      //     import('./features/file-browser/trash/trash.component').then(
-      //       (m) => m.TrashComponent,
-      //     ),
-      // },
+      {
+        path: 'drive',
+        loadComponent: () =>
+          import('./features/file-browser/file-browser.component').then(
+            (m) => m.FileBrowserComponent,
+          ),
+      },
+      {
+        path: 'drive/folder/:folderId',
+        loadComponent: () =>
+          import('./features/file-browser/file-browser.component').then(
+            (m) => m.FileBrowserComponent,
+          ),
+      },
+      {
+        path: 'drive/trash',
+        loadComponent: () =>
+          import('./features/file-browser/trash/trash.component').then(
+            (m) => m.TrashComponent,
+          ),
+      },
     ],
   },
 
