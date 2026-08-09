@@ -1,48 +1,94 @@
-import { Component } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
+import { DatePipe } from '@angular/common';
+import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatTooltipModule } from '@angular/material/tooltip';
+
+import { FileService } from '../../../core/services/file.service';
+import { ToastService } from '../../../shared/components/toast/toast.service';
+import { FileIconPipe } from '../../../shared/pipes/file-icon.pipe';
+import { FileSizePipe } from '../../../shared/pipes/file-size.pipe';
+import { ConfirmDialog, ConfirmDialogData } from '../../../shared/components/confirm-dialog/confirm-dialog';
+import { FileItem } from '../../../core/models/file-item.model';
 
 /**
- * Placeholder component for the Trash view.
+ * Trash view component for managing soft-deleted files.
  */
 @Component({
   selector: 'app-trash',
-  template: `
-    <div class="trash-container">
-      <div class="glass-panel trash-card">
-        <span class="material-icons trash-icon gradient-text">delete</span>
-        <h2>Trash</h2>
-        <p>Coming in Step 8</p>
-      </div>
-    </div>
-  `,
-  styles: `
-    .trash-container {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100%;
-      padding: 2rem;
-    }
-    .trash-card {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 3rem;
-      text-align: center;
-      color: var(--text-primary);
-      max-width: 400px;
-      width: 100%;
-    }
-    .trash-icon {
-      font-size: 4rem;
-      margin-bottom: 1rem;
-    }
-    h2 {
-      margin-bottom: 0.5rem;
-      font-weight: 500;
-    }
-    p {
-      color: var(--text-secondary, #888);
-    }
-  `
+  templateUrl: './trash.component.html',
+  styleUrl: './trash.component.scss',
+  imports: [
+    DatePipe,
+    MatIconModule,
+    MatButtonModule,
+    MatDialogModule,
+    MatTooltipModule,
+    FileIconPipe,
+    FileSizePipe,
+  ]
 })
-export class TrashComponent {}
+export class TrashComponent {
+  private readonly fileService = inject(FileService);
+  private readonly toastService = inject(ToastService);
+  private readonly dialog = inject(MatDialog);
+
+  /** Reactive list of trashed files */
+  trashedFiles = computed(() => this.fileService.getDeletedFiles());
+
+  /** Computed flag if trash is empty */
+  isEmpty = computed(() => this.trashedFiles().length === 0);
+
+  /**
+   * Restores a file to its original location
+   * @param file The file item to restore
+   */
+  restoreFile(file: FileItem): void {
+    this.fileService.restoreFile(file.fileId);
+    this.toastService.success(`Restored ${file.fileName}`);
+  }
+
+  /**
+   * Prompts for permanent deletion of a single file
+   * @param file The file item to permanently delete
+   */
+  confirmPermanentDelete(file: FileItem): void {
+    const dialogRef = this.dialog.open<ConfirmDialog, ConfirmDialogData>(ConfirmDialog, {
+      data: {
+        title: 'Delete Permanently',
+        message: `Are you sure you want to permanently delete "${file.fileName}"? This action cannot be undone.`,
+        confirmText: 'Delete',
+        confirmColor: 'warn'
+      }
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        this.fileService.permanentlyDeleteFile(file.fileId);
+        this.toastService.success(`Permanently deleted ${file.fileName}`);
+      }
+    });
+  }
+
+  /**
+   * Prompts to empty the entire trash
+   */
+  confirmEmptyTrash(): void {
+    const dialogRef = this.dialog.open<ConfirmDialog, ConfirmDialogData>(ConfirmDialog, {
+      data: {
+        title: 'Empty Trash',
+        message: 'Empty trash? This cannot be undone.',
+        confirmText: 'Empty Trash',
+        confirmColor: 'warn'
+      }
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        this.fileService.emptyTrash();
+        this.toastService.success('Trash emptied');
+      }
+    });
+  }
+}

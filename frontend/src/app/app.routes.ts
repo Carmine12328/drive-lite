@@ -23,6 +23,7 @@ export const routes: Routes = [
           import('./features/auth/landing/landing.component').then(
             (m) => m.LandingComponent,
           ),
+        data: { animation: 'LandingPage' }
       },
       {
         path: 'login',
@@ -30,6 +31,7 @@ export const routes: Routes = [
           import('./features/auth/login/login.component').then(
             (m) => m.LoginComponent,
           ),
+        data: { animation: 'LoginPage' }
       },
       {
         path: 'register',
@@ -37,6 +39,7 @@ export const routes: Routes = [
           import('./features/auth/register/register.component').then(
             (m) => m.RegisterComponent,
           ),
+        data: { animation: 'RegisterPage' }
       },
       {
         path: 'callback',
@@ -44,6 +47,7 @@ export const routes: Routes = [
           import(
             './features/auth/cognito-callback/cognito-callback.component'
           ).then((m) => m.CognitoCallbackComponent),
+        data: { animation: 'CallbackPage' }
       },
     ],
   },
@@ -63,6 +67,7 @@ export const routes: Routes = [
           import('./features/dashboard/dashboard.component').then(
             (m) => m.DashboardComponent,
           ),
+        data: { animation: 'DashboardPage' }
       },
       {
         path: 'drive',
@@ -70,6 +75,7 @@ export const routes: Routes = [
           import('./features/file-browser/file-browser.component').then(
             (m) => m.FileBrowserComponent,
           ),
+        data: { animation: 'DrivePage' }
       },
       {
         path: 'drive/folder/:folderId',
@@ -77,6 +83,7 @@ export const routes: Routes = [
           import('./features/file-browser/file-browser.component').then(
             (m) => m.FileBrowserComponent,
           ),
+        data: { animation: 'DriveFolderPage' }
       },
       {
         path: 'drive/trash',
@@ -84,6 +91,7 @@ export const routes: Routes = [
           import('./features/file-browser/trash/trash.component').then(
             (m) => m.TrashComponent,
           ),
+        data: { animation: 'TrashPage' }
       },
     ],
   },

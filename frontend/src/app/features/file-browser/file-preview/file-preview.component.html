@@ -1,0 +1,99 @@
+<div class="preview-layout">
+  <!-- Header -->
+  <header class="preview-header" mat-dialog-title>
+    <div class="nav-controls">
+      <button mat-icon-button (click)="navigatePrev()" [disabled]="!hasPrev()" aria-label="Previous file">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <span class="file-name">{{ currentFile().fileName }} ({{ currentIndex() + 1 }} of {{ allFiles.length }})</span>
+      <button mat-icon-button (click)="navigateNext()" [disabled]="!hasNext()" aria-label="Next file">
+        <mat-icon>arrow_forward</mat-icon>
+      </button>
+    </div>
+    
+    <div class="actions">
+      <button mat-icon-button (click)="toggleInfo()" class="info-toggle" aria-label="Toggle info">
+        <mat-icon>info</mat-icon>
+      </button>
+      <button mat-icon-button (click)="close()" aria-label="Close dialog">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+  </header>
+
+  <div class="preview-body">
+    <!-- Content Area -->
+    <main class="preview-content">
+      @switch (previewType()) {
+        @case ('image') {
+          <img [src]="previewUrl()" [alt]="currentFile().fileName" class="preview-image">
+        }
+        @case ('pdf') {
+          <iframe [src]="safePdfUrl()" title="PDF preview" class="preview-pdf"></iframe>
+        }
+        @case ('text') {
+          <pre class="preview-text"><code>{{ textContent() }}</code></pre>
+        }
+        @case ('video') {
+          <video class="preview-video" controls autoplay [src]="mediaUrl()" [attr.aria-label]="'Video preview: ' + currentFile().fileName">
+            Your browser does not support video playback.
+          </video>
+        }
+        @case ('audio') {
+          <div class="preview-audio-container">
+            <mat-icon class="large-icon">audiotrack</mat-icon>
+            <h3>{{ currentFile().fileName }}</h3>
+            <audio controls [src]="mediaUrl()" [attr.aria-label]="'Audio preview: ' + currentFile().fileName">
+              Your browser does not support audio playback.
+            </audio>
+          </div>
+        }
+        @default {
+          <div class="preview-unsupported">
+            <mat-icon class="large-icon">{{ currentFile().mimeType | fileIcon }}</mat-icon>
+            <h2>Preview unavailable</h2>
+            <p>No preview available for {{ currentFile().mimeType }}</p>
+            <button mat-button color="primary" (click)="onDownload()">
+              <mat-icon>download</mat-icon>
+              Download File
+            </button>
+          </div>
+        }
+      }
+    </main>
+
+    <!-- Sidebar Info -->
+    @if (showInfo()) {
+      <aside class="preview-sidebar">
+        <h3>File Details</h3>
+        <div class="detail-row">
+          <span class="label">Name</span>
+          <span class="value">{{ currentFile().fileName }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="label">Type</span>
+          <span class="value">{{ currentFile().mimeType }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="label">Size</span>
+          <span class="value">{{ currentFile().fileSize | fileSize }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="label">Created</span>
+          <span class="value">{{ currentFile().createdAt | date:'medium' }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="label">Modified</span>
+          <span class="value">{{ currentFile().updatedAt | date:'medium' }}</span>
+        </div>
+        
+        <div class="sidebar-actions">
+          <button mat-button (click)="onDownload()" class="download-btn">
+            <mat-icon>download</mat-icon>
+            Download
+          </button>
+        </div>
+      </aside>
+    }
+  </div>
+</div>

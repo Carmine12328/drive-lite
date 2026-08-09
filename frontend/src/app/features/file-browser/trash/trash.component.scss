@@ -1,0 +1,133 @@
+.trash-view {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: var(--space-6);
+  gap: var(--space-6);
+  box-sizing: border-box;
+}
+
+.trash-header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  
+  @media screen and (min-width: 768px) {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.info-banner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  color: var(--text-primary);
+  background: var(--bg-surface);
+  border-left: 4px solid var(--accent-primary);
+
+  .info-icon {
+    color: var(--accent-primary);
+  }
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  color: var(--text-secondary);
+
+  .empty-icon {
+    font-size: 4rem;
+    width: 4rem;
+    height: 4rem;
+    margin-bottom: var(--space-4);
+    opacity: 0.5;
+  }
+
+  h2 {
+    color: var(--text-primary);
+    margin: 0 0 var(--space-2) 0;
+    font-weight: 500;
+  }
+
+  p {
+    margin: 0;
+  }
+}
+
+.trash-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  overflow-y: auto;
+  padding-bottom: var(--space-6);
+}
+
+.file-item {
+  display: flex;
+  align-items: center;
+  padding: var(--space-3) var(--space-4);
+  gap: var(--space-4);
+  transition: background-color var(--transition-fast) ease;
+
+  &:hover {
+    background: var(--bg-hover);
+  }
+}
+
+.file-icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-elevated);
+}
+
+.file-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+
+  .file-name {
+    font-weight: 500;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .file-meta {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+
+    .meta-separator {
+      opacity: 0.5;
+    }
+  }
+}
+
+.file-actions {
+  display: flex;
+  gap: var(--space-1);
+  opacity: 0.7;
+  transition: opacity var(--transition-fast);
+
+  .file-item:hover & {
+    opacity: 1;
+  }
+
+  @media (max-width: 768px) {
+    opacity: 1;
+  }
+}

@@ -1,0 +1,53 @@
+<div class="trash-view fade-in">
+  <div class="trash-header">
+    <div class="info-banner glass-panel">
+      <mat-icon class="info-icon">info</mat-icon>
+      <span>Items in Trash are permanently deleted after 30 days</span>
+    </div>
+    <div class="actions">
+      <button 
+        mat-flat-button 
+        color="warn" 
+        [disabled]="isEmpty()" 
+        (click)="confirmEmptyTrash()">
+        Empty Trash
+      </button>
+    </div>
+  </div>
+
+  @if (isEmpty()) {
+    <div class="empty-state slide-up">
+      <mat-icon class="empty-icon">delete_outline</mat-icon>
+      <h2>Trash is empty</h2>
+      <p>No files have been deleted</p>
+    </div>
+  } @else {
+    <div class="trash-list slide-up">
+      @for (file of trashedFiles(); track file.fileId) {
+        <div class="file-item glass-panel">
+          <div class="file-icon-wrapper">
+            <mat-icon>{{ file.mimeType | fileIcon }}</mat-icon>
+          </div>
+          
+          <div class="file-info">
+            <span class="file-name">{{ file.fileName }}</span>
+            <div class="file-meta">
+              <span class="file-size">{{ file.fileSize | fileSize }}</span>
+              <span class="meta-separator">•</span>
+              <span class="file-date">Deleted: {{ file.deletedAt | date:'mediumDate' }}</span>
+            </div>
+          </div>
+          
+          <div class="file-actions">
+            <button mat-icon-button matTooltip="Restore" (click)="restoreFile(file)">
+              <mat-icon>restore_from_trash</mat-icon>
+            </button>
+            <button mat-icon-button color="warn" matTooltip="Delete Permanently" (click)="confirmPermanentDelete(file)">
+              <mat-icon>delete_forever</mat-icon>
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>
