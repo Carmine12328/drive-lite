@@ -6,6 +6,14 @@ When delegating research to subagents:
    responses land in the parent's context and bloat it with redundant data.
    The parent can always read files directly with `view_file`.
 
+   **Anti-pattern** (do NOT do this):
+   > "Read these 15 files and return ALL contents verbatim"
+
+   **Correct pattern**:
+   > "Read these 15 files and report: key types/interfaces, method
+   > signatures, patterns used, and anything relevant to [specific task].
+   > Include file paths and line numbers so I can view_file directly."
+
 2. **Instruct subagents to analyze and summarize.** Ask for:
    - Key interfaces, types, and method signatures
    - Patterns and conventions observed
@@ -19,3 +27,7 @@ When delegating research to subagents:
    to search across many files, correlate patterns, or answer questions
    that require reading 10+ files. But the output should be a concise
    analysis, not a file dump.
+
+5. **Hard cap**: If a subagent response would exceed ~2 KB of code
+   snippets, it is too verbose. Summarize further and point to file
+   paths instead.
