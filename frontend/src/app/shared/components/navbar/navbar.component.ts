@@ -1,4 +1,5 @@
 import { Component, inject, signal } from '@angular/core';
+import { RouterLink, RouterLinkActive } from '@angular/router';
 import { MatToolbar } from '@angular/material/toolbar';
 import { MatIconButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
@@ -15,6 +16,8 @@ import { ViewStateService } from '../../../core/services/view-state.service';
 @Component({
   selector: 'app-navbar',
   imports: [
+    RouterLink,
+    RouterLinkActive,
     MatToolbar,
     MatIconButton,
     MatIcon,

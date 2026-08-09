@@ -185,19 +185,25 @@
 }
 
 .actions-column {
-  width: 120px;
+  width: 140px;
   text-align: right;
-  
+
   button {
     mat-icon {
       font-size: 18px;
       color: var(--text-secondary);
     }
-    
+
     &:hover mat-icon {
       color: var(--text-primary);
     }
   }
+}
+
+.actions-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
 }
 
 .file-row {

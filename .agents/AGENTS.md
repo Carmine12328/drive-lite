@@ -138,6 +138,20 @@ AWS blog, Angular changelog, etc.) when the practice is non-obvious.
   without explicit user approval.
 - All secrets and credentials must use environment variables or a secrets
   manager — never hardcoded.
+- After completing any task or implementation step, **always update docs
+  before committing**:
+  1. Mark completed tasks as `[x]` in `FE_IMPLEMENTATION_PLAN.md` (or the
+     relevant plan file).
+  2. Update the "Current state" header to reflect what is now built.
+  3. Create or update the walkthrough artifact summarizing changes, commits,
+     and verification results.
+  4. Only then commit and push.
+- After any code change, **always verify the dev server**:
+  1. Check if a dev server is already running (list background tasks).
+  2. If running, confirm it rebuilt successfully (check logs for errors).
+  3. If not running, start one (`ng serve` / `npm run dev`) and keep it up.
+  4. Never declare a step complete based solely on `ng build` — the live
+     dev server is the source of truth.
 
 ---
 

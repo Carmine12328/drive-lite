@@ -1,13 +1,23 @@
 <mat-toolbar class="navbar">
-  <!-- Left section: Branding -->
+  <!-- Left section: Branding + Navigation -->
   <div class="navbar-left">
     <button mat-icon-button class="mobile-menu-btn" aria-label="Toggle menu">
       <mat-icon>menu</mat-icon>
     </button>
-    <div class="brand">
+    <a class="brand" routerLink="/dashboard">
       <mat-icon class="brand-icon">cloud</mat-icon>
       <span class="brand-text gradient-text">Drive Lite</span>
-    </div>
+    </a>
+    <nav class="nav-links" aria-label="Main navigation">
+      <a class="nav-link" routerLink="/dashboard" routerLinkActive="nav-link-active" [routerLinkActiveOptions]="{ exact: true }">
+        <mat-icon>dashboard</mat-icon>
+        <span>Dashboard</span>
+      </a>
+      <a class="nav-link" routerLink="/drive" routerLinkActive="nav-link-active">
+        <mat-icon>folder</mat-icon>
+        <span>My Drive</span>
+      </a>
+    </nav>
   </div>
 
   <!-- Center section: Search -->

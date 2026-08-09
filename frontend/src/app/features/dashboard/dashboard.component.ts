@@ -1,4 +1,5 @@
 import { Component, OnInit, inject, computed } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { MatIcon } from '@angular/material/icon';
 import { MatButton } from '@angular/material/button';
 import { AuthService } from '../../core/auth/auth.service';
@@ -11,7 +12,7 @@ import { FolderService } from '../../core/services/folder.service';
  */
 @Component({
   selector: 'app-dashboard',
-  imports: [MatIcon, MatButton],
+  imports: [RouterLink, MatIcon, MatButton],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss']
 })
