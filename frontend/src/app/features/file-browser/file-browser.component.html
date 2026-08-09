@@ -24,11 +24,22 @@
            (dragover)="onDragOver($event)"
            (drop)="onDrop($event)">
 
-    <!-- Breadcrumb -->
-    <app-breadcrumb
-      [path]="breadcrumbPath()"
-      (navigate)="onBreadcrumbNavigate($event)"
-    />
+    <!-- Breadcrumb + actions toolbar -->
+    <div class="toolbar">
+      <app-breadcrumb
+        [path]="breadcrumbPath()"
+        (navigate)="onBreadcrumbNavigate($event)"
+      />
+      <div class="toolbar-actions">
+        <button mat-flat-button color="primary" (click)="onUploadRequest()">
+          <mat-icon>upload</mat-icon>
+          Upload
+        </button>
+        <button mat-icon-button (click)="onNewFolder()" aria-label="Create new folder">
+          <mat-icon>create_new_folder</mat-icon>
+        </button>
+      </div>
+    </div>
 
     <!-- Loading indicator -->
     @if (isLoading()) {

@@ -1,0 +1,95 @@
+.dropzone {
+  border: 2px dashed var(--border-primary);
+  border-radius: var(--radius-lg);
+  padding: 40px 24px;
+  text-align: center;
+  transition: border-color 200ms ease, background-color 200ms ease;
+  cursor: pointer;
+  margin-bottom: 16px;
+}
+
+.dropzone--active {
+  border-color: var(--accent-primary);
+  background: rgba(var(--accent-primary-rgb, 99, 102, 241), 0.06);
+}
+
+.dropzone__icon {
+  font-size: 48px;
+  width: 48px;
+  height: 48px;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+
+.dropzone__text {
+  font-size: 1.1rem;
+  color: var(--text-primary);
+  margin: 0 0 4px;
+}
+
+.dropzone__subtext {
+  color: var(--text-muted);
+  margin: 0 0 12px;
+  font-size: 0.875rem;
+}
+
+.queue-section {
+  margin-top: 16px;
+}
+
+.queue-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin: 0 0 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.queue-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border-primary);
+}
+
+.queue-item:last-child {
+  border-bottom: none;
+}
+
+.queue-item__icon {
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.queue-item__info {
+  flex: 1;
+  min-width: 0;
+}
+
+.queue-item__name {
+  display: block;
+  font-size: 0.875rem;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.queue-item__size {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.status-icon {
+  flex-shrink: 0;
+}
+
+.status-icon--success {
+  color: var(--color-success, #4caf50);
+}
+
+.status-icon--error {
+  color: var(--color-error, #f44336);
+}

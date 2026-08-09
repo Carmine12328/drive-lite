@@ -1,7 +1,8 @@
 import { Component, computed, inject, signal, viewChild, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatIcon } from '@angular/material/icon';
-import { MatIconButton } from '@angular/material/button';
+import { MatIconButton, MatButton } from '@angular/material/button';
+import { MatDialog } from '@angular/material/dialog';
 import { Subject, takeUntil } from 'rxjs';
 
 import { BreadcrumbComponent } from '../../shared/components/breadcrumb/breadcrumb.component';
@@ -10,20 +11,31 @@ import { FolderTreeComponent } from './folder-tree/folder-tree.component';
 import { FileListComponent } from './file-list/file-list.component';
 import { FileService } from '../../core/services/file.service';
 import { FolderService } from '../../core/services/folder.service';
+import { Upload } from '../../core/services/upload';
 import { ViewStateService } from '../../core/services/view-state.service';
+import { ToastService } from '../../shared/components/toast/toast.service';
 import { FileItem } from '../../core/models/file-item.model';
 import { Folder } from '../../core/models/folder.model';
+import { UploadDialog, UploadDialogData } from './upload-dialog/upload-dialog';
+import { ConfirmDialog, ConfirmDialogData } from '../../shared/components/confirm-dialog/confirm-dialog';
+import { InputDialog, InputDialogData } from '../../shared/components/input-dialog/input-dialog';
 
 /**
  * Main file browser component providing a Google Drive–like experience.
  * Split layout: sidebar folder tree + main content area (breadcrumb + file list).
  * Reads `folderId` from route params and loads corresponding files and folders.
+ *
+ * Integrates with:
+ * - {@link Upload} for file uploads via the upload dialog
+ * - {@link ConfirmDialog} for delete confirmations
+ * - {@link InputDialog} for rename and new folder operations
  */
 @Component({
   selector: 'app-file-browser',
   imports: [
     MatIcon,
     MatIconButton,
+    MatButton,
     BreadcrumbComponent,
     ContextMenuComponent,
     FolderTreeComponent,
@@ -37,7 +49,10 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
   private readonly router = inject(Router);
   private readonly fileService = inject(FileService);
   private readonly folderService = inject(FolderService);
+  private readonly uploadService = inject(Upload);
   private readonly viewState = inject(ViewStateService);
+  private readonly dialog = inject(MatDialog);
+  private readonly toastService = inject(ToastService);
   private readonly destroy$ = new Subject<void>();
 
   /** Current folder ID from route params. Defaults to ROOT. */
@@ -159,12 +174,10 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
         this.fileService.downloadFile(event.file.fileId);
         break;
       case 'rename':
-        // Step 7: open rename dialog
-        console.debug('[FileBrowser] Rename stub:', event.file.fileName);
+        this.openRenameFileDialog(event.file);
         break;
       case 'delete':
-        // Step 7: open confirmation dialog
-        console.debug('[FileBrowser] Delete stub:', event.file.fileName);
+        this.openDeleteFileDialog(event.file);
         break;
     }
   }
@@ -212,16 +225,13 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
           this.onFolderSelect(folder.folderId);
           break;
         case 'new-folder':
-          // Step 7: open new folder dialog
-          console.debug('[FileBrowser] New folder stub in:', folder.folderName);
+          this.openNewFolderDialog(folder.folderId);
           break;
         case 'rename':
-          // Step 7: open rename dialog
-          console.debug('[FileBrowser] Rename folder stub:', folder.folderName);
+          this.openRenameFolderDialog(folder);
           break;
         case 'delete':
-          // Step 7: open delete confirmation dialog
-          console.debug('[FileBrowser] Delete folder stub:', folder.folderName);
+          this.openDeleteFolderDialog(folder);
           break;
       }
     }
@@ -231,6 +241,160 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
   /** Toggles the sidebar visibility (mobile). */
   toggleSidebar(): void {
     this.sidebarOpen.update(open => !open);
+  }
+
+  // --- Dialog methods ---
+
+  /**
+   * Opens the upload dialog.
+   * @param initialFiles Optional pre-selected files (e.g., from drag-and-drop).
+   */
+  private openUploadDialog(initialFiles?: File[]): void {
+    const data: UploadDialogData = {
+      folderId: this.currentFolderId(),
+      initialFiles,
+    };
+
+    this.dialog.open(UploadDialog, {
+      width: '600px',
+      maxWidth: '90vw',
+      panelClass: 'drive-dialog',
+      disableClose: true,
+      data,
+      ariaLabel: 'Upload files dialog',
+    });
+  }
+
+  /**
+   * Opens the rename-file dialog and applies the rename on confirm.
+   * @param file The file to rename.
+   */
+  private openRenameFileDialog(file: FileItem): void {
+    const data: InputDialogData = {
+      title: 'Rename File',
+      label: 'File name',
+      value: file.fileName,
+      confirmText: 'Rename',
+    };
+
+    this.dialog.open(InputDialog, {
+      width: '400px',
+      panelClass: 'drive-dialog',
+      data,
+      ariaLabel: 'Rename file dialog',
+    }).afterClosed().subscribe((newName: string | undefined) => {
+      if (newName && newName !== file.fileName) {
+        this.fileService.renameFile(file.fileId, newName);
+        this.toastService.success(`Renamed to "${newName}"`);
+      }
+    });
+  }
+
+  /**
+   * Opens a confirmation dialog for file deletion.
+   * @param file The file to delete.
+   */
+  private openDeleteFileDialog(file: FileItem): void {
+    const data: ConfirmDialogData = {
+      title: 'Delete File',
+      message: `Are you sure you want to delete "${file.fileName}"? This action cannot be undone.`,
+      confirmText: 'Delete',
+      confirmColor: 'warn',
+    };
+
+    this.dialog.open(ConfirmDialog, {
+      width: '400px',
+      panelClass: 'drive-dialog',
+      data,
+      ariaLabel: 'Delete file confirmation',
+    }).afterClosed().subscribe((confirmed: boolean) => {
+      if (confirmed) {
+        this.fileService.deleteFile(file.fileId);
+        this.toastService.success(`"${file.fileName}" deleted`);
+      }
+    });
+  }
+
+  /**
+   * Opens the new folder dialog. Called from toolbar button or context menu.
+   * @param parentFolderId The parent folder ID. Defaults to current folder.
+   */
+  openNewFolderDialog(parentFolderId?: string): void {
+    const data: InputDialogData = {
+      title: 'New Folder',
+      label: 'Folder name',
+      placeholder: 'Untitled Folder',
+      confirmText: 'Create',
+    };
+
+    this.dialog.open(InputDialog, {
+      width: '400px',
+      panelClass: 'drive-dialog',
+      data,
+      ariaLabel: 'Create new folder dialog',
+    }).afterClosed().subscribe((folderName: string | undefined) => {
+      if (folderName) {
+        this.folderService.createFolder(folderName, parentFolderId ?? this.currentFolderId());
+        this.toastService.success(`Folder "${folderName}" created`);
+      }
+    });
+  }
+
+  /**
+   * Alias method for the template — creates a folder in the current directory.
+   */
+  onNewFolder(): void {
+    this.openNewFolderDialog();
+  }
+
+  /**
+   * Opens the rename-folder dialog and applies the rename on confirm.
+   * @param folder The folder to rename.
+   */
+  private openRenameFolderDialog(folder: Folder): void {
+    const data: InputDialogData = {
+      title: 'Rename Folder',
+      label: 'Folder name',
+      value: folder.folderName,
+      confirmText: 'Rename',
+    };
+
+    this.dialog.open(InputDialog, {
+      width: '400px',
+      panelClass: 'drive-dialog',
+      data,
+      ariaLabel: 'Rename folder dialog',
+    }).afterClosed().subscribe((newName: string | undefined) => {
+      if (newName && newName !== folder.folderName) {
+        this.folderService.renameFolder(folder.folderId, newName);
+        this.toastService.success(`Renamed to "${newName}"`);
+      }
+    });
+  }
+
+  /**
+   * Opens a confirmation dialog for folder deletion.
+   * @param folder The folder to delete.
+   */
+  private openDeleteFolderDialog(folder: Folder): void {
+    const data: ConfirmDialogData = {
+      title: 'Delete Folder',
+      message: `Are you sure you want to delete "${folder.folderName}" and all its contents? This action cannot be undone.`,
+      confirmText: 'Delete',
+      confirmColor: 'warn',
+    };
+
+    this.dialog.open(ConfirmDialog, {
+      width: '400px',
+      panelClass: 'drive-dialog',
+      data,
+      ariaLabel: 'Delete folder confirmation',
+    }).afterClosed().subscribe((confirmed: boolean) => {
+      if (confirmed) {
+        this.folderService.deleteFolder(folder.folderId);
+        this.toastService.success(`"${folder.folderName}" deleted`);
+      }
+    });
   }
 
   // --- Drag-and-drop overlay handlers ---
@@ -267,7 +431,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
 
   /**
    * Handles file drop on the overlay.
-   * Currently a stub — will trigger upload dialog in Step 7.
+   * Opens the upload dialog with the dropped files pre-loaded.
    */
   onDrop(event: DragEvent): void {
     event.preventDefault();
@@ -277,14 +441,12 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
 
     const files = event.dataTransfer?.files;
     if (files && files.length > 0) {
-      // Step 7: trigger upload with dropped files
-      console.debug('[FileBrowser] Dropped files stub:', files.length, 'file(s)');
+      this.openUploadDialog(Array.from(files));
     }
   }
 
-  /** Handles upload request from the empty state CTA. */
+  /** Handles upload request from the empty state CTA or toolbar button. */
   onUploadRequest(): void {
-    // Step 7: open upload dialog
-    console.debug('[FileBrowser] Upload request stub');
+    this.openUploadDialog();
   }
 }

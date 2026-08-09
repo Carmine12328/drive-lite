@@ -93,7 +93,9 @@ export class FolderService {
 
   /**
    * Creates a new folder and adds it to the mock data.
-   * 
+   * Directly appends to the folders signal rather than re-filtering
+   * via listFolders(), because the folder tree needs all folders visible.
+   *
    * @param name The name of the new folder.
    * @param parentId The ID of the parent folder. Defaults to 'ROOT'.
    */
@@ -107,7 +109,7 @@ export class FolderService {
     };
 
     this.mockFolders.push(newFolder);
-    this.listFolders(parentId);
+    this.folders.update(current => [...current, newFolder]);
   }
 
   /**

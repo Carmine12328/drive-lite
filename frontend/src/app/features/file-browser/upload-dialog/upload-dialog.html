@@ -1,0 +1,112 @@
+<h2 mat-dialog-title>Upload Files</h2>
+
+<mat-dialog-content>
+  <!-- Drop zone -->
+  <div
+    class="dropzone"
+    [class.dropzone--active]="isDragOver()"
+    (dragover)="onDragOver($event)"
+    (dragenter)="onDragEnter($event)"
+    (dragleave)="onDragLeave($event)"
+    (drop)="onDrop($event)"
+  >
+    <mat-icon class="dropzone__icon">cloud_upload</mat-icon>
+    <p class="dropzone__text">Drag & drop files here</p>
+    <p class="dropzone__subtext">or</p>
+    <button mat-flat-button color="primary" (click)="fileInput.click()">
+      Browse Files
+    </button>
+    <input
+      #fileInput
+      type="file"
+      multiple
+      hidden
+      (change)="onFileSelected($event)"
+    />
+  </div>
+
+  <!-- Pending files (not yet uploading) -->
+  @if (pendingFiles().length > 0) {
+    <div class="queue-section">
+      <h3 class="queue-title">Selected Files</h3>
+      @for (file of pendingFiles(); track $index) {
+        <div class="queue-item">
+          <mat-icon class="queue-item__icon">{{ file.type | fileIcon }}</mat-icon>
+          <div class="queue-item__info">
+            <span class="queue-item__name">{{ file.name }}</span>
+            <span class="queue-item__size">{{ file.size | fileSize }}</span>
+          </div>
+          <button
+            mat-icon-button
+            (click)="removePendingFile($index)"
+            aria-label="Remove file"
+          >
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Active / completed uploads -->
+  @if (uploadService.uploadQueue().length > 0) {
+    <mat-divider />
+    <div class="queue-section">
+      <h3 class="queue-title">Uploads</h3>
+      @for (task of uploadService.uploadQueue(); track task.id) {
+        <div class="queue-item">
+          <mat-icon class="queue-item__icon">{{ task.mimeType | fileIcon }}</mat-icon>
+          <div class="queue-item__info">
+            <span class="queue-item__name">{{ task.fileName }}</span>
+            <app-progress-bar
+              [progress]="task.progress"
+              [fileName]="''"
+              [status]="getProgressStatus(task)"
+            />
+          </div>
+          @if (task.status === 'uploading' || task.status === 'pending') {
+            <button
+              mat-icon-button
+              (click)="uploadService.cancelUpload(task.id)"
+              aria-label="Cancel upload"
+            >
+              <mat-icon>close</mat-icon>
+            </button>
+          }
+          @if (task.status === 'completed') {
+            <mat-icon class="status-icon status-icon--success">check_circle</mat-icon>
+          }
+          @if (task.status === 'error') {
+            <mat-icon class="status-icon status-icon--error">error</mat-icon>
+          }
+        </div>
+      }
+    </div>
+  }
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button
+    mat-button
+    color="warn"
+    [disabled]="!uploadService.hasActiveUploads()"
+    (click)="cancelAll()"
+  >
+    Cancel All
+  </button>
+  <button
+    mat-flat-button
+    color="primary"
+    [disabled]="pendingFiles().length === 0"
+    (click)="uploadAll()"
+  >
+    Upload All
+  </button>
+  <button
+    mat-button
+    [disabled]="uploadService.hasActiveUploads()"
+    (click)="onClose()"
+  >
+    Close
+  </button>
+</mat-dialog-actions>

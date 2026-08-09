@@ -1,11 +1,14 @@
-import { Service, signal, WritableSignal } from '@angular/core';
+import { inject, Service, signal, WritableSignal } from '@angular/core';
 import { FileItem } from '../models/file-item.model';
+import { ToastService } from '../../shared/components/toast/toast.service';
 
 /**
  * Service for managing file operations and state.
  */
 @Service()
 export class FileService {
+  private readonly toastService = inject(ToastService);
+
   /**
    * Internal mock data array containing all simulated files.
    */
@@ -145,11 +148,20 @@ export class FileService {
 
   /**
    * Initiates a download for the specified file.
-   * Currently a stub that logs to the console.
-   * @param fileId The ID of the file to download.
+   *
+   * STUB: Shows a toast notification. No actual download occurs.
+   * Replace with: POST /files/{id}/download-url → create hidden <a> → click
+   *
+   * @param fileId The ID of the file to download
    */
   public downloadFile(fileId: string): void {
-    console.log(`Downloading file with ID: ${fileId}`);
+    // STUB: replace with real presigned URL download flow
+    const file = this.ALL_MOCK_FILES.find(f => f.fileId === fileId);
+    if (file) {
+      this.toastService.info(`Download started: ${file.fileName}`);
+    } else {
+      this.toastService.error('File not found.');
+    }
   }
 
   /**
@@ -203,5 +215,17 @@ export class FileService {
    */
   public getTotalCount(): number {
     return this.ALL_MOCK_FILES.length;
+  }
+
+  /**
+   * Adds a file to local state without an API call.
+   * Used by UploadService after a successful upload to immediately
+   * reflect the new file in the UI.
+   *
+   * @param file The FileItem to add to local state
+   */
+  public addFileLocally(file: FileItem): void {
+    this.ALL_MOCK_FILES.push(file);
+    this.files.update(current => [...current, file]);
   }
 }

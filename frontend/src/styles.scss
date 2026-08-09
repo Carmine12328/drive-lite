@@ -380,3 +380,26 @@ $breakpoint-lg: 1280px;
 // ---------------------------------------------------------------------------
 // Imported via @use at the top of this file (SCSS requires all @use rules
 // before any other statements). See: src/app/shared/components/toast/
+
+// ---------------------------------------------------------------------------
+// 8. Dialog Global Overrides
+// ---------------------------------------------------------------------------
+// Applied via panelClass: 'drive-dialog' on every MatDialog.open() call.
+// Must be global because the dialog overlay sits outside component encapsulation.
+
+.drive-dialog .mat-mdc-dialog-container {
+  --mdc-dialog-container-color: var(--bg-surface);
+  --mdc-dialog-subhead-color: var(--text-primary);
+  --mdc-dialog-supporting-text-color: var(--text-secondary);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-primary);
+}
+
+.drive-dialog .mat-mdc-dialog-title {
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.drive-dialog .mat-mdc-dialog-actions {
+  padding: 12px 24px 20px;
+}
