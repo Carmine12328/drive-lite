@@ -43,5 +43,10 @@ npm-debug.log*
 IMPLEMENTATION_PLAN.md
 FE_IMPLEMENTATION_PLAN.md
 
+# Repowise local index & cache
+.repowise/
+.mcp.json
+.cognito/
+
 # Misc
 *.tgz

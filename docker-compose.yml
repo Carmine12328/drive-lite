@@ -7,11 +7,24 @@ services:
       - "4510-4559:4510-4559" # External service port range
     environment:
       - LOCALSTACK_AUTH_TOKEN=${LOCALSTACK_AUTH_TOKEN}
-      - SERVICES=s3,dynamodb,cognito-idp,iam,sts
+      - SERVICES=s3,dynamodb,iam,sts,cloudformation,lambda,apigatewayv2,ssm
       - DEBUG=0
       - AWS_DEFAULT_REGION=us-east-1
+      - LAMBDA_RUNTIME_ENVIRONMENT_TIMEOUT=60
     volumes:
       - "${LOCALSTACK_VOLUME_DIR:-./volume}:/var/lib/localstack"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    networks:
+      - drive-lite
+
+  # Standalone Cognito emulator — LocalStack freemium doesn't include cognito-idp
+  cognito:
+    container_name: drive-lite-cognito
+    image: jagregory/cognito-local:latest
+    ports:
+      - "9230:9229"
+    volumes:
+      - "./.cognito:/app/.cognito"
     networks:
       - drive-lite
 

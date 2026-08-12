@@ -9,6 +9,7 @@
     "infra"
   ],
   "scripts": {
+    "start:local": "powershell -ExecutionPolicy Bypass -File scripts/start-local.ps1",
     "dev:frontend": "npm run dev -w frontend",
     "dev:backend": "npm run dev -w backend",
     "build": "npm run build --workspaces",

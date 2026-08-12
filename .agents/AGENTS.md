@@ -234,6 +234,7 @@ files under `.agents/rules/`. These are loaded automatically alongside this file
 | `angular-frontend.md` | Angular 22, TypeScript, components, services, accessibility |
 | `aws-backend.md` | Lambda handlers, DynamoDB, S3, SDK v3, error handling, Vitest |
 | `aws-cdk-infra.md` | CDK constructs, IAM, API Gateway, S3, CloudFront, LocalStack |
+| `repowise-mcp.md` | Repowise MCP tools for codebase research, symbol lookups, dead code & risk analysis |
 
 ---
 
