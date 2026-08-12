@@ -72,8 +72,11 @@ export class LoginComponent implements OnInit {
     localStorage.setItem('drive-lite-theme', newTheme);
   }
 
-  /** Handles form submission */
-  onSubmit(): void {
+  /**
+   * Handles login form submission.
+   * Calls the async signIn method and displays errors from Cognito.
+   */
+  async onSubmit(): Promise<void> {
     if (this.loginForm.invalid) {
       this.loginForm.markAllAsTouched();
       return;
@@ -82,15 +85,11 @@ export class LoginComponent implements OnInit {
     this.errorMessage.set('');
     const { email, password } = this.loginForm.value;
 
-    try {
-      this.authService.signIn(email, password);
-    } catch (error: unknown) {
-      const message =
-        error instanceof Error
-          ? error.message
-          : 'Failed to sign in. Please check your credentials and try again.';
-      this.errorMessage.set(message);
+    const result = await this.authService.signIn(email, password);
+    if (!result.success) {
+      this.errorMessage.set(result.message ?? 'Sign in failed.');
     }
+    // On success, AuthService navigates to /dashboard internally
   }
 
   /** Initiates Cognito Hosted UI sign in */

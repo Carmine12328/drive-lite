@@ -9,6 +9,8 @@
 export const environment = {
   production: true,
   apiUrl: '',
+  /** Not used in production — SDK uses the default AWS Cognito endpoint. */
+  cognitoEndpoint: '',
   cognitoUserPoolId: '',
   cognitoClientId: '',
   cognitoAuthDomain: '',

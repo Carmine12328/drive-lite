@@ -62,6 +62,8 @@ export class RegisterComponent implements OnInit, OnDestroy {
   isLoading = this.authService.isLoading;
   hidePassword = signal(true);
   hideConfirmPassword = signal(true);
+  /** Error message from the latest auth operation. */
+  errorMessage = signal<string>('');
 
   isDarkMode = signal(true);
 
@@ -141,38 +143,52 @@ export class RegisterComponent implements OnInit, OnDestroy {
     this.hideConfirmPassword.update(v => !v);
   }
 
-  /** Submits the step 1 registration form */
-  onRegisterSubmit(): void {
+  /**
+   * Submits the step 1 registration form.
+   * Calls the async signUp method and advances to verification on success.
+   */
+  async onRegisterSubmit(): Promise<void> {
     if (this.registerForm.invalid) {
       this.registerForm.markAllAsTouched();
       return;
     }
+    this.errorMessage.set('');
     const { email, password } = this.registerForm.value;
     if (email && password) {
-      try {
-        this.authService.signUp(email, password);
+      const result = await this.authService.signUp(email, password);
+      if (result.success) {
         this.currentStep.set(2);
         this.startResendTimer();
-      } catch (err) {
-        console.error('Registration failed', err);
+      } else {
+        this.errorMessage.set(result.message ?? 'Registration failed.');
       }
     }
   }
 
-  /** Submits the 6-digit verification code in step 2 */
-  onCodeSubmit(): void {
+  /**
+   * Submits the 6-digit verification code in step 2.
+   * Calls the async confirmSignUp method, which auto-signs-in and
+   * initializes the user profile on success.
+   */
+  async onCodeSubmit(): Promise<void> {
     const isCodeValid = this.codeControls.every(ctrl => ctrl.valid);
     if (!isCodeValid) {
       this.codeControls.forEach(ctrl => ctrl.markAsTouched());
       return;
     }
+    this.errorMessage.set('');
     const code = this.codeControls.map(ctrl => ctrl.value).join('');
     const email = this.registerForm.value.email;
     if (email && code) {
-      try {
-        this.authService.confirmSignUp(email, code);
-      } catch (err) {
-        console.error('Verification failed', err);
+      const result = await this.authService.confirmSignUp(email, code);
+      if (result.success) {
+        // If confirmSignUp auto-signed-in, AuthService already navigated.
+        // If it didn't (no cached password), redirect to login.
+        if (!this.authService.isAuthenticated()) {
+          await this.router.navigate(['/auth/login']);
+        }
+      } else {
+        this.errorMessage.set(result.message ?? 'Verification failed.');
       }
     }
   }
