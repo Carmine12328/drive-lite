@@ -1,4 +1,4 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, inject, OnInit } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
@@ -14,6 +14,7 @@ import { FileItem } from '../../../core/models/file-item.model';
 
 /**
  * Trash view component for managing soft-deleted files.
+ * Loads trashed files from the backend on init via GET /trash/files.
  */
 @Component({
   selector: 'app-trash',
@@ -29,7 +30,7 @@ import { FileItem } from '../../../core/models/file-item.model';
     FileSizePipe,
   ]
 })
-export class TrashComponent {
+export class TrashComponent implements OnInit {
   private readonly fileService = inject(FileService);
   private readonly toastService = inject(ToastService);
   private readonly dialog = inject(MatDialog);
@@ -39,6 +40,11 @@ export class TrashComponent {
 
   /** Computed flag if trash is empty */
   isEmpty = computed(() => this.trashedFiles().length === 0);
+
+  /** Load trashed files from the backend on component init. */
+  ngOnInit(): void {
+    this.fileService.loadTrash();
+  }
 
   /**
    * Restores a file to its original location

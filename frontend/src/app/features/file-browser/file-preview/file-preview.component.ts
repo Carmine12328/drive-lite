@@ -1,12 +1,15 @@
 import { Component, computed, effect, inject, signal } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef, MatDialogTitle } from '@angular/material/dialog';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { HttpClient } from '@angular/common/http';
 import { MatIcon } from '@angular/material/icon';
 import { MatIconButton, MatButton } from '@angular/material/button';
 import { DatePipe } from '@angular/common';
+import { firstValueFrom } from 'rxjs';
 
 import { FileItem } from '../../../core/models/file-item.model';
 import { FileService } from '../../../core/services/file.service';
+import { ApiService } from '../../../core/services/api.service';
 import { FileIconPipe } from '../../../shared/pipes/file-icon.pipe';
 import { FileSizePipe } from '../../../shared/pipes/file-size.pipe';
 
@@ -22,6 +25,7 @@ export interface FilePreviewDialogData {
 
 /**
  * Dialog component for previewing files (images, PDFs, text, or fallback).
+ * Fetches presigned download URLs from the backend to render real file content.
  */
 @Component({
   selector: 'app-file-preview',
@@ -45,6 +49,8 @@ export class FilePreviewComponent {
   private readonly data = inject<FilePreviewDialogData>(MAT_DIALOG_DATA);
   private readonly sanitizer = inject(DomSanitizer);
   private readonly fileService = inject(FileService);
+  private readonly api = inject(ApiService);
+  private readonly http = inject(HttpClient);
 
   /** All available files for navigation */
   readonly allFiles = this.data.allFiles;
@@ -55,8 +61,11 @@ export class FilePreviewComponent {
   /** Toggles the info sidebar visibility */
   readonly showInfo = signal<boolean>(true);
 
-  /** Mock text content for text/* files */
+  /** Text content fetched from S3 for text/* files */
   readonly textContent = signal<string>('');
+
+  /** Whether the preview content is currently loading */
+  readonly isLoadingPreview = signal<boolean>(false);
 
   /**
    * Computed property for the preview type based on the MIME type.
@@ -72,41 +81,20 @@ export class FilePreviewComponent {
   });
 
   /**
-   * Computed property for the image preview URL.
+   * Presigned URL for the current file, fetched from the backend.
+   * Used for image, video, and audio previews.
    */
-  readonly previewUrl = computed<string>(() => {
-    if (this.previewType() === 'image') {
-      return `https://picsum.photos/seed/${this.currentFile().fileId}/800/600`;
-    }
-    return '';
-  });
+  readonly previewUrl = signal<string>('');
 
   /**
-   * Computed property for the PDF preview URL.
+   * Safe resource URL for PDF preview (iframe src).
    */
-  readonly safePdfUrl = computed<SafeResourceUrl | null>(() => {
-    if (this.previewType() === 'pdf') {
-      // Stub for PDF preview
-      return this.sanitizer.bypassSecurityTrustResourceUrl('');
-    }
-    return null;
-  });
+  readonly safePdfUrl = signal<SafeResourceUrl | null>(null);
 
   /**
-   * Computed URL for video/audio preview.
-   * STUB: Uses public sample media. Replace with presigned S3 URLs.
+   * Presigned URL for video/audio media preview.
    */
-  readonly mediaUrl = computed<string>(() => {
-    const type = this.previewType();
-    if (type === 'video') {
-      // Short sample trailer with CORS headers. Replace with presigned S3 URLs.
-      return 'https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-576p.mp4';
-    }
-    if (type === 'audio') {
-      return 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3';
-    }
-    return '';
-  });
+  readonly mediaUrl = signal<string>('');
 
   /** Current index in the files list */
   readonly currentIndex = computed(() => this.allFiles.findIndex(f => f.fileId === this.currentFile().fileId));
@@ -118,13 +106,76 @@ export class FilePreviewComponent {
   readonly hasNext = computed(() => this.currentIndex() < this.allFiles.length - 1);
 
   constructor() {
+    // Fetch a presigned URL whenever the current file changes
     effect(() => {
-      if (this.previewType() === 'text') {
-        this.textContent.set('This is mock text content for previewing text files.\n\nLine 2\nLine 3');
-      } else {
-        this.textContent.set('');
-      }
+      const file = this.currentFile();
+      this.loadPreview(file);
     });
+  }
+
+  /**
+   * Fetches a presigned download URL from the backend and updates
+   * the appropriate preview signal based on the file's MIME type.
+   *
+   * @param file The file to load a preview for.
+   */
+  private async loadPreview(file: FileItem): Promise<void> {
+    // Reset previous preview state
+    this.previewUrl.set('');
+    this.safePdfUrl.set(null);
+    this.mediaUrl.set('');
+    this.textContent.set('');
+    this.isLoadingPreview.set(true);
+
+    try {
+      const response = await firstValueFrom(
+        this.api.post<{ downloadUrl: string; fileName: string }>(
+          `/files/${file.fileId}/download-url`, {}
+        )
+      );
+
+      const url = response.downloadUrl;
+      const type = this.previewType();
+
+      switch (type) {
+        case 'image':
+          this.previewUrl.set(url);
+          break;
+        case 'pdf':
+          this.safePdfUrl.set(this.sanitizer.bypassSecurityTrustResourceUrl(url));
+          break;
+        case 'video':
+        case 'audio':
+          this.mediaUrl.set(url);
+          break;
+        case 'text':
+          // Fetch the actual text content from S3
+          await this.loadTextContent(url);
+          break;
+      }
+    } catch (err) {
+      console.error('[FilePreview] Failed to load preview URL:', err);
+      this.textContent.set('Preview unavailable — failed to load file.');
+    } finally {
+      this.isLoadingPreview.set(false);
+    }
+  }
+
+  /**
+   * Fetches text content from the presigned S3 URL.
+   *
+   * @param url The presigned download URL.
+   */
+  private async loadTextContent(url: string): Promise<void> {
+    try {
+      const content = await firstValueFrom(
+        this.http.get(url, { responseType: 'text' })
+      );
+      this.textContent.set(content);
+    } catch (err) {
+      console.error('[FilePreview] Failed to load text content:', err);
+      this.textContent.set('Unable to load text content.');
+    }
   }
 
   /**

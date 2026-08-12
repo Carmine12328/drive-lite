@@ -1,120 +1,28 @@
 import { inject, Service, signal, WritableSignal } from '@angular/core';
+import { HttpParams } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
 import { FileItem } from '../models/file-item.model';
+import { ApiService } from './api.service';
 import { ToastService } from '../../shared/components/toast/toast.service';
 
 /**
  * Service for managing file operations and state.
+ * Communicates with the backend API via ApiService.
  */
 @Service()
 export class FileService {
+  private readonly api = inject(ApiService);
   private readonly toastService = inject(ToastService);
 
   /**
-   * Internal mock data array containing all simulated files.
+   * Internal cache of all loaded files across folders.
    */
-  private readonly ALL_MOCK_FILES: FileItem[] = [
-    {
-      fileId: 'file-1',
-      fileName: 'vacation-photo.jpg',
-      fileSize: 3456789,
-      mimeType: 'image/jpeg',
-      s3Key: 'users/mock-user-id/files/file-1/vacation-photo.jpg',
-      folderId: 'ROOT',
-      userId: 'mock-user-id',
-      uploadStatus: 'COMPLETED',
-      createdAt: '2026-07-15T10:30:00Z',
-      updatedAt: '2026-07-15T10:30:00Z',
-    },
-    {
-      fileId: 'file-2',
-      fileName: 'quarterly-report.pdf',
-      fileSize: 1250000,
-      mimeType: 'application/pdf',
-      s3Key: 'users/mock-user-id/files/file-2/quarterly-report.pdf',
-      folderId: 'folder-1',
-      userId: 'mock-user-id',
-      uploadStatus: 'COMPLETED',
-      createdAt: '2026-07-20T14:15:00Z',
-      updatedAt: '2026-07-21T09:00:00Z',
-    },
-    {
-      fileId: 'file-3',
-      fileName: 'budget-2026.xlsx',
-      fileSize: 512000,
-      mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      s3Key: 'users/mock-user-id/files/file-3/budget-2026.xlsx',
-      folderId: 'folder-1',
-      userId: 'mock-user-id',
-      uploadStatus: 'COMPLETED',
-      createdAt: '2026-07-22T11:00:00Z',
-      updatedAt: '2026-07-22T11:45:00Z',
-    },
-    {
-      fileId: 'file-4',
-      fileName: 'notes.txt',
-      fileSize: 1024,
-      mimeType: 'text/plain',
-      s3Key: 'users/mock-user-id/files/file-4/notes.txt',
-      folderId: 'ROOT',
-      userId: 'mock-user-id',
-      uploadStatus: 'COMPLETED',
-      createdAt: '2026-07-25T08:20:00Z',
-      updatedAt: '2026-07-25T08:20:00Z',
-    },
-    {
-      fileId: 'file-5',
-      fileName: 'project-assets.zip',
-      fileSize: 45000000,
-      mimeType: 'application/zip',
-      s3Key: 'users/mock-user-id/files/file-5/project-assets.zip',
-      folderId: 'folder-2',
-      userId: 'mock-user-id',
-      uploadStatus: 'COMPLETED',
-      createdAt: '2026-07-28T16:30:00Z',
-      updatedAt: '2026-07-28T16:40:00Z',
-    },
-    {
-      fileId: 'file-6',
-      fileName: 'demo-recording.mp4',
-      fileSize: 128000000,
-      mimeType: 'video/mp4',
-      s3Key: 'users/mock-user-id/files/file-6/demo-recording.mp4',
-      folderId: 'folder-2',
-      userId: 'mock-user-id',
-      uploadStatus: 'COMPLETED',
-      createdAt: '2026-08-01T13:00:00Z',
-      updatedAt: '2026-08-01T13:30:00Z',
-    },
-    {
-      fileId: 'file-7',
-      fileName: 'logo-transparent.png',
-      fileSize: 256000,
-      mimeType: 'image/png',
-      s3Key: 'users/mock-user-id/files/file-7/logo-transparent.png',
-      folderId: 'ROOT',
-      userId: 'mock-user-id',
-      uploadStatus: 'COMPLETED',
-      createdAt: '2026-08-05T09:10:00Z',
-      updatedAt: '2026-08-05T09:10:00Z',
-    },
-    {
-      fileId: 'file-8',
-      fileName: 'invoice-1024.pdf',
-      fileSize: 150000,
-      mimeType: 'application/pdf',
-      s3Key: 'users/mock-user-id/files/file-8/invoice-1024.pdf',
-      folderId: 'folder-1',
-      userId: 'mock-user-id',
-      uploadStatus: 'COMPLETED',
-      createdAt: '2026-08-08T15:20:00Z',
-      updatedAt: '2026-08-08T15:20:00Z',
-    },
-  ];
+  private allFiles: FileItem[] = [];
 
   /**
-   * Signal holding the currently loaded files.
+   * Signal holding the currently loaded files for the active folder view.
    */
-  public files: WritableSignal<FileItem[]> = signal<FileItem[]>([...this.ALL_MOCK_FILES]);
+  public files: WritableSignal<FileItem[]> = signal<FileItem[]>([]);
 
   /**
    * Signal indicating if a file operation is in progress.
@@ -134,193 +42,274 @@ export class FileService {
   private readonly trashVersion: WritableSignal<number> = signal<number>(0);
 
   /**
-   * Filters the files by the specified folder ID and updates the files signal.
-   * Excludes soft-deleted files (those with a `deletedAt` timestamp).
-   * @param folderId The ID of the folder to list files for.
+   * Signal holding the most recently modified files across all folders.
+   * Populated by `loadRecentFiles()`.
    */
-  public listFiles(folderId: string): void {
-    this.isLoading.set(true);
-    const filteredFiles = this.ALL_MOCK_FILES.filter(
-      (file) => file.folderId === folderId && !file.deletedAt,
-    );
-    this.files.set(filteredFiles);
-    this.isLoading.set(false);
+  public recentFiles: WritableSignal<FileItem[]> = signal<FileItem[]>([]);
+
+  /**
+   * Fetches the most recently modified files across all folders.
+   * Uses GET /files/recent which queries GSI1 and sorts by updatedAt.
+   *
+   * @param limit Maximum number of files to return (default 10).
+   */
+  public async loadRecentFiles(limit = 10): Promise<void> {
+    try {
+      const params = new HttpParams().set('limit', limit.toString());
+      const response = await firstValueFrom(
+        this.api.get<{ files: FileItem[] }>('/files/recent', params)
+      );
+      this.recentFiles.set(response.files ?? []);
+    } catch (err: unknown) {
+      console.error('[FileService] loadRecentFiles error:', err);
+    }
   }
 
   /**
-   * Retrieves a single file from the mock data by its ID.
+   * Fetches files for the specified folder from the backend API.
+   * Excludes soft-deleted files (those with a `deletedAt` timestamp).
+   * @param folderId The ID of the folder to list files for.
+   */
+  public async listFiles(folderId: string): Promise<void> {
+    this.isLoading.set(true);
+    this.error.set(null);
+
+    try {
+      const params = new HttpParams().set('folderId', folderId);
+      const response = await firstValueFrom(
+        this.api.get<{ files: FileItem[] }>('/files', params)
+      );
+
+      const files = (response.files ?? []).filter(f => !f.deletedAt);
+      this.files.set(files);
+
+      // Merge into all-files cache
+      for (const file of files) {
+        const idx = this.allFiles.findIndex(f => f.fileId === file.fileId);
+        if (idx >= 0) {
+          this.allFiles[idx] = file;
+        } else {
+          this.allFiles.push(file);
+        }
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Failed to load files';
+      this.error.set(msg);
+      console.error('[FileService] listFiles error:', err);
+    } finally {
+      this.isLoading.set(false);
+    }
+  }
+
+  /**
+   * Retrieves a single file from the internal cache by its ID.
    * @param fileId The ID of the file to retrieve.
    * @returns The file item, or undefined if not found.
    */
   public getFile(fileId: string): FileItem | undefined {
-    return this.ALL_MOCK_FILES.find((file) => file.fileId === fileId);
+    return this.allFiles.find(f => f.fileId === fileId);
   }
 
   /**
-   * Initiates a download for the specified file.
-   *
-   * STUB: Generates a placeholder blob and triggers a real browser download.
-   * Replace with: POST /files/{id}/download-url → presigned GET → hidden <a> → click
+   * Initiates a download for the specified file by requesting a
+   * presigned download URL from the backend, then triggering a
+   * browser download via a hidden anchor element.
    *
    * @param fileId The ID of the file to download
    */
-  public downloadFile(fileId: string): void {
-    const file = this.ALL_MOCK_FILES.find(f => f.fileId === fileId);
-    if (!file) {
-      this.toastService.error('File not found.');
-      return;
+  public async downloadFile(fileId: string): Promise<void> {
+    try {
+      const response = await firstValueFrom(
+        this.api.post<{ downloadUrl: string; fileName: string }>(
+          `/files/${fileId}/download-url`, {}
+        )
+      );
+
+      // Trigger browser download via hidden anchor
+      const anchor = document.createElement('a');
+      anchor.href = response.downloadUrl;
+      anchor.download = response.fileName;
+      anchor.style.display = 'none';
+      document.body.appendChild(anchor);
+      anchor.click();
+      document.body.removeChild(anchor);
+
+      this.toastService.info(`Download started: ${response.fileName}`);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Download failed';
+      this.toastService.error(msg);
+      console.error('[FileService] downloadFile error:', err);
     }
-
-    // Generate a stub blob with placeholder content
-    const content = `[Drive Lite stub download]\n\nFile: ${file.fileName}\nSize: ${file.fileSize} bytes\nType: ${file.mimeType}\nCreated: ${file.createdAt}\n\nThis is a placeholder download. Real file content will be served via presigned S3 URLs once the backend is connected.`;
-    const blob = new Blob([content], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-
-    // Create a hidden anchor, trigger click, then clean up
-    const anchor = document.createElement('a');
-    anchor.href = url;
-    anchor.download = file.fileName;
-    document.body.appendChild(anchor);
-    anchor.click();
-    document.body.removeChild(anchor);
-    URL.revokeObjectURL(url);
-
-    this.toastService.info(`Download started: ${file.fileName}`);
   }
 
   /**
-   * Renames a file in the mock data and updates the files signal.
+   * Renames a file via the backend API and updates the files signal.
    * @param fileId The ID of the file to rename.
    * @param newName The new name for the file.
    */
-  public renameFile(fileId: string, newName: string): void {
-    const index = this.ALL_MOCK_FILES.findIndex((file) => file.fileId === fileId);
-    if (index !== -1) {
-      this.ALL_MOCK_FILES[index] = {
-        ...this.ALL_MOCK_FILES[index],
-        fileName: newName,
-        updatedAt: new Date().toISOString(),
-      };
-      
-      // Update the signal to reflect changes, if it is currently in the active list
-      this.files.update((currentFiles) => {
-        return currentFiles.map((file) => 
-          file.fileId === fileId ? { ...file, fileName: newName, updatedAt: new Date().toISOString() } : file
-        );
-      });
+  public async renameFile(fileId: string, newName: string): Promise<void> {
+    this.error.set(null);
+
+    try {
+      await firstValueFrom(
+        this.api.patch(`/files/${fileId}`, { name: newName })
+      );
+
+      // Update cache
+      const idx = this.allFiles.findIndex(f => f.fileId === fileId);
+      if (idx >= 0) {
+        this.allFiles[idx] = { ...this.allFiles[idx], fileName: newName, updatedAt: new Date().toISOString() };
+      }
+
+      // Update signal
+      this.files.update(currentFiles =>
+        currentFiles.map(file =>
+          file.fileId === fileId
+            ? { ...file, fileName: newName, updatedAt: new Date().toISOString() }
+            : file
+        )
+      );
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Failed to rename file';
+      this.error.set(msg);
+      console.error('[FileService] renameFile error:', err);
     }
   }
 
   /**
-   * Soft-deletes a file by setting its `deletedAt` timestamp.
-   * The file is removed from the current files signal but remains
-   * in the mock data array for restoration from the Trash view.
+   * Deletes a file via the backend API.
+   * The backend performs a soft-delete for COMPLETED files
+   * and a hard-delete for PENDING files.
    *
-   * STUB: replace with real API call (PATCH /files/{id} with deletedAt)
-   *
-   * @param fileId The ID of the file to soft-delete.
+   * @param fileId The ID of the file to delete.
    */
-  public deleteFile(fileId: string): void {
-    const index = this.ALL_MOCK_FILES.findIndex((file) => file.fileId === fileId);
-    if (index !== -1) {
-      this.ALL_MOCK_FILES[index] = {
-        ...this.ALL_MOCK_FILES[index],
-        deletedAt: new Date().toISOString(),
-      };
+  public async deleteFile(fileId: string): Promise<void> {
+    this.error.set(null);
 
-      // Remove from current files signal (active view excludes deleted files)
-      this.files.update((currentFiles) => currentFiles.filter((file) => file.fileId !== fileId));
+    try {
+      await firstValueFrom(this.api.delete(`/files/${fileId}`));
+
+      // Remove from cache and signal
+      this.allFiles = this.allFiles.filter(f => f.fileId !== fileId);
+      this.files.update(currentFiles => currentFiles.filter(file => file.fileId !== fileId));
       this.trashVersion.update(v => v + 1);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Failed to delete file';
+      this.error.set(msg);
+      console.error('[FileService] deleteFile error:', err);
     }
   }
 
   /**
-   * Calculates the total size of all files in the mock data.
+   * Calculates the total size of all cached files.
    * @returns The total size in bytes.
    */
   public getTotalSize(): number {
-    return this.ALL_MOCK_FILES
-      .filter((file) => !file.deletedAt)
+    return this.allFiles
+      .filter(file => !file.deletedAt)
       .reduce((total, file) => total + file.fileSize, 0);
   }
 
   /**
-   * Retrieves the total count of non-deleted files.
+   * Retrieves the total count of non-deleted cached files.
    * @returns The total number of active files.
    */
   public getTotalCount(): number {
-    return this.ALL_MOCK_FILES.filter((file) => !file.deletedAt).length;
+    return this.allFiles.filter(file => !file.deletedAt).length;
   }
 
   /**
-   * Returns all non-deleted files regardless of folder.
+   * Returns all non-deleted files from the cache regardless of folder.
    * Used by SearchService and Dashboard for cross-folder queries.
    *
    * @returns Array of all active (non-deleted) FileItems.
    */
   public getAllFiles(): FileItem[] {
-    return this.ALL_MOCK_FILES.filter((file) => !file.deletedAt);
+    return this.allFiles.filter(file => !file.deletedAt);
   }
 
   // --- Trash operations ---
+  // TODO: These are client-side only until backend trash endpoints are implemented.
 
   /**
-   * Returns all soft-deleted files (those with a `deletedAt` timestamp).
-   * Used by the Trash view to display deleted items.
+   * Signal holding the loaded trash files.
+   * Populated by `loadTrash()`.
+   */
+  public trashFiles: WritableSignal<FileItem[]> = signal<FileItem[]>([]);
+
+  /**
+   * Returns all soft-deleted files.
+   * Reads from the `trashFiles` signal, which is populated by `loadTrash()`.
+   *
+   * Also reads `trashVersion` so computed consumers re-evaluate on mutations
+   * (restore, permanent delete, empty trash).
    *
    * @returns Array of soft-deleted FileItems.
    */
   public getDeletedFiles(): FileItem[] {
-    // Read trashVersion to establish a signal dependency — when trash
-    // mutations bump this counter, any computed() calling this method re-runs.
     this.trashVersion();
-    return this.ALL_MOCK_FILES.filter((file) => !!file.deletedAt);
+    return this.trashFiles();
+  }
+
+  /**
+   * Loads soft-deleted files from the backend trash endpoint.
+   * Queries the TRASH#{userId} partition via GET /trash/files.
+   */
+  public async loadTrash(): Promise<void> {
+    this.isLoading.set(true);
+    this.error.set(null);
+
+    try {
+      const response = await firstValueFrom(
+        this.api.get<{ files: FileItem[] }>('/trash/files'),
+      );
+      this.trashFiles.set(response.files);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Failed to load trash';
+      this.error.set(msg);
+      console.error('[FileService] loadTrash error:', err);
+    } finally {
+      this.isLoading.set(false);
+    }
   }
 
   /**
    * Restores a soft-deleted file by clearing its `deletedAt` timestamp.
-   * The file becomes visible again in its original folder.
-   *
-   * STUB: replace with real API call (PATCH /files/{id} remove deletedAt)
+   * TODO: Replace with real API call when backend restore endpoint exists.
    *
    * @param fileId The ID of the file to restore.
    */
   public restoreFile(fileId: string): void {
-    const index = this.ALL_MOCK_FILES.findIndex((file) => file.fileId === fileId);
-    if (index !== -1) {
-      const { deletedAt, ...restored } = this.ALL_MOCK_FILES[index];
-      this.ALL_MOCK_FILES[index] = restored as FileItem;
+    const idx = this.allFiles.findIndex(file => file.fileId === fileId);
+    if (idx !== -1) {
+      const { deletedAt, ...restored } = this.allFiles[idx];
+      this.allFiles[idx] = restored as FileItem;
       this.trashVersion.update(v => v + 1);
     }
   }
 
   /**
-   * Permanently removes a file from the mock data array.
-   * This cannot be undone — the file is fully removed.
-   *
-   * STUB: replace with real API call (DELETE /files/{id})
+   * Permanently removes a file from the cache.
+   * TODO: Replace with real API call when backend permanent-delete endpoint exists.
    *
    * @param fileId The ID of the file to permanently delete.
    */
   public permanentlyDeleteFile(fileId: string): void {
-    const index = this.ALL_MOCK_FILES.findIndex((file) => file.fileId === fileId);
-    if (index !== -1) {
-      this.ALL_MOCK_FILES.splice(index, 1);
+    const idx = this.allFiles.findIndex(file => file.fileId === fileId);
+    if (idx !== -1) {
+      this.allFiles.splice(idx, 1);
       this.trashVersion.update(v => v + 1);
     }
   }
 
   /**
-   * Permanently removes all soft-deleted files from the mock data.
-   * Called by the "Empty Trash" action.
-   *
-   * STUB: replace with real API call (DELETE /files/trash)
+   * Permanently removes all soft-deleted files from the cache.
+   * TODO: Replace with real API call when backend empty-trash endpoint exists.
    */
   public emptyTrash(): void {
-    // Remove all files with deletedAt set — iterate in reverse to avoid index shifting
-    for (let i = this.ALL_MOCK_FILES.length - 1; i >= 0; i--) {
-      if (this.ALL_MOCK_FILES[i].deletedAt) {
-        this.ALL_MOCK_FILES.splice(i, 1);
+    for (let i = this.allFiles.length - 1; i >= 0; i--) {
+      if (this.allFiles[i].deletedAt) {
+        this.allFiles.splice(i, 1);
       }
     }
     this.trashVersion.update(v => v + 1);
@@ -334,7 +323,7 @@ export class FileService {
    * @param file The FileItem to add to local state
    */
   public addFileLocally(file: FileItem): void {
-    this.ALL_MOCK_FILES.push(file);
+    this.allFiles.push(file);
     this.files.update(current => [...current, file]);
   }
 }

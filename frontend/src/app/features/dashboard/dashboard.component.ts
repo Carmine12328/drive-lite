@@ -1,10 +1,16 @@
 import { Component, OnInit, inject, computed } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { MatIcon } from '@angular/material/icon';
-import { MatButton } from '@angular/material/button';
+import { MatButton, MatIconButton } from '@angular/material/button';
+import { MatDialog } from '@angular/material/dialog';
+import { MatTooltip } from '@angular/material/tooltip';
 import { AuthService } from '../../core/auth/auth.service';
 import { FileService } from '../../core/services/file.service';
 import { FolderService } from '../../core/services/folder.service';
+import { ToastService } from '../../shared/components/toast/toast.service';
+import { FileItem } from '../../core/models/file-item.model';
+import { FilePreviewComponent, FilePreviewDialogData } from '../file-browser/file-preview/file-preview.component';
+import { ConfirmDialog, ConfirmDialogData } from '../../shared/components/confirm-dialog/confirm-dialog';
 
 /**
  * Dashboard component displaying user stats, recent files, and quick actions.
@@ -12,7 +18,7 @@ import { FolderService } from '../../core/services/folder.service';
  */
 @Component({
   selector: 'app-dashboard',
-  imports: [RouterLink, MatIcon, MatButton],
+  imports: [RouterLink, MatIcon, MatButton, MatIconButton, MatTooltip],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss']
 })
@@ -20,6 +26,8 @@ export class DashboardComponent implements OnInit {
   private readonly authService = inject(AuthService);
   private readonly fileService = inject(FileService);
   private readonly folderService = inject(FolderService);
+  private readonly toastService = inject(ToastService);
+  private readonly dialog = inject(MatDialog);
 
   /** Computed signal for the current user's email address. */
   readonly userEmail = computed(() => this.authService.currentUser()?.email ?? 'User');
@@ -34,26 +42,82 @@ export class DashboardComponent implements OnInit {
   readonly storageUsed = computed(() => this.formatBytes(this.fileService.getTotalSize()));
 
   /**
-   * Computed signal for the last 5 uploaded files, sorted by creation date descending.
+   * Computed signal for the most recently modified files across all folders.
+   * Data is pre-sorted by the backend (updatedAt descending).
    * Maps each file to include pre-formatted display values for the template.
    */
   readonly recentFiles = computed(() => {
-    const files = this.fileService.files();
-    return [...files]
-      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-      .slice(0, 5)
-      .map((file) => ({
-        ...file,
-        formattedSize: this.formatBytes(file.fileSize),
-        formattedDate: this.formatDate(file.createdAt),
-        icon: this.getFileIcon(file.mimeType)
-      }));
+    const files = this.fileService.recentFiles();
+    return files.map((file) => ({
+      ...file,
+      formattedSize: this.formatBytes(file.fileSize),
+      formattedDate: this.formatDate(file.updatedAt),
+      icon: this.getFileIcon(file.mimeType)
+    }));
   });
 
-  /** Initializes the component by fetching ROOT files and all folders. */
+  /** Initializes the component by fetching recent files and folders. */
   ngOnInit(): void {
-    this.fileService.listFiles('ROOT');
+    this.fileService.loadRecentFiles(5);
     this.folderService.listFolders();
+  }
+
+  /**
+   * Opens the file preview dialog for a recent file.
+   * @param file The file to preview.
+   */
+  onPreviewFile(file: FileItem): void {
+    const allFiles = this.fileService.recentFiles();
+    const data: FilePreviewDialogData = {
+      file,
+      allFiles,
+    };
+
+    this.dialog.open(FilePreviewComponent, {
+      width: '95vw',
+      maxWidth: '95vw',
+      height: '90vh',
+      maxHeight: '95vh',
+      panelClass: 'file-preview-dialog-panel',
+      autoFocus: false,
+      data,
+    });
+  }
+
+  /**
+   * Triggers a download for the specified file.
+   * @param file The file to download.
+   */
+  onDownloadFile(file: FileItem): void {
+    this.fileService.downloadFile(file.fileId);
+  }
+
+  /**
+   * Opens a confirmation dialog and deletes the file if confirmed.
+   * Refreshes the recent files list after deletion.
+   * @param file The file to delete.
+   */
+  onDeleteFile(file: FileItem): void {
+    const data: ConfirmDialogData = {
+      title: 'Delete File',
+      message: `Are you sure you want to delete "${file.fileName}"? This action cannot be undone.`,
+      confirmText: 'Delete',
+      confirmColor: 'warn',
+    };
+
+    this.dialog.open(ConfirmDialog, {
+      width: '400px',
+      panelClass: 'drive-dialog',
+      data,
+      ariaLabel: 'Delete file confirmation',
+    }).afterClosed().subscribe((confirmed: boolean) => {
+      if (confirmed) {
+        this.fileService.deleteFile(file.fileId);
+        this.toastService.success(`"${file.fileName}" deleted`);
+        // Refresh recent files after deletion
+        this.fileService.loadRecentFiles(5);
+      }
+    });
   }
 
   /**

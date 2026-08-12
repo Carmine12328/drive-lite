@@ -64,7 +64,8 @@
     @if (recentFiles().length > 0) {
       <div class="recent-files-list">
         @for (file of recentFiles(); track file.fileId) {
-          <div class="file-row">
+          <div class="file-row" (click)="onPreviewFile(file)" role="button" tabindex="0"
+               (keydown.enter)="onPreviewFile(file)">
             <div class="file-icon">
               <mat-icon>{{ file.icon }}</mat-icon>
             </div>
@@ -74,6 +75,14 @@
             <div class="file-meta">
               <span class="file-date">{{ file.formattedDate }}</span>
               <span class="file-size">{{ file.formattedSize }}</span>
+            </div>
+            <div class="file-actions" (click)="$event.stopPropagation()">
+              <button mat-icon-button matTooltip="Download" (click)="onDownloadFile(file)" aria-label="Download file">
+                <mat-icon>download</mat-icon>
+              </button>
+              <button mat-icon-button matTooltip="Delete" (click)="onDeleteFile(file)" aria-label="Delete file">
+                <mat-icon>delete</mat-icon>
+              </button>
             </div>
           </div>
         }

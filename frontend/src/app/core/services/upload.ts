@@ -1,7 +1,10 @@
 import { Service, inject, signal, computed, WritableSignal } from '@angular/core';
-import { Observable } from 'rxjs';
+import { HttpClient, HttpEventType } from '@angular/common/http';
+import { Observable, firstValueFrom } from 'rxjs';
 import { FileService } from '../services/file.service';
 import { ToastService } from '../../shared/components/toast/toast.service';
+import { ApiService } from '../services/api.service';
+import { AuthService } from '../auth/auth.service';
 import { FileItem } from '../models/file-item.model';
 
 export interface UploadTask {
@@ -15,6 +18,14 @@ export interface UploadTask {
   status: 'pending' | 'uploading' | 'confirming' | 'completed' | 'error' | 'cancelled';
   errorMessage?: string;
   fileId?: string;
+  s3Key?: string;
+}
+
+/** Response from POST /files/upload-url */
+interface UploadUrlResponse {
+  uploadUrl: string;
+  fileId: string;
+  s3Key: string;
 }
 
 /**
@@ -22,15 +33,16 @@ export interface UploadTask {
  *
  * Implements a 3-phase presigned URL upload pattern:
  * 1. Request — get a presigned URL + fileId from the API
- * 2. Upload — PUT the file directly to S3
+ * 2. Upload — PUT the file directly to S3 via the presigned URL
  * 3. Confirm — notify the API that the upload completed
- *
- * Currently uses stubs for all three phases.
  */
 @Service()
 export class Upload {
-  private fileService = inject(FileService);
-  private toastService = inject(ToastService);
+  private readonly fileService = inject(FileService);
+  private readonly toastService = inject(ToastService);
+  private readonly api = inject(ApiService);
+  private readonly http = inject(HttpClient);
+  private readonly authService = inject(AuthService);
 
   /**
    * Queue of all upload tasks.
@@ -79,15 +91,6 @@ export class Upload {
   }
 
   /**
-   * Simulates a delay for mocking async operations.
-   * @param ms The duration in milliseconds.
-   * @returns A promise that resolves after the specified delay.
-   */
-  private simulateDelay(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
-  }
-
-  /**
    * Initiates the file upload process.
    * @param file The file to upload.
    * @param folderId The ID of the folder to upload into.
@@ -96,8 +99,6 @@ export class Upload {
   async uploadFile(file: File, folderId: string): Promise<void> {
     const errorMsg = this.validateFile(file);
     if (errorMsg) {
-      // In a real app we might throw here or call toastService directly.
-      // We'll throw so the caller knows it failed, though instructions didn't specify.
       throw new Error(errorMsg);
     }
 
@@ -129,14 +130,14 @@ export class Upload {
       let task = this.uploadQueue().find(t => t.id === taskId);
       if (!task) return;
 
-      // Phase 1: Request presigned URL
-      const { uploadUrl, fileId } = await this.requestPresignedUrl(task);
-      this.updateTask(taskId, { fileId });
-      
+      // Phase 1: Request presigned URL from API
+      const { uploadUrl, fileId, s3Key } = await this.requestPresignedUrl(task);
+      this.updateTask(taskId, { fileId, s3Key });
+
       task = this.uploadQueue().find(t => t.id === taskId);
       if (!task || task.status === 'cancelled') return;
 
-      // Phase 2: Upload to S3
+      // Phase 2: Upload to S3 via presigned URL
       await new Promise<void>((resolve, reject) => {
         const sub = this.uploadToS3(task as UploadTask, uploadUrl).subscribe({
           next: progress => {
@@ -157,7 +158,7 @@ export class Upload {
           }
         });
       });
-      
+
       task = this.uploadQueue().find(t => t.id === taskId);
       if (!task || task.status === 'cancelled') return;
 
@@ -166,10 +167,10 @@ export class Upload {
       await this.confirmUpload(task);
 
       this.updateTask(taskId, { status: 'completed', progress: 100 });
-      // Assuming toastService has success method or similar. 
-      // The instructions don't strictly require a toast here, but we inject it.
-    } catch (error: any) {
-      this.updateTask(taskId, { status: 'error', errorMessage: error.message || 'Upload failed' });
+      this.toastService.info(`Upload complete: ${task.fileName}`);
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : 'Upload failed';
+      this.updateTask(taskId, { status: 'error', errorMessage: msg });
     }
   }
 
@@ -203,59 +204,79 @@ export class Upload {
     );
   }
 
-  // STUB: replace with actual API call to get presigned URL
   /**
-   * Phase 1: Requests a presigned URL.
+   * Phase 1: Requests a presigned URL from the backend API.
    * @param task The task requesting the URL.
-   * @returns A promise resolving to the URL and file ID.
+   * @returns A promise resolving to the URL, file ID, and S3 key.
    */
-  private async requestPresignedUrl(task: UploadTask): Promise<{ uploadUrl: string; fileId: string }> {
-    await this.simulateDelay(500);
-    return {
-      uploadUrl: `https://fake-s3-bucket.amazonaws.com/${crypto.randomUUID()}`,
-      fileId: crypto.randomUUID()
-    };
+  private async requestPresignedUrl(task: UploadTask): Promise<UploadUrlResponse> {
+    return firstValueFrom(
+      this.api.post<UploadUrlResponse>('/files/upload-url', {
+        fileName: task.fileName,
+        fileSize: task.fileSize,
+        mimeType: task.mimeType,
+        folderId: task.folderId,
+      })
+    );
   }
 
-  // STUB: replace with actual S3 upload using HttpClient
   /**
-   * Phase 2: Uploads the file to S3.
+   * Phase 2: Uploads the file directly to S3 via the presigned URL.
+   * Uses HttpClient with progress reporting.
+   *
    * @param task The task to upload.
    * @param uploadUrl The presigned URL.
    * @returns An observable emitting progress percentage.
    */
   private uploadToS3(task: UploadTask, uploadUrl: string): Observable<number> {
-    return new Observable<number>(observer => {
-      let progress = 0;
-      const interval = setInterval(() => {
-        progress += 5;
-        observer.next(Math.min(progress, 100));
-        if (progress >= 100) {
-          clearInterval(interval);
-          observer.complete();
-        }
-      }, 100); // 20 increments of 5% over 100ms = 2s total
+    // LocalStack presigned URLs may use Docker-internal IPs (e.g. 172.18.0.2:4566)
+    // that aren't reachable from the browser. Replace with localhost.
+    const fixedUrl = uploadUrl.replace(
+      /^(https?:\/\/)[^/:]+(:4566)/,
+      '$1localhost$2'
+    );
 
-      return () => clearInterval(interval);
+    return new Observable<number>(observer => {
+      const sub = this.http.put(fixedUrl, task.file, {
+        headers: { 'Content-Type': task.mimeType },
+        reportProgress: true,
+        observe: 'events',
+      }).subscribe({
+        next: event => {
+          if (event.type === HttpEventType.UploadProgress && event.total) {
+            const pct = Math.round((event.loaded / event.total) * 100);
+            observer.next(pct);
+          } else if (event.type === HttpEventType.Response) {
+            observer.next(100);
+            observer.complete();
+          }
+        },
+        error: err => observer.error(err),
+      });
+
+      return () => sub.unsubscribe();
     });
   }
 
-  // STUB: replace with actual confirmation API call
   /**
-   * Phase 3: Confirms the upload and adds the file locally.
+   * Phase 3: Confirms the upload with the backend API and adds the file to local state.
    * @param task The uploaded task.
    * @returns A promise resolving when confirmation completes.
    */
   private async confirmUpload(task: UploadTask): Promise<void> {
-    await this.simulateDelay(300);
+    await firstValueFrom(
+      this.api.post('/files/confirm-upload', { fileId: task.fileId })
+    );
+
+    // Add the file to local state so it appears in the UI immediately
     const newFileItem: FileItem = {
       fileId: task.fileId || crypto.randomUUID(),
       fileName: task.fileName,
       fileSize: task.fileSize,
       mimeType: task.mimeType,
-      s3Key: `uploads/${task.folderId}/${task.fileName}`,
+      s3Key: task.s3Key || `uploads/${task.folderId}/${task.fileName}`,
       folderId: task.folderId,
-      userId: 'mock-user-id',
+      userId: this.authService.getCurrentUser()?.userId ?? 'unknown',
       uploadStatus: 'COMPLETED',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()

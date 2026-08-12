@@ -84,7 +84,7 @@ export class FolderTreeComponent {
     folders.forEach(folder => {
       const node = nodeMap.get(folder.folderId);
       if (node) {
-        if (folder.parentFolderId === 'ROOT') {
+        if (folder.parentFolderId === 'ROOT' && folder.folderId !== 'ROOT') {
           rootNodes.push(node);
         } else {
           const parentNode = nodeMap.get(folder.parentFolderId);

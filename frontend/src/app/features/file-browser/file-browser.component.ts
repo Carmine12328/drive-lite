@@ -99,7 +99,9 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
 
   /** Child folders of the current folder — shown at the top of the file list. */
   readonly subFolders = computed(() =>
-    this.allFolders().filter(f => f.parentFolderId === this.currentFolderId())
+    this.allFolders().filter(
+      f => f.parentFolderId === this.currentFolderId() && f.folderId !== 'ROOT',
+    )
   );
 
   /** Files for the current folder. */
@@ -409,9 +411,9 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
    */
   private openDeleteFileDialog(file: FileItem): void {
     const data: ConfirmDialogData = {
-      title: 'Delete File',
-      message: `Are you sure you want to delete "${file.fileName}"? This action cannot be undone.`,
-      confirmText: 'Delete',
+      title: 'Move to Trash',
+      message: `Move "${file.fileName}" to trash? You can restore it from the trash later.`,
+      confirmText: 'Move to Trash',
       confirmColor: 'warn',
     };
 
@@ -419,11 +421,11 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
       width: '400px',
       panelClass: 'drive-dialog',
       data,
-      ariaLabel: 'Delete file confirmation',
+      ariaLabel: 'Move file to trash confirmation',
     }).afterClosed().subscribe((confirmed: boolean) => {
       if (confirmed) {
         this.fileService.deleteFile(file.fileId);
-        this.toastService.success(`"${file.fileName}" deleted`);
+        this.toastService.success(`"${file.fileName}" moved to trash`);
       }
     });
   }

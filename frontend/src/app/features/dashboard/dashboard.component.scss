@@ -137,10 +137,15 @@
     border-radius: var(--radius-lg, 8px);
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     transition: transform 0.2s, box-shadow 0.2s;
+    cursor: pointer;
     
     &:hover {
       transform: translateY(-2px);
       box-shadow: var(--shadow-md, 0 4px 6px rgba(0,0,0,0.1));
+
+      .file-actions {
+        opacity: 1;
+      }
     }
     
     .file-icon {
@@ -178,6 +183,27 @@
         @media (max-width: 767px) {
           min-width: 60px;
         }
+      }
+    }
+
+    .file-actions {
+      display: flex;
+      gap: 4px;
+      margin-left: var(--space-md, 12px);
+      opacity: 0;
+      transition: opacity 0.15s ease;
+
+      button {
+        color: var(--text-secondary, #666);
+
+        &:hover {
+          color: var(--accent-primary, #007bff);
+        }
+      }
+
+      /* Always visible on touch devices */
+      @media (hover: none) {
+        opacity: 1;
       }
     }
   }
