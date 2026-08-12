@@ -7,7 +7,13 @@ export interface AppConfig {
   BUCKET_NAME: string;
   REGION: string;
   ALLOWED_ORIGINS: string;
-  LOCALSTACK_ENDPOINT?: string;
+  /**
+   * True when running inside LocalStack.
+   * Detected via `AWS_ENDPOINT_URL` which LocalStack auto-injects into Lambda
+   * environments. Used to enable S3 path-style access; endpoint routing is
+   * handled automatically by the SDK v3 reading `AWS_ENDPOINT_URL`.
+   */
+  isLocalStack: boolean;
 }
 
 function requireEnv(name: string): string {
@@ -24,5 +30,5 @@ export const config: AppConfig = Object.freeze({
   BUCKET_NAME: requireEnv('BUCKET_NAME'),
   REGION: process.env['AWS_REGION'] ?? process.env['REGION'] ?? 'us-east-1',
   ALLOWED_ORIGINS: process.env['ALLOWED_ORIGINS'] ?? 'http://localhost:4200',
-  LOCALSTACK_ENDPOINT: process.env['LOCALSTACK_ENDPOINT'],
+  isLocalStack: !!process.env['AWS_ENDPOINT_URL'],
 });

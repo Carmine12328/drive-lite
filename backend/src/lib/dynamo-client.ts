@@ -2,12 +2,13 @@ import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb';
 import { config } from './config';
 
-/** Raw DynamoDB client — configured for region and optional LocalStack endpoint. */
+/**
+ * Raw DynamoDB client — configured for region.
+ * Endpoint routing is handled automatically by the SDK v3 via the
+ * `AWS_ENDPOINT_URL` env var (auto-injected by LocalStack in local dev).
+ */
 const ddbClient = new DynamoDBClient({
   region: config.REGION,
-  ...(config.LOCALSTACK_ENDPOINT && {
-    endpoint: config.LOCALSTACK_ENDPOINT,
-  }),
 });
 
 /**

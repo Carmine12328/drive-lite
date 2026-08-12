@@ -27,8 +27,6 @@ export interface ApiConstructProps {
   userPool: cognito.IUserPool;
   /** Cognito User Pool Client */
   userPoolClient: cognito.IUserPoolClient;
-  /** Optional LocalStack endpoint */
-  localstackEndpoint?: string;
 }
 
 /**
@@ -79,9 +77,6 @@ export class ApiConstruct extends Construct {
       REGION: Stack.of(this).region,
       ALLOWED_ORIGINS: 'http://localhost:4200',
     };
-    if (props.localstackEndpoint) {
-      lambdaEnvironment['LOCALSTACK_ENDPOINT'] = props.localstackEndpoint;
-    }
 
     // Helper to create Lambda functions
     const createHandler = (name: string, entry: string, timeout = 30): NodejsFunction => {
@@ -119,6 +114,7 @@ export class ApiConstruct extends Construct {
     const getFile = createHandler('GetFileFn', '../../backend/src/handlers/files/get-file.ts');
     const renameFile = createHandler('RenameFileFn', '../../backend/src/handlers/files/rename-file.ts');
     const deleteFile = createHandler('DeleteFileFn', '../../backend/src/handlers/files/delete-file.ts');
+    const recentFiles = createHandler('RecentFilesFn', '../../backend/src/handlers/files/recent-files.ts');
 
     // --- Auth Handler (Cognito trigger, not an API route) ---
     this.postConfirmationHandler = createHandler(
@@ -131,7 +127,7 @@ export class ApiConstruct extends Construct {
     const allHandlers = [
       createFolder, listFolders, renameFolder, deleteFolder,
       getUploadUrl, confirmUpload, getDownloadUrl,
-      listFiles, getFile, renameFile, deleteFile,
+      listFiles, getFile, renameFile, deleteFile, recentFiles,
       this.postConfirmationHandler,
     ];
     for (const fn of allHandlers) {
@@ -172,6 +168,12 @@ export class ApiConstruct extends Construct {
     });
 
     // Files
+    this.api.addRoutes({
+      path: '/files/recent',
+      methods: [HttpMethod.GET],
+      integration: new HttpLambdaIntegration('RecentFilesIntegration', recentFiles),
+      authorizer,
+    });
     this.api.addRoutes({
       path: '/files/upload-url',
       methods: [HttpMethod.POST],

@@ -41,7 +41,6 @@ export class DriveLiteStack extends Stack {
       bucket: storage.bucket,
       userPool: auth.userPool,
       userPoolClient: auth.userPoolClient,
-      localstackEndpoint: isLocalStack ? 'http://localhost:4566' : undefined,
     });
 
     // 4. Wire Cognito post-confirmation trigger
