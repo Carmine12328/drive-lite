@@ -7,6 +7,8 @@ import {
   SignUpCommand,
   ConfirmSignUpCommand,
   InitiateAuthCommand,
+  RevokeTokenCommand,
+  ResendConfirmationCodeCommand,
 } from '@aws-sdk/client-cognito-identity-provider';
 import { environment } from '../../../environments/environment';
 
@@ -182,6 +184,36 @@ export class AuthService {
     }
   }
 
+  // ── Resend Confirmation Code ──────────────────────────────────────────
+
+  /**
+   * Requests a new email verification code for an unconfirmed user.
+   *
+   * Calls Cognito's ResendConfirmationCode API. Safe to call multiple times —
+   * Cognito rate-limits this internally. The UI enforces an additional 60-second
+   * cooldown to avoid unnecessary requests.
+   *
+   * @param email The email address of the unconfirmed user.
+   * @returns AuthResult indicating success or failure.
+   */
+  public async resendSignUpCode(email: string): Promise<AuthResult> {
+    this.isLoading.set(true);
+    try {
+      await this.cognito.send(
+        new ResendConfirmationCodeCommand({
+          ClientId: environment.cognitoClientId,
+          Username: email,
+        }),
+      );
+      return { success: true };
+    } catch (error: unknown) {
+      const message = this.extractErrorMessage(error, 'Failed to resend verification code.');
+      return { success: false, message };
+    } finally {
+      this.isLoading.set(false);
+    }
+  }
+
   // ── Sign In ──────────────────────────────────────────────────────────
 
   /**
@@ -217,47 +249,35 @@ export class AuthService {
     }
   }
 
-  // ── Cognito Hosted UI (stub) ─────────────────────────────────────────
-
-  /**
-   * Initiates authentication via AWS Cognito Hosted UI.
-   *
-   * This remains a stub — the Hosted UI requires a real AWS Cognito domain
-   * which isn't available in LocalStack. Will be implemented when deploying
-   * to real AWS.
-   */
-  public signInWithCognito(): void {
-    // STUB: Hosted UI requires real AWS Cognito domain — not available in LocalStack.
-    // Will redirect to Cognito's hosted login page when deployed to real AWS.
-    console.warn(
-      '[AuthService] signInWithCognito is a stub. ' +
-        'Hosted UI requires real AWS Cognito (not available in LocalStack).',
-    );
-  }
-
-  /**
-   * Handles the redirect callback after Cognito Hosted UI authentication.
-   *
-   * Stub — will be implemented when deploying to real AWS.
-   */
-  public handleCognitoCallback(): void {
-    // STUB: Will parse OAuth callback params and exchange code for tokens
-    console.warn('[AuthService] handleCognitoCallback is a stub.');
-  }
-
   // ── Sign Out ─────────────────────────────────────────────────────────
 
   /**
    * Signs out the current user.
    *
-   * Clears all token storage (memory + sessionStorage), resets auth signals,
-   * and navigates to the auth landing page.
+   * Revokes the refresh token via Cognito RevokeTokenCommand, clears all
+   * token storage (memory + sessionStorage), resets auth signals, and
+   * navigates to the auth landing page.
    */
-  public signOut(): void {
+  public async signOut(): Promise<void> {
+    const tokenSet = this.tokens();
+    if (tokenSet?.refreshToken) {
+      try {
+        await this.cognito.send(
+          new RevokeTokenCommand({
+            ClientId: environment.cognitoClientId,
+            Token: tokenSet.refreshToken,
+          }),
+        );
+        console.debug('[AuthService] Refresh token revoked via Cognito');
+      } catch (error) {
+        console.warn('[AuthService] Failed to revoke refresh token:', error);
+      }
+    }
+
     this.clearTokens();
     this.isAuthenticated.set(false);
     this.currentUser.set(null);
-    this.router.navigate(['/auth/landing']);
+    await this.router.navigate(['/auth/landing']);
   }
 
   // ── Token Access ─────────────────────────────────────────────────────

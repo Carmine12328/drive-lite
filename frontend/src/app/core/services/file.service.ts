@@ -25,6 +25,11 @@ export class FileService {
   public files: WritableSignal<FileItem[]> = signal<FileItem[]>([]);
 
   /**
+   * Signal holding the currently active folder ID.
+   */
+  public currentFolderId: WritableSignal<string> = signal<string>('ROOT');
+
+  /**
    * Signal indicating if a file operation is in progress.
    */
   public isLoading: WritableSignal<boolean> = signal<boolean>(false);
@@ -71,6 +76,7 @@ export class FileService {
    * @param folderId The ID of the folder to list files for.
    */
   public async listFiles(folderId: string): Promise<void> {
+    this.currentFolderId.set(folderId);
     this.isLoading.set(true);
     this.error.set(null);
 
@@ -229,7 +235,6 @@ export class FileService {
   }
 
   // --- Trash operations ---
-  // TODO: These are client-side only until backend trash endpoints are implemented.
 
   /**
    * Signal holding the loaded trash files.
@@ -274,45 +279,87 @@ export class FileService {
   }
 
   /**
-   * Restores a soft-deleted file by clearing its `deletedAt` timestamp.
-   * TODO: Replace with real API call when backend restore endpoint exists.
+   * Restores a soft-deleted file back to its original parent folder.
+   * Calls POST /files/{id}/restore.
    *
    * @param fileId The ID of the file to restore.
    */
-  public restoreFile(fileId: string): void {
-    const idx = this.allFiles.findIndex(file => file.fileId === fileId);
-    if (idx !== -1) {
-      const { deletedAt, ...restored } = this.allFiles[idx];
-      this.allFiles[idx] = restored as FileItem;
+  public async restoreFile(fileId: string): Promise<void> {
+    try {
+      const response = await firstValueFrom(
+        this.api.post<{ message: string; file: FileItem }>(`/files/${fileId}/restore`, {}),
+      );
+
+      // Remove from trash signals
+      this.trashFiles.update(list => list.filter(f => f.fileId !== fileId));
+
+      // Add to active files list if available
+      if (response.file) {
+        const restored = response.file;
+        const exists = this.allFiles.some(f => f.fileId === fileId);
+        if (!exists) {
+          this.allFiles.push(restored);
+        } else {
+          const idx = this.allFiles.findIndex(f => f.fileId === fileId);
+          this.allFiles[idx] = restored;
+        }
+
+        if (restored.folderId === this.currentFolderId()) {
+          this.files.update(current => {
+            const idx = current.findIndex(f => f.fileId === fileId);
+            return idx !== -1 ? current.map((f, i) => i === idx ? restored : f) : [...current, restored];
+          });
+        }
+      }
+
       this.trashVersion.update(v => v + 1);
+    } catch (err: unknown) {
+      console.error('[FileService] restoreFile error:', err);
+      throw err;
     }
   }
 
   /**
-   * Permanently removes a file from the cache.
-   * TODO: Replace with real API call when backend permanent-delete endpoint exists.
+   * Permanently removes a soft-deleted file from trash and storage.
+   * Calls DELETE /trash/files/{id}.
    *
    * @param fileId The ID of the file to permanently delete.
    */
-  public permanentlyDeleteFile(fileId: string): void {
-    const idx = this.allFiles.findIndex(file => file.fileId === fileId);
-    if (idx !== -1) {
-      this.allFiles.splice(idx, 1);
+  public async permanentlyDeleteFile(fileId: string): Promise<void> {
+    try {
+      await firstValueFrom(
+        this.api.delete<{ message: string }>(`/trash/files/${fileId}`),
+      );
+
+      this.trashFiles.update(list => list.filter(f => f.fileId !== fileId));
+      this.allFiles = this.allFiles.filter(f => f.fileId !== fileId);
+      this.files.update(list => list.filter(f => f.fileId !== fileId));
       this.trashVersion.update(v => v + 1);
+    } catch (err: unknown) {
+      console.error('[FileService] permanentlyDeleteFile error:', err);
+      throw err;
     }
   }
 
   /**
-   * Permanently removes all soft-deleted files from the cache.
-   * TODO: Replace with real API call when backend empty-trash endpoint exists.
+   * Permanently removes all soft-deleted files from trash and storage.
+   * Calls DELETE /trash/files.
    */
-  public emptyTrash(): void {
-    for (let i = this.allFiles.length - 1; i >= 0; i--) {
-      if (this.allFiles[i].deletedAt) {
-        this.allFiles.splice(i, 1);
-      }
+  public async emptyTrash(): Promise<void> {
+    try {
+      await firstValueFrom(
+        this.api.delete<{ message: string; deletedCount: number }>('/trash/files'),
+      );
+
+      const deletedIds = new Set(this.trashFiles().map(f => f.fileId));
+      this.trashFiles.set([]);
+      this.allFiles = this.allFiles.filter(f => !deletedIds.has(f.fileId));
+      this.files.update(list => list.filter(f => !deletedIds.has(f.fileId)));
+      this.trashVersion.update(v => v + 1);
+    } catch (err: unknown) {
+      console.error('[FileService] emptyTrash error:', err);
+      throw err;
     }
-    this.trashVersion.update(v => v + 1);
   }
 
   /**

@@ -9,6 +9,7 @@ import { MatIcon } from '@angular/material/icon';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { ErrorStateMatcher } from '@angular/material/core';
 import { AuthService } from '../../../core/auth/auth.service';
+import { ToastService } from '../../../shared/components/toast/toast.service';
 
 /** Validator to ensure passwords match */
 export function passwordMatchValidator(group: AbstractControl): ValidationErrors | null {
@@ -57,6 +58,7 @@ export class ConfirmPasswordErrorStateMatcher implements ErrorStateMatcher {
 export class RegisterComponent implements OnInit, OnDestroy {
   private readonly router = inject(Router);
   private readonly authService = inject(AuthService);
+  private readonly toastService = inject(ToastService);
 
   currentStep = signal<1 | 2>(1);
   isLoading = this.authService.isLoading;
@@ -244,13 +246,17 @@ export class RegisterComponent implements OnInit, OnDestroy {
     }, 1000);
   }
 
-  /** Requests a new verification code from the auth service */
-  resendCode(): void {
+  /** Requests a new verification code from Cognito and restarts the cooldown timer. */
+  async resendCode(): Promise<void> {
     if (this.resendCooldown() > 0) return;
     const { email } = this.registerForm.value;
-    if (email) {
-      // STUB: replace with authService.resendSignUpCode(email) when available
+    if (!email) return;
+
+    const result = await this.authService.resendSignUpCode(email);
+    if (result.success) {
       this.startResendTimer();
+    } else {
+      this.toastService.error(result.message ?? 'Failed to resend verification code.');
     }
   }
 }
