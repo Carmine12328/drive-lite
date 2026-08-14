@@ -10,6 +10,9 @@ import { HttpLambdaIntegration } from 'aws-cdk-lib/aws-apigatewayv2-integrations
 import * as cognito from 'aws-cdk-lib/aws-cognito';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 import * as s3 from 'aws-cdk-lib/aws-s3';
+import * as iam from 'aws-cdk-lib/aws-iam';
+
+
 
 // For ESM __dirname equivalent
 const __filename = fileURLToPath(import.meta.url);
@@ -135,6 +138,14 @@ export class ApiConstruct extends Construct {
     // --- Thumbnail Generator (S3 event trigger) ---
     const generateThumbnail = createHandler('GenerateThumbnailFn', '../../backend/src/handlers/files/generate-thumbnail.ts', 60, ['sharp']);
 
+    // --- AI Summarization Handler ---
+    const summarizeFile = createHandler('SummarizeFileFn', '../../backend/src/handlers/files/summarize-file.ts', 60, ['pdf-parse']);
+    summarizeFile.addToRolePolicy(new iam.PolicyStatement({
+      actions: ['bedrock:InvokeModel'],
+      resources: ['*'],
+    }));
+
+
     // --- Auth Handler (Cognito trigger, not an API route) ---
     this.postConfirmationHandler = createHandler(
       'PostConfirmationFn',
@@ -149,7 +160,7 @@ export class ApiConstruct extends Construct {
       listFiles, getFile, renameFile, deleteFile, recentFiles,
       listTrash, restoreFile, permanentDeleteFile, emptyTrash,
       createShare, getShare, downloadShare, listShares, revokeShare,
-      listVersions, rollbackVersion, generateThumbnail,
+      listVersions, rollbackVersion, generateThumbnail, summarizeFile,
       this.postConfirmationHandler,
     ];
     for (const fn of allHandlers) {
@@ -162,11 +173,13 @@ export class ApiConstruct extends Construct {
     props.bucket.grantRead(confirmUpload);   // HeadObject to verify upload
     props.bucket.grantRead(downloadShare);  // GetObject for public presigned download URLs
     props.bucket.grantRead(listVersions);   // ListBucketVersions for version history
+    props.bucket.grantRead(summarizeFile);  // GetObject for reading document text
     props.bucket.grantReadWrite(rollbackVersion); // CopyObject and HeadObject for version rollback
     props.bucket.grantReadWrite(generateThumbnail); // GetObject and PutObject for thumbnails
     props.bucket.grantDelete(deleteFile);    // DeleteObject for cleanup
     props.bucket.grantDelete(permanentDeleteFile); // DeleteObject for trash cleanup
     props.bucket.grantDelete(emptyTrash);          // DeleteObject for emptying trash
+
 
 
     // --- API Routes (all behind JWT authorizer) ---
@@ -251,6 +264,13 @@ export class ApiConstruct extends Construct {
       integration: new HttpLambdaIntegration('RestoreFileIntegration', restoreFile),
       authorizer,
     });
+    this.api.addRoutes({
+      path: '/files/{id}/summarize',
+      methods: [HttpMethod.POST],
+      integration: new HttpLambdaIntegration('SummarizeFileIntegration', summarizeFile),
+      authorizer,
+    });
+
 
     // Versions (Authenticated)
     this.api.addRoutes({

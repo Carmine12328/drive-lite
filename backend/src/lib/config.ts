@@ -7,6 +7,8 @@ export interface AppConfig {
   BUCKET_NAME: string;
   REGION: string;
   ALLOWED_ORIGINS: string;
+  BEDROCK_ENABLED: boolean;
+  BEDROCK_MODEL_ID: string;
   /**
    * True when running inside LocalStack.
    * Detected via `AWS_ENDPOINT_URL` which LocalStack auto-injects into Lambda
@@ -30,5 +32,8 @@ export const config: AppConfig = Object.freeze({
   BUCKET_NAME: requireEnv('BUCKET_NAME'),
   REGION: process.env['AWS_REGION'] ?? process.env['REGION'] ?? 'us-east-1',
   ALLOWED_ORIGINS: process.env['ALLOWED_ORIGINS'] ?? 'http://localhost:4200',
+  BEDROCK_ENABLED: process.env['BEDROCK_ENABLED'] === 'true',
+  BEDROCK_MODEL_ID: process.env['BEDROCK_MODEL_ID'] ?? 'amazon.titan-text-lite-v1',
   isLocalStack: !!process.env['AWS_ENDPOINT_URL'],
 });
+

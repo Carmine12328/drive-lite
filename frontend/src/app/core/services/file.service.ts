@@ -1,11 +1,21 @@
 import { computed, inject, Injectable, signal, WritableSignal } from '@angular/core';
 import { HttpParams } from '@angular/common/http';
-import { firstValueFrom } from 'rxjs';
+import { Observable, firstValueFrom } from 'rxjs';
 import JSZip from 'jszip';
 import { FileItem } from '../models/file-item.model';
 import { FileVersion, ListVersionsResponse, RollbackVersionResponse } from '../models/file-version.model';
 import { ApiService } from './api.service';
 import { ToastService } from '../../shared/components/toast/toast.service';
+
+/** AI Summarization response interface */
+export interface SummarizeResponse {
+  summary: string;
+  modelUsed: string;
+  sourceLength: number;
+  wordCount: number;
+  readingTimeMinutes: number;
+}
+
 
 /**
  * Service for managing file operations and state.
@@ -594,7 +604,19 @@ export class FileService {
 
     this.toastService.success(`Downloaded ${files.length} files as ZIP bundle`);
   }
+
+  /**
+   * Requests an AI-powered document summary from the backend.
+   *
+   * @param fileId Unique identifier of the file to summarize
+   * @returns Observable of SummarizeResponse
+   */
+  public summarizeFile(fileId: string): Observable<SummarizeResponse> {
+    return this.api.post<SummarizeResponse>(`/files/${fileId}/summarize`, {});
+  }
 }
+
+
 
 
 

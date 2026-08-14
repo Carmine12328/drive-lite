@@ -12,6 +12,11 @@
     </div>
     
     <div class="actions">
+      @if (previewType() === 'text' || previewType() === 'pdf') {
+        <button mat-icon-button (click)="onSummarize()" [disabled]="isSummarizing()" [class.active-summary]="showSummary()" aria-label="AI Summary" matTooltip="AI Summary (Amazon Titan)">
+          <mat-icon>{{ isSummarizing() ? 'hourglass_top' : 'auto_awesome' }}</mat-icon>
+        </button>
+      }
       @if (previewType() === 'text') {
         @if (isEditing()) {
           <button mat-flat-button color="primary" class="save-btn" [disabled]="isSaving()" (click)="onSaveContent()" aria-label="Save changes">
@@ -42,6 +47,31 @@
   <div class="preview-body">
     <!-- Content Area -->
     <main class="preview-content" [class.editor-mode]="previewType() === 'text' && isEditing()">
+      <!-- AI Summary Overlay Card -->
+      @if (showSummary() && summaryResult()) {
+        <div class="ai-summary-overlay">
+          <div class="summary-card">
+            <div class="summary-card-header">
+              <div class="summary-title-wrapper">
+                <mat-icon class="ai-sparkle-icon">auto_awesome</mat-icon>
+                <h4>AI Document Summary</h4>
+              </div>
+              <button mat-icon-button (click)="closeSummary()" aria-label="Close summary">
+                <mat-icon>close</mat-icon>
+              </button>
+            </div>
+            <div class="summary-meta-row">
+              <span class="model-badge">{{ summaryResult()!.modelUsed }}</span>
+              <span class="meta-tag">{{ summaryResult()!.wordCount }} words</span>
+              <span class="meta-tag">~{{ summaryResult()!.readingTimeMinutes }} min read</span>
+            </div>
+            <div class="summary-body">
+              <p>{{ summaryResult()!.summary }}</p>
+            </div>
+          </div>
+        </div>
+      }
+
       @switch (previewType()) {
         @case ('image') {
           <img [src]="previewUrl()" [alt]="currentFile().fileName" class="preview-image">
@@ -115,6 +145,12 @@
         </div>
         
         <div class="sidebar-actions">
+          @if (previewType() === 'text' || previewType() === 'pdf') {
+            <button mat-button (click)="onSummarize()" [disabled]="isSummarizing()" class="summary-btn">
+              <mat-icon>auto_awesome</mat-icon>
+              {{ isSummarizing() ? 'Analyzing...' : 'AI Summary' }}
+            </button>
+          }
           @if (previewType() === 'text') {
             <button mat-button (click)="toggleEdit()" class="edit-sidebar-btn">
               <mat-icon>{{ isEditing() ? 'visibility' : 'edit' }}</mat-icon>
@@ -137,6 +173,6 @@
       </aside>
     }
   </div>
-
 </div>
+
 

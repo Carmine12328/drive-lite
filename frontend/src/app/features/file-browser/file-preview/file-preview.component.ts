@@ -9,9 +9,10 @@ import { DatePipe } from '@angular/common';
 import { firstValueFrom } from 'rxjs';
 
 import { FileItem } from '../../../core/models/file-item.model';
-import { FileService } from '../../../core/services/file.service';
+import { FileService, SummarizeResponse } from '../../../core/services/file.service';
 import { ApiService } from '../../../core/services/api.service';
 import { FileIconPipe } from '../../../shared/pipes/file-icon.pipe';
+
 
 import { FileSizePipe } from '../../../shared/pipes/file-size.pipe';
 import { ShareDialog } from '../../../shared/components/share-dialog/share-dialog';
@@ -84,8 +85,19 @@ export class FilePreviewComponent {
   /** Local edited content buffer */
   readonly editedContent = signal<string>('');
 
+  /** Whether AI summarization request is running */
+  readonly isSummarizing = signal<boolean>(false);
+
+  /** Whether the AI summary card is visible */
+  readonly showSummary = signal<boolean>(false);
+
+  /** Stored AI summary result */
+  readonly summaryResult = signal<SummarizeResponse | null>(null);
+
+
   /** Whether the preview content is currently loading */
   readonly isLoadingPreview = signal<boolean>(false);
+
 
   /**
    * Computed property for the preview type based on the MIME type and file extension.
@@ -361,12 +373,50 @@ export class FilePreviewComponent {
   }
 
   /**
+   * Generates or displays the AI document summary.
+   */
+  async onSummarize(): Promise<void> {
+    if (this.showSummary()) {
+      this.showSummary.set(false);
+      return;
+    }
+
+    if (this.summaryResult()) {
+      this.showSummary.set(true);
+      return;
+    }
+
+    this.isSummarizing.set(true);
+    try {
+      const res = await firstValueFrom(
+        this.fileService.summarizeFile(this.currentFile().fileId)
+      );
+      this.summaryResult.set(res);
+      this.showSummary.set(true);
+      this.toastService.success('AI summary generated successfully');
+    } catch (err: unknown) {
+      console.error('[FilePreview] Error summarizing file:', err);
+      this.toastService.error('Failed to generate AI summary');
+    } finally {
+      this.isSummarizing.set(false);
+    }
+  }
+
+  /**
+   * Closes the summary overlay.
+   */
+  closeSummary(): void {
+    this.showSummary.set(false);
+  }
+
+  /**
    * Toggles the info sidebar visibility.
    */
   toggleInfo(): void {
     this.showInfo.update(v => !v);
   }
 }
+
 
 
 

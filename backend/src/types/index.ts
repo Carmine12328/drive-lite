@@ -197,4 +197,14 @@ export interface RollbackVersionResponse {
   updatedAt: string;
 }
 
+/** Response from AI summarization endpoint */
+export interface SummarizeResponse {
+  summary: string;
+  modelUsed: string;
+  sourceLength: number;
+  wordCount: number;
+  readingTimeMinutes: number;
+}
+
+
 

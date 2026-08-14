@@ -13,10 +13,12 @@
     "lint": "eslint src/ --no-error-on-unmatched-pattern"
   },
   "dependencies": {
+    "@aws-sdk/client-bedrock-runtime": "^3.1111.0",
     "@aws-sdk/client-dynamodb": "^3.650.0",
     "@aws-sdk/client-s3": "^3.650.0",
     "@aws-sdk/lib-dynamodb": "^3.650.0",
     "@aws-sdk/s3-request-presigner": "^3.650.0",
+    "pdf-parse": "^2.4.5",
     "sharp": "^0.35.3",
     "ulid": "^2.3.0"
   },
@@ -25,6 +27,7 @@
     "@types/aws-lambda": "^8.10.145",
     "@types/express": "^5.0.6",
     "@types/node": "^20.14.0",
+    "@types/pdf-parse": "^1.1.5",
     "@types/sharp": "^0.31.1",
     "eslint": "^10.8.1",
     "express": "^5.2.1",
