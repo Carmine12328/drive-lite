@@ -74,6 +74,16 @@ export class CleanupAssistantComponent {
     return groups;
   });
 
+  /** Total count of files that are part of duplicate groups */
+  readonly totalDuplicateFilesCount = computed(() => {
+    return this.duplicateGroups().reduce((acc, g) => acc + g.files.length, 0);
+  });
+
+  /** Total count of redundant duplicate copies that can be cleaned up */
+  readonly totalRedundantCopiesCount = computed(() => {
+    return this.duplicateGroups().reduce((acc, g) => acc + (g.files.length - 1), 0);
+  });
+
   /** Stuck or failed pending uploads */
   readonly stuckUploads = computed<FileItem[]>(() => {
     const oneHourAgo = Date.now() - 60 * 60 * 1000;
@@ -98,6 +108,73 @@ export class CleanupAssistantComponent {
   /** Switch active tab */
   setTab(tab: CleanupTab): void {
     this.activeTab.set(tab);
+  }
+
+  /**
+   * Cleans all redundant duplicate copies across all groups in one click,
+   * keeping the original/first copy of each file.
+   */
+  onClearAllDuplicates(): void {
+    const redundantFiles = this.duplicateGroups().flatMap(g => g.files.slice(1));
+    if (redundantFiles.length === 0) return;
+
+    const count = redundantFiles.length;
+    const savings = this.formattedSavings();
+    const groupCount = this.duplicateGroups().length;
+
+    const ref = this.dialog.open(ConfirmDialog, {
+      data: {
+        title: 'Clean All Duplicates',
+        message: `Delete ${count} redundant copies across ${groupCount} file groups to free up ${savings}? The original (first) version of each file will be kept.`,
+        confirmText: `Delete ${count} Duplicates`,
+        cancelText: 'Cancel',
+        confirmColor: 'warn',
+      } satisfies ConfirmDialogData,
+    });
+
+    ref.afterClosed().subscribe((confirmed) => {
+      if (confirmed) {
+        for (const file of redundantFiles) {
+          this.fileService.deleteFile(file.fileId);
+        }
+        this.toastService.success(`Deleted ${count} duplicate copies (${savings} freed)`);
+        this.fileService.loadRecentFiles(50);
+        this.fileService.listFiles('ROOT');
+      }
+    });
+  }
+
+  /**
+   * Cleans redundant copies for a single duplicate group, keeping the first copy.
+   * @param group The duplicate group to clean.
+   */
+  onCleanGroup(group: DuplicateGroup): void {
+    const redundantFiles = group.files.slice(1);
+    if (redundantFiles.length === 0) return;
+
+    const count = redundantFiles.length;
+    const savings = this.formatBytes(group.size * count);
+
+    const ref = this.dialog.open(ConfirmDialog, {
+      data: {
+        title: `Clean Duplicates: ${group.name}`,
+        message: `Delete ${count} duplicate copy(ies) of "${group.name}" and keep the original? (${savings} freed)`,
+        confirmText: `Delete ${count} Duplicates`,
+        cancelText: 'Cancel',
+        confirmColor: 'warn',
+      } satisfies ConfirmDialogData,
+    });
+
+    ref.afterClosed().subscribe((confirmed) => {
+      if (confirmed) {
+        for (const file of redundantFiles) {
+          this.fileService.deleteFile(file.fileId);
+        }
+        this.toastService.success(`Deleted ${count} duplicate copies of "${group.name}"`);
+        this.fileService.loadRecentFiles(50);
+        this.fileService.listFiles('ROOT');
+      }
+    });
   }
 
   /** Preview a file in modal */
@@ -129,6 +206,8 @@ export class CleanupAssistantComponent {
       if (confirmed) {
         this.fileService.deleteFile(file.fileId);
         this.toastService.success(`"${file.fileName}" moved to trash`);
+        this.fileService.loadRecentFiles(50);
+        this.fileService.listFiles('ROOT');
       }
     });
   }

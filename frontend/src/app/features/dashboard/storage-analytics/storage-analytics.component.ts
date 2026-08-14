@@ -33,8 +33,11 @@ export class StorageAnalyticsComponent {
   /** Free Tier storage quota (5 GB) */
   readonly QUOTA_BYTES = 5 * 1024 * 1024 * 1024;
 
-  /** Total size in bytes of all known files */
-  readonly totalBytes = computed(() => this.fileService.getTotalSize());
+  /** Total size in bytes of all categorized files */
+  readonly totalBytes = computed(() => {
+    return this.categories().reduce((sum, cat) => sum + cat.size, 0);
+  });
+
 
   /** Formatted total size */
   readonly formattedTotalSize = computed(() => this.formatBytes(this.totalBytes()));

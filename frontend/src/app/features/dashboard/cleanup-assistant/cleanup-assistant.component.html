@@ -5,11 +5,18 @@
       <h3>Cleanup Assistant</h3>
     </div>
     @if (potentialSavingsBytes() > 0) {
-      <span class="savings-badge">
+      <button
+        type="button"
+        class="savings-badge"
+        (click)="setTab('duplicates')"
+        [matTooltip]="'Click to view redundant duplicate copies and free up ' + formattedSavings()"
+        aria-label="Free up storage space"
+      >
         <mat-icon class="badge-icon">cleaning_services</mat-icon>
-        Save {{ formattedSavings() }}
-      </span>
+        Free up {{ formattedSavings() }}
+      </button>
     }
+
   </div>
 
   <!-- Navigation Tabs -->
@@ -28,8 +35,9 @@
       (click)="setTab('duplicates')"
     >
       <mat-icon>content_copy</mat-icon>
-      Duplicates ({{ duplicateGroups().length }})
+      Duplicates ({{ totalDuplicateFilesCount() }})
     </button>
+
     <button
       class="tab-btn"
       [class.active]="activeTab() === 'stuck'"
@@ -78,18 +86,53 @@
       <!-- 2. Duplicates Tab -->
       @case ('duplicates') {
         @if (duplicateGroups().length > 0) {
+          <!-- Master Duplicates Action Banner -->
+          <div class="duplicates-toolbar">
+            <div class="duplicates-info">
+              <mat-icon class="info-icon">auto_awesome</mat-icon>
+              <div class="info-text">
+                <span class="info-title">Found {{ duplicateGroups().length }} duplicate file sets ({{ totalRedundantCopiesCount() }} redundant copies)</span>
+                <span class="info-desc">You can free up <strong>{{ formattedSavings() }}</strong>. Deleting duplicate copies safely preserves the original (first) copy.</span>
+              </div>
+            </div>
+            <button
+              mat-flat-button
+              class="clear-all-btn"
+              (click)="onClearAllDuplicates()"
+              [matTooltip]="'Delete all ' + totalRedundantCopiesCount() + ' duplicate copies to free up ' + formattedSavings()"
+              aria-label="Clean all duplicate copies"
+            >
+              <mat-icon>delete_sweep</mat-icon>
+              Clean All Duplicates ({{ formattedSavings() }})
+            </button>
+          </div>
+
           <div class="duplicates-list">
             @for (group of duplicateGroups(); track group.name + group.size) {
               <div class="duplicate-group">
                 <div class="group-header">
-                  <span class="group-title">{{ group.name }}</span>
-                  <span class="group-size">{{ formatBytes(group.size) }} each ({{ group.files.length }} copies)</span>
+                  <div class="group-title-info">
+                    <span class="group-title">{{ group.name }}</span>
+                    <span class="group-size">{{ formatBytes(group.size) }} each · {{ group.files.length }} copies ({{ group.files.length - 1 }} redundant)</span>
+                  </div>
+                  <button
+                    mat-stroked-button
+                    class="clean-group-btn"
+                    (click)="onCleanGroup(group)"
+                    matTooltip="Keep the first copy and delete other duplicate copies of this file"
+                    aria-label="Clean duplicates for this file"
+                  >
+                    <mat-icon>delete_sweep</mat-icon>
+                    Keep only 1
+                  </button>
                 </div>
                 <div class="group-files">
                   @for (file of group.files; track file.fileId; let idx = $index) {
                     <div class="cleanup-item sub-item">
                       <div class="item-info">
-                        <span class="copy-badge">Copy #{{ idx + 1 }}</span>
+                        <span class="copy-badge" [class.original]="idx === 0">
+                          {{ idx === 0 ? 'Original' : 'Copy #' + (idx + 1) }}
+                        </span>
                         <span class="created-at">Created {{ file.createdAt | date:'mediumDate' }}</span>
                       </div>
                       <div class="item-actions">

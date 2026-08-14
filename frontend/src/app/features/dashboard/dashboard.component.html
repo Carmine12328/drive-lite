@@ -1,108 +1,78 @@
 <div class="dashboard-container">
-  <header class="welcome-banner">
-    <h1>Welcome back, <span class="gradient-text">{{ userEmail() }}</span> 👋</h1>
+  <!-- Dashboard Top Header: Welcome + Action Buttons -->
+  <header class="dashboard-header">
+    <div class="welcome-section">
+      <h1>Welcome back, <span class="gradient-text">{{ userName() }}</span> 👋</h1>
+      <p class="welcome-subtitle">Here is what is happening with your storage and files</p>
+    </div>
+
+    <div class="quick-actions">
+      <button mat-flat-button class="action-btn upload-btn" (click)="onUploadFile()">
+        <mat-icon>upload_file</mat-icon>
+        Upload File
+      </button>
+      <button mat-stroked-button class="action-btn folder-btn" (click)="onNewFolder()">
+        <mat-icon>create_new_folder</mat-icon>
+        New Folder
+      </button>
+    </div>
   </header>
 
-  <section class="quick-actions">
-    <button mat-flat-button class="action-btn upload-btn" (click)="onUploadFile()">
-      <mat-icon>upload_file</mat-icon>
-      Upload File
-    </button>
-    <button mat-stroked-button class="action-btn folder-btn" (click)="onNewFolder()">
-      <mat-icon>create_new_folder</mat-icon>
-      New Folder
-    </button>
-    <a mat-stroked-button class="action-btn drive-btn" routerLink="/drive">
-      <mat-icon>folder_open</mat-icon>
-      My Drive
-    </a>
-  </section>
-
-  <section class="stats-row">
-    <div class="stat-card">
-      <div class="stat-card-accent"></div>
-      <div class="stat-card-content">
-        <div class="stat-icon-wrapper">
-          <mat-icon>insert_drive_file</mat-icon>
+  <!-- Row 1: Top Equal-Height Cards (Recent Files & Storage Breakdown) -->
+  <div class="dashboard-top-grid">
+    <!-- Recent Files (Left) -->
+    <section class="recent-files-card">
+      <div class="card-header">
+        <div class="title-wrapper">
+          <mat-icon class="header-icon">schedule</mat-icon>
+          <h2>Recent Files</h2>
         </div>
-        <div class="stat-info">
-          <span class="stat-label">Total Files</span>
-          <span class="stat-value">{{ totalFiles() }}</span>
-        </div>
+        <a routerLink="/drive" class="view-all-link">
+          View all
+          <mat-icon>arrow_forward</mat-icon>
+        </a>
       </div>
-    </div>
 
-    <div class="stat-card">
-      <div class="stat-card-accent"></div>
-      <div class="stat-card-content">
-        <div class="stat-icon-wrapper">
-          <mat-icon>folder</mat-icon>
+      @if (recentFiles().length > 0) {
+        <div class="recent-files-list">
+          @for (file of recentFiles(); track file.fileId) {
+            <div class="file-row" (click)="onPreviewFile(file)" role="button" tabindex="0"
+                 (keydown.enter)="onPreviewFile(file)">
+              <div class="file-icon">
+                <mat-icon>{{ file.icon }}</mat-icon>
+              </div>
+              <div class="file-details">
+                <span class="file-name" [title]="file.fileName">{{ file.fileName }}</span>
+                <span class="file-meta-sub">{{ file.formattedSize }} · {{ file.formattedDate }}</span>
+              </div>
+              <div class="file-actions">
+                <button mat-icon-button matTooltip="Download" (click)="$event.stopPropagation(); onDownloadFile(file)" aria-label="Download file">
+                  <mat-icon>download</mat-icon>
+                </button>
+                <button mat-icon-button matTooltip="Delete" (click)="$event.stopPropagation(); onDeleteFile(file)" aria-label="Delete file">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </div>
+            </div>
+          }
         </div>
-        <div class="stat-info">
-          <span class="stat-label">Total Folders</span>
-          <span class="stat-value">{{ totalFolders() }}</span>
+      } @else {
+        <div class="empty-state">
+          <mat-icon class="empty-icon">folder_open</mat-icon>
+          <p>No recent files found. Upload files to get started.</p>
         </div>
-      </div>
-    </div>
+      }
+    </section>
 
-    <div class="stat-card">
-      <div class="stat-card-accent"></div>
-      <div class="stat-card-content">
-        <div class="stat-icon-wrapper">
-          <mat-icon>cloud</mat-icon>
-        </div>
-        <div class="stat-info">
-          <span class="stat-label">Storage Used</span>
-          <span class="stat-value">{{ storageUsed() }}</span>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Storage Insights: Analytics Donut & Cleanup Assistant -->
-  <section class="storage-insights-row">
-    <div class="insights-col">
+    <!-- Storage Breakdown (Right) -->
+    <section class="storage-analytics-wrapper">
       <app-storage-analytics />
-    </div>
-    <div class="insights-col">
-      <app-cleanup-assistant />
-    </div>
-  </section>
+    </section>
+  </div>
 
-  <section class="recent-files">
-    <h2>Recent Files</h2>
-
-    @if (recentFiles().length > 0) {
-      <div class="recent-files-list">
-        @for (file of recentFiles(); track file.fileId) {
-          <div class="file-row" (click)="onPreviewFile(file)" role="button" tabindex="0"
-               (keydown.enter)="onPreviewFile(file)">
-            <div class="file-icon">
-              <mat-icon>{{ file.icon }}</mat-icon>
-            </div>
-            <div class="file-details">
-              <span class="file-name">{{ file.fileName }}</span>
-            </div>
-            <div class="file-meta">
-              <span class="file-date">{{ file.formattedDate }}</span>
-              <span class="file-size">{{ file.formattedSize }}</span>
-            </div>
-            <div class="file-actions">
-              <button mat-icon-button matTooltip="Download" (click)="$event.stopPropagation(); onDownloadFile(file)" aria-label="Download file">
-                <mat-icon>download</mat-icon>
-              </button>
-              <button mat-icon-button matTooltip="Delete" (click)="$event.stopPropagation(); onDeleteFile(file)" aria-label="Delete file">
-                <mat-icon>delete</mat-icon>
-              </button>
-            </div>
-
-          </div>
-        }
-      </div>
-    } @else {
-      <div class="empty-state">
-        <p>No recent files found.</p>
-      </div>
-    }
+  <!-- Row 2: Full-Width Cleanup Assistant -->
+  <section class="dashboard-cleanup-section">
+    <app-cleanup-assistant />
   </section>
 </div>
+

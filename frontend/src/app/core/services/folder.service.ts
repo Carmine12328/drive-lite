@@ -172,8 +172,10 @@ export class FolderService {
    * @returns The total number of folders as a number.
    */
   getTotalCount(): number {
+    this.folderVersion();
     return this.knownFolders.length;
   }
+
 
   /**
    * Retrieves all known folders from the internal cache.

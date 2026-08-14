@@ -10,6 +10,8 @@ import { FolderService } from '../../core/services/folder.service';
 import { ToastService } from '../../shared/components/toast/toast.service';
 import { FileItem } from '../../core/models/file-item.model';
 import { FilePreviewComponent, FilePreviewDialogData } from '../file-browser/file-preview/file-preview.component';
+import { UploadDialog, UploadDialogData } from '../file-browser/upload-dialog/upload-dialog';
+import { InputDialog, InputDialogData } from '../../shared/components/input-dialog/input-dialog';
 import { ConfirmDialog, ConfirmDialogData } from '../../shared/components/confirm-dialog/confirm-dialog';
 import { StorageAnalyticsComponent } from './storage-analytics/storage-analytics.component';
 import { CleanupAssistantComponent } from './cleanup-assistant/cleanup-assistant.component';
@@ -43,6 +45,14 @@ export class DashboardComponent implements OnInit {
   /** Computed signal for the current user's email address. */
   readonly userEmail = computed(() => this.authService.currentUser()?.email ?? 'User');
 
+  /** Computed signal for the friendly display username. */
+  readonly userName = computed(() => {
+    const email = this.authService.currentUser()?.email;
+    if (!email) return 'User';
+    const prefix = email.split('@')[0];
+    return prefix.charAt(0).toUpperCase() + prefix.slice(1);
+  });
+
   /** Computed signal for the total count of files. */
   readonly totalFiles = computed(() => this.fileService.getTotalCount());
 
@@ -58,7 +68,7 @@ export class DashboardComponent implements OnInit {
    * Maps each file to include pre-formatted display values for the template.
    */
   readonly recentFiles = computed(() => {
-    const files = this.fileService.recentFiles();
+    const files = this.fileService.recentFiles().slice(0, 5);
     return files.map((file) => ({
       ...file,
       formattedSize: this.formatBytes(file.fileSize),
@@ -67,11 +77,14 @@ export class DashboardComponent implements OnInit {
     }));
   });
 
-  /** Initializes the component by fetching recent files and folders. */
+
+  /** Initializes the component by fetching all files, recent files, and folders. */
   ngOnInit(): void {
-    this.fileService.loadRecentFiles(5);
+    this.fileService.listFiles('ROOT');
+    this.fileService.loadRecentFiles(50);
     this.folderService.listFolders();
   }
+
 
   /**
    * Opens the file preview dialog for a recent file.
@@ -176,13 +189,48 @@ export class DashboardComponent implements OnInit {
     return 'insert_drive_file';
   }
 
-  /** Stub — upload file action (wired in Step 7). */
+  /**
+   * Opens the upload dialog from the dashboard.
+   */
   onUploadFile(): void {
-    console.debug('[Dashboard] Upload file stub');
+    const data: UploadDialogData = {
+      folderId: 'ROOT',
+    };
+
+    this.dialog.open(UploadDialog, {
+      width: '600px',
+      maxWidth: '90vw',
+      panelClass: 'drive-dialog',
+      disableClose: true,
+      data,
+      ariaLabel: 'Upload files dialog',
+    }).afterClosed().subscribe(() => {
+      this.fileService.loadRecentFiles(50);
+      this.fileService.listFiles('ROOT');
+    });
   }
 
-  /** Stub — create new folder action (wired in Step 7). */
+  /**
+   * Opens the new folder dialog from the dashboard.
+   */
   onNewFolder(): void {
-    console.debug('[Dashboard] New folder stub');
+    const data: InputDialogData = {
+      title: 'New Folder',
+      label: 'Folder name',
+      placeholder: 'Untitled Folder',
+      confirmText: 'Create',
+    };
+
+    this.dialog.open(InputDialog, {
+      width: '400px',
+      panelClass: 'drive-dialog',
+      data,
+      ariaLabel: 'Create new folder dialog',
+    }).afterClosed().subscribe((folderName: string | undefined) => {
+      if (folderName) {
+        this.folderService.createFolder(folderName, 'ROOT');
+        this.toastService.success(`Folder "${folderName}" created`);
+      }
+    });
   }
 }

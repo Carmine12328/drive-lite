@@ -101,11 +101,22 @@ export class FileService {
       const response = await firstValueFrom(
         this.api.get<{ files: FileItem[] }>('/files/recent', params)
       );
-      this.recentFiles.set(response.files ?? []);
+      const recent = response.files ?? [];
+      this.recentFiles.set(recent);
+
+      for (const file of recent) {
+        const idx = this.allFiles.findIndex(f => f.fileId === file.fileId);
+        if (idx >= 0) {
+          this.allFiles[idx] = file;
+        } else {
+          this.allFiles.push(file);
+        }
+      }
     } catch (err: unknown) {
       console.error('[FileService] loadRecentFiles error:', err);
     }
   }
+
 
   /**
    * Fetches files for the specified folder from the backend API.
@@ -244,22 +255,25 @@ export class FileService {
   }
 
   /**
-   * Calculates the total size of all cached files.
+   * Calculates the total size of all active files across loaded signals.
    * @returns The total size in bytes.
    */
   public getTotalSize(): number {
-    return this.allFiles
+    const all = Array.from(new Map(this.files().concat(this.recentFiles()).map(f => [f.fileId, f])).values());
+    return all
       .filter(file => !file.deletedAt)
-      .reduce((total, file) => total + file.fileSize, 0);
+      .reduce((total, file) => total + (file.fileSize || 0), 0);
   }
 
   /**
-   * Retrieves the total count of non-deleted cached files.
+   * Retrieves the total count of non-deleted active files across loaded signals.
    * @returns The total number of active files.
    */
   public getTotalCount(): number {
-    return this.allFiles.filter(file => !file.deletedAt).length;
+    const all = Array.from(new Map(this.files().concat(this.recentFiles()).map(f => [f.fileId, f])).values());
+    return all.filter(file => !file.deletedAt).length;
   }
+
 
   /**
    * Returns all non-deleted files from the cache regardless of folder.

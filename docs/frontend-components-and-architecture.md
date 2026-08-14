@@ -314,14 +314,14 @@ Manages expiring public share links.
 - **Command Palette**: Adds `@HostListener('document:keydown.control.k')` to trigger the Command Palette.
 
 ### 4.2. Dashboard Component: `frontend/src/app/features/dashboard/dashboard.component.ts`
-- **Role**: Authenticated home page after login.
-- **Computed Metrics**:
+- **Role**: Authenticated home page after login with content-first layout (Recent Files, Storage Breakdown, and Cleanup Assistant).
+- **Computed Metrics & Signals**:
   - `userEmail`: Extracted from `AuthService.currentUser().email`.
-  - `totalFiles`: Computed from `FileService.getTotalCount()`.
-  - `totalFolders`: Computed from `FolderService.getTotalCount()`.
-  - `storageUsed`: Computed from `FileService.getTotalSize()` and formatted with `formatBytes()`.
+  - `userName`: Formatted display name computed from the user's email prefix.
   - `recentFiles`: Computed from `FileService.recentFiles()`, formatted with human-readable sizes, dates, and icon identifiers.
 - **Actions**:
+  - `onUploadFile()`: Opens `UploadDialog` modal and refreshes recent files upon completion.
+  - `onNewFolder()`: Opens `InputDialog` modal for creating a new folder directly in `'ROOT'`.
   - `onPreviewFile(file)`: Opens `FilePreviewComponent` dialog in near-fullscreen modal (`95vw`, `90vh`).
   - `onDownloadFile(file)`: Invokes `FileService.downloadFile()`.
   - `onDeleteFile(file)`: Opens `ConfirmDialog` modal; deletes file via `FileService.deleteFile()` on confirmation and reloads recent files.
@@ -437,7 +437,12 @@ Manages expiring public share links.
 - **Role**: SVG donut chart visualizing storage usage with MIME category breakdown.
 
 ### 4.16. Cleanup Assistant Component: `frontend/src/app/features/dashboard/cleanup-assistant.component.ts`
-- **Role**: Identifies largest files, duplicates, old trash, and stuck uploads for storage optimization.
+- **Role**: Identifies largest files, duplicates, and stuck uploads for storage optimization.
+- **Features & Actions**:
+  - **Tabs**: `Largest Files`, `Duplicates`, and `Pending/Stuck`.
+  - **Duplicates Banner Toolbar**: Displays total redundant copies and potential space savings, with a master `Clean All Duplicates` button that deletes redundant copies in bulk while preserving the original/first file.
+  - **Per-Group Actions**: Each duplicate group features a `Keep only 1` action button and badges differentiating the `Original` file from duplicate copies (`Copy #2`, `Copy #3`, etc.).
+  - **Modal Dialog Confirmation**: All bulk and individual deletions require user confirmation via `ConfirmDialog`.
 
 ### 4.17. Command Palette Component: `frontend/src/app/shared/components/command-palette/command-palette.component.ts`
 - **Role**: Global quick-action overlay triggered via `Ctrl+K`. Features a filterable command list and full keyboard navigation.

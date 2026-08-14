@@ -27,13 +27,14 @@
               cy="50"
               r="40"
               class="donut-segment"
-              [style.stroke]="cat.color"
-              [style.stroke-dasharray]="cat.dashArray"
-              [style.stroke-dashoffset]="cat.dashOffset"
+              [attr.stroke]="cat.color"
+              [attr.stroke-dasharray]="cat.dashArray"
+              [attr.stroke-dashoffset]="cat.dashOffset"
               [matTooltip]="cat.label + ': ' + formatBytes(cat.size) + ' (' + cat.percent + '%)'"
             />
           }
         }
+
       </svg>
 
       <!-- Center text inside donut -->
