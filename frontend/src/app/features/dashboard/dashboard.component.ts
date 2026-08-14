@@ -11,6 +11,8 @@ import { ToastService } from '../../shared/components/toast/toast.service';
 import { FileItem } from '../../core/models/file-item.model';
 import { FilePreviewComponent, FilePreviewDialogData } from '../file-browser/file-preview/file-preview.component';
 import { ConfirmDialog, ConfirmDialogData } from '../../shared/components/confirm-dialog/confirm-dialog';
+import { StorageAnalyticsComponent } from './storage-analytics/storage-analytics.component';
+import { CleanupAssistantComponent } from './cleanup-assistant/cleanup-assistant.component';
 
 /**
  * Dashboard component displaying user stats, recent files, and quick actions.
@@ -18,11 +20,20 @@ import { ConfirmDialog, ConfirmDialogData } from '../../shared/components/confir
  */
 @Component({
   selector: 'app-dashboard',
-  imports: [RouterLink, MatIcon, MatButton, MatIconButton, MatTooltip],
+  imports: [
+    RouterLink,
+    MatIcon,
+    MatButton,
+    MatIconButton,
+    MatTooltip,
+    StorageAnalyticsComponent,
+    CleanupAssistantComponent
+  ],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss']
 })
 export class DashboardComponent implements OnInit {
+
   private readonly authService = inject(AuthService);
   private readonly fileService = inject(FileService);
   private readonly folderService = inject(FolderService);

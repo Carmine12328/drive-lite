@@ -1,0 +1,147 @@
+<div class="cleanup-assistant-card">
+  <div class="cleanup-header">
+    <div class="title-wrapper">
+      <mat-icon class="header-icon">auto_fix_high</mat-icon>
+      <h3>Cleanup Assistant</h3>
+    </div>
+    @if (potentialSavingsBytes() > 0) {
+      <span class="savings-badge">
+        <mat-icon class="badge-icon">cleaning_services</mat-icon>
+        Save {{ formattedSavings() }}
+      </span>
+    }
+  </div>
+
+  <!-- Navigation Tabs -->
+  <div class="cleanup-tabs">
+    <button
+      class="tab-btn"
+      [class.active]="activeTab() === 'largest'"
+      (click)="setTab('largest')"
+    >
+      <mat-icon>trending_up</mat-icon>
+      Largest Files ({{ largestFiles().length }})
+    </button>
+    <button
+      class="tab-btn"
+      [class.active]="activeTab() === 'duplicates'"
+      (click)="setTab('duplicates')"
+    >
+      <mat-icon>content_copy</mat-icon>
+      Duplicates ({{ duplicateGroups().length }})
+    </button>
+    <button
+      class="tab-btn"
+      [class.active]="activeTab() === 'stuck'"
+      (click)="setTab('stuck')"
+    >
+      <mat-icon>hourglass_empty</mat-icon>
+      Pending/Stuck ({{ stuckUploads().length }})
+    </button>
+  </div>
+
+  <!-- Tab Content -->
+  <div class="cleanup-content">
+    @switch (activeTab()) {
+      <!-- 1. Largest Files Tab -->
+      @case ('largest') {
+        @if (largestFiles().length > 0) {
+          <div class="file-list">
+            @for (file of largestFiles(); track file.fileId) {
+              <div class="cleanup-item">
+                <div class="item-info">
+                  <mat-icon class="file-icon">description</mat-icon>
+                  <div class="item-names">
+                    <span class="name" [title]="file.fileName">{{ file.fileName }}</span>
+                    <span class="meta">{{ formatBytes(file.fileSize) }} · {{ file.updatedAt | date:'shortDate' }}</span>
+                  </div>
+                </div>
+                <div class="item-actions">
+                  <button mat-icon-button (click)="onPreview(file)" matTooltip="Preview file" aria-label="Preview file">
+                    <mat-icon>visibility</mat-icon>
+                  </button>
+                  <button mat-icon-button class="delete-btn" (click)="onDelete(file)" matTooltip="Delete to trash" aria-label="Delete file">
+                    <mat-icon>delete_outline</mat-icon>
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="empty-state">
+            <mat-icon>check_circle</mat-icon>
+            <p>No large files found.</p>
+          </div>
+        }
+      }
+
+      <!-- 2. Duplicates Tab -->
+      @case ('duplicates') {
+        @if (duplicateGroups().length > 0) {
+          <div class="duplicates-list">
+            @for (group of duplicateGroups(); track group.name + group.size) {
+              <div class="duplicate-group">
+                <div class="group-header">
+                  <span class="group-title">{{ group.name }}</span>
+                  <span class="group-size">{{ formatBytes(group.size) }} each ({{ group.files.length }} copies)</span>
+                </div>
+                <div class="group-files">
+                  @for (file of group.files; track file.fileId; let idx = $index) {
+                    <div class="cleanup-item sub-item">
+                      <div class="item-info">
+                        <span class="copy-badge">Copy #{{ idx + 1 }}</span>
+                        <span class="created-at">Created {{ file.createdAt | date:'mediumDate' }}</span>
+                      </div>
+                      <div class="item-actions">
+                        <button mat-icon-button (click)="onPreview(file)" matTooltip="Preview" aria-label="Preview copy">
+                          <mat-icon>visibility</mat-icon>
+                        </button>
+                        <button mat-icon-button class="delete-btn" (click)="onDelete(file)" matTooltip="Delete duplicate" aria-label="Delete copy">
+                          <mat-icon>delete_outline</mat-icon>
+                        </button>
+                      </div>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="empty-state">
+            <mat-icon>check_circle</mat-icon>
+            <p>No duplicate files detected. Storage is well optimized!</p>
+          </div>
+        }
+      }
+
+      <!-- 3. Stuck Uploads Tab -->
+      @case ('stuck') {
+        @if (stuckUploads().length > 0) {
+          <div class="file-list">
+            @for (file of stuckUploads(); track file.fileId) {
+              <div class="cleanup-item">
+                <div class="item-info">
+                  <mat-icon class="warning-icon">warning</mat-icon>
+                  <div class="item-names">
+                    <span class="name">{{ file.fileName }}</span>
+                    <span class="meta">Stuck since {{ file.createdAt | date:'short' }}</span>
+                  </div>
+                </div>
+                <div class="item-actions">
+                  <button mat-icon-button class="delete-btn" (click)="onDelete(file)" matTooltip="Remove stuck upload" aria-label="Remove stuck upload">
+                    <mat-icon>delete_outline</mat-icon>
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="empty-state">
+            <mat-icon>check_circle</mat-icon>
+            <p>No stuck or failed uploads.</p>
+          </div>
+        }
+      }
+    }
+  </div>
+</div>

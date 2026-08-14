@@ -57,6 +57,22 @@
   }
 }
 
+.storage-insights-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-lg, 16px);
+
+  @media (min-width: 1024px) {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .insights-col {
+    display: flex;
+    width: 100%;
+  }
+}
+
+
 .stat-card {
   position: relative;
   background: var(--bg-glass, rgba(255, 255, 255, 0.7));

@@ -1,0 +1,74 @@
+<div class="storage-analytics-card">
+  <div class="analytics-header">
+    <div class="title-wrapper">
+      <mat-icon class="header-icon">pie_chart</mat-icon>
+      <h3>Storage Breakdown</h3>
+    </div>
+    <span class="quota-badge">{{ quotaPercent().toFixed(1) }}% of 5 GB used</span>
+  </div>
+
+  <div class="analytics-body">
+    <!-- SVG Donut Chart -->
+    <div class="chart-container">
+      <svg class="donut-chart" viewBox="0 0 100 100" aria-label="Storage allocation donut chart">
+        <!-- Background track circle -->
+        <circle
+          cx="50"
+          cy="50"
+          r="40"
+          class="donut-track"
+        />
+
+        <!-- Category segments -->
+        @for (cat of categories(); track cat.key) {
+          @if (cat.size > 0) {
+            <circle
+              cx="50"
+              cy="50"
+              r="40"
+              class="donut-segment"
+              [style.stroke]="cat.color"
+              [style.stroke-dasharray]="cat.dashArray"
+              [style.stroke-dashoffset]="cat.dashOffset"
+              [matTooltip]="cat.label + ': ' + formatBytes(cat.size) + ' (' + cat.percent + '%)'"
+            />
+          }
+        }
+      </svg>
+
+      <!-- Center text inside donut -->
+      <div class="chart-center">
+        <span class="center-value">{{ formattedTotalSize() }}</span>
+        <span class="center-label">Used</span>
+      </div>
+    </div>
+
+    <!-- Category Legend List -->
+    <div class="legend-list">
+      @for (cat of categories(); track cat.key) {
+        <div class="legend-item" [class.empty]="cat.size === 0">
+          <div class="legend-info">
+            <span class="color-dot" [style.background-color]="cat.color"></span>
+            <mat-icon class="cat-icon">{{ cat.icon }}</mat-icon>
+            <span class="cat-name">{{ cat.label }}</span>
+          </div>
+          <div class="legend-stats">
+            <span class="cat-size">{{ formatBytes(cat.size) }}</span>
+            <span class="cat-count">({{ cat.count }})</span>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- Quota Progress Bar -->
+  <div class="quota-progress-container">
+    <div class="progress-bar">
+      <div class="progress-fill" [style.width.%]="quotaPercent()"></div>
+    </div>
+    <div class="quota-labels">
+      <span>{{ formattedTotalSize() }} used</span>
+      <span>5 GB Free Tier</span>
+    </div>
+  </div>
+</div>

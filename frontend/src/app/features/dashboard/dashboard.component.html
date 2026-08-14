@@ -59,8 +59,19 @@
     </div>
   </section>
 
+  <!-- Storage Insights: Analytics Donut & Cleanup Assistant -->
+  <section class="storage-insights-row">
+    <div class="insights-col">
+      <app-storage-analytics />
+    </div>
+    <div class="insights-col">
+      <app-cleanup-assistant />
+    </div>
+  </section>
+
   <section class="recent-files">
     <h2>Recent Files</h2>
+
     @if (recentFiles().length > 0) {
       <div class="recent-files-list">
         @for (file of recentFiles(); track file.fileId) {
