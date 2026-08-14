@@ -41,7 +41,7 @@ export const handler = async (event: APIGatewayProxyEventV2): Promise<APIGateway
     const targetPK = fileItem['originalPK'] || folderPK(userId, fileItem['folderId'] || 'ROOT');
 
     // Remove trash-specific metadata properties
-    const restoredItem = {
+    const restoredItem: Record<string, unknown> = {
       ...fileItem,
       PK: targetPK,
       updatedAt: new Date().toISOString()
@@ -49,6 +49,7 @@ export const handler = async (event: APIGatewayProxyEventV2): Promise<APIGateway
     delete restoredItem['deletedAt'];
     delete restoredItem['originalPK'];
     delete restoredItem['ttl'];
+
 
 
 

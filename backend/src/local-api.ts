@@ -249,6 +249,7 @@ async function main(): Promise<void> {
   const { handler: revokeShare }    = await import('./handlers/shares/revoke-share.js');
   const { handler: listVersions }   = await import('./handlers/files/list-versions.js');
   const { handler: rollbackVersion } = await import('./handlers/files/rollback-version.js');
+  const { handler: summarizeFile }  = await import('./handlers/files/summarize-file.js');
   const { handler: postConfirmation } = await import('./handlers/auth/post-confirmation.js');
 
   // 3. Express app
@@ -281,15 +282,17 @@ async function main(): Promise<void> {
   app.post('/share/:token/download', lambdaRoute(downloadShare));
   app.delete('/share/:token',        lambdaRoute(revokeShare));
 
-  // Versions (specific routes before parameterized files)
+  // Versions & Summarization (specific routes before parameterized files)
   app.get('/files/:id/versions',     lambdaRoute(listVersions));
   app.post('/files/:id/rollback',    lambdaRoute(rollbackVersion));
+  app.post('/files/:id/summarize',   lambdaRoute(summarizeFile));
 
   // Files — specific routes BEFORE parameterized routes
   app.post('/files/upload-url',       lambdaRoute(getUploadUrl));
   app.post('/files/confirm-upload',   lambdaRoute(confirmUpload));
   app.post('/files/:id/download-url', lambdaRoute(getDownloadUrl));
   app.post('/files/:id/restore',      lambdaRoute(restoreFile));
+
   app.get('/files/recent',            lambdaRoute(recentFiles));
   app.get('/files',                   lambdaRoute(listFiles));
   app.get('/files/:id',               lambdaRoute(getFile));
