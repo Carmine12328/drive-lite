@@ -22,6 +22,11 @@ export interface FileItem {
   createdAt: string;
   /** Timestamp when the record was last updated in ISO 8601 format */
   updatedAt: string;
+  /** S3 key for generated 200x200 webp thumbnail, if generated */
+  thumbnailKey?: string;
+  /** Thumbnail size in bytes, if generated */
+  thumbnailSize?: number;
   /** Timestamp when the record was soft-deleted (trash), if applicable */
   deletedAt?: string;
 }
+

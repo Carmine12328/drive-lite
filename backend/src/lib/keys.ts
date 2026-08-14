@@ -68,6 +68,17 @@ export function s3Key(userId: string, fileId: string, fileName: string): string 
 }
 
 /**
+ * Build the S3 object key for a generated thumbnail.
+ * @param userId - Cognito user sub
+ * @param fileId - File ID (ULID)
+ * @returns `thumbnails/users/${userId}/files/${fileId}/thumb.webp`
+ */
+export function thumbnailS3Key(userId: string, fileId: string): string {
+  return `thumbnails/users/${userId}/files/${fileId}/thumb.webp`;
+}
+
+
+/**
  * Build the partition key for a share link.
  * @param shareToken - Unique share token
  * @returns `SHARE#${shareToken}`

@@ -17,6 +17,7 @@
     "@aws-sdk/client-s3": "^3.650.0",
     "@aws-sdk/lib-dynamodb": "^3.650.0",
     "@aws-sdk/s3-request-presigner": "^3.650.0",
+    "sharp": "^0.35.3",
     "ulid": "^2.3.0"
   },
   "devDependencies": {
@@ -24,6 +25,7 @@
     "@types/aws-lambda": "^8.10.145",
     "@types/express": "^5.0.6",
     "@types/node": "^20.14.0",
+    "@types/sharp": "^0.31.1",
     "eslint": "^10.8.1",
     "express": "^5.2.1",
     "tsx": "^4.23.12",

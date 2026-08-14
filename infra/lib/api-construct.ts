@@ -79,7 +79,7 @@ export class ApiConstruct extends Construct {
     };
 
     // Helper to create Lambda functions
-    const createHandler = (name: string, entry: string, timeout = 30): NodejsFunction => {
+    const createHandler = (name: string, entry: string, timeout = 30, extraNodeModules?: string[]): NodejsFunction => {
       return new NodejsFunction(this, name, {
         entry: path.join(__dirname, entry),
         handler: 'handler',
@@ -93,6 +93,7 @@ export class ApiConstruct extends Construct {
           banner: "import { createRequire } from 'module';const require = createRequire(import.meta.url);",
           // Externalize SDK for Lambda runtime (reduces bundle size)
           externalModules: ['@aws-sdk/*'],
+          nodeModules: extraNodeModules,
         },
       });
     };
@@ -131,6 +132,9 @@ export class ApiConstruct extends Construct {
     const listVersions = createHandler('ListVersionsFn', '../../backend/src/handlers/files/list-versions.ts');
     const rollbackVersion = createHandler('RollbackVersionFn', '../../backend/src/handlers/files/rollback-version.ts');
 
+    // --- Thumbnail Generator (S3 event trigger) ---
+    const generateThumbnail = createHandler('GenerateThumbnailFn', '../../backend/src/handlers/files/generate-thumbnail.ts', 60, ['sharp']);
+
     // --- Auth Handler (Cognito trigger, not an API route) ---
     this.postConfirmationHandler = createHandler(
       'PostConfirmationFn',
@@ -145,7 +149,7 @@ export class ApiConstruct extends Construct {
       listFiles, getFile, renameFile, deleteFile, recentFiles,
       listTrash, restoreFile, permanentDeleteFile, emptyTrash,
       createShare, getShare, downloadShare, listShares, revokeShare,
-      listVersions, rollbackVersion,
+      listVersions, rollbackVersion, generateThumbnail,
       this.postConfirmationHandler,
     ];
     for (const fn of allHandlers) {
@@ -159,6 +163,7 @@ export class ApiConstruct extends Construct {
     props.bucket.grantRead(downloadShare);  // GetObject for public presigned download URLs
     props.bucket.grantRead(listVersions);   // ListBucketVersions for version history
     props.bucket.grantReadWrite(rollbackVersion); // CopyObject and HeadObject for version rollback
+    props.bucket.grantReadWrite(generateThumbnail); // GetObject and PutObject for thumbnails
     props.bucket.grantDelete(deleteFile);    // DeleteObject for cleanup
     props.bucket.grantDelete(permanentDeleteFile); // DeleteObject for trash cleanup
     props.bucket.grantDelete(emptyTrash);          // DeleteObject for emptying trash

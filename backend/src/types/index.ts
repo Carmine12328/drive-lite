@@ -36,11 +36,14 @@ export interface FileItem {
   uploadStatus: UploadStatus;
   createdAt: string;        // ISO 8601
   updatedAt: string;        // ISO 8601
+  thumbnailKey?: string;    // S3 key for generated 200x200 webp thumbnail
+  thumbnailSize?: number;   // Thumbnail size in bytes
   // Soft-delete fields (present only when trashed)
   deletedAt?: string;       // ISO 8601
   originalPK?: string;      // Original PK before trash move
   ttl?: number;             // Unix epoch for DynamoDB TTL auto-cleanup
 }
+
 
 /** DynamoDB user profile item */
 export interface UserProfile {
