@@ -166,3 +166,32 @@ export interface DownloadShareResponse {
   fileName: string;
 }
 
+/** File version representation from S3 versioning */
+export interface FileVersion {
+  versionId: string;
+  lastModified: string;
+  size: number;
+  isLatest: boolean;
+  etag?: string;
+}
+
+/** Response from listing versions */
+export interface ListVersionsResponse {
+  versions: FileVersion[];
+}
+
+/** Request body for rolling back to a specific version */
+export interface RollbackVersionRequest {
+  versionId: string;
+}
+
+/** Response from rolling back to a version */
+export interface RollbackVersionResponse {
+  message: string;
+  fileId: string;
+  versionId: string;
+  fileSize: number;
+  updatedAt: string;
+}
+
+

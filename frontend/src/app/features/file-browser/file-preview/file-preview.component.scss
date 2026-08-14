@@ -196,7 +196,8 @@
       gap: var(--space-2);
     }
 
-    .share-btn {
+    .share-btn,
+    .version-btn {
       border: 1px solid var(--border-color);
       color: var(--accent-primary);
 
@@ -207,6 +208,7 @@
     }
   }
 }
+
 
 
 .info-toggle {

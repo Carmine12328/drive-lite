@@ -127,6 +127,10 @@ export class ApiConstruct extends Construct {
     const listShares = createHandler('ListSharesFn', '../../backend/src/handlers/shares/list-shares.ts');
     const revokeShare = createHandler('RevokeShareFn', '../../backend/src/handlers/shares/revoke-share.ts');
 
+    // --- Version Handlers ---
+    const listVersions = createHandler('ListVersionsFn', '../../backend/src/handlers/files/list-versions.ts');
+    const rollbackVersion = createHandler('RollbackVersionFn', '../../backend/src/handlers/files/rollback-version.ts');
+
     // --- Auth Handler (Cognito trigger, not an API route) ---
     this.postConfirmationHandler = createHandler(
       'PostConfirmationFn',
@@ -141,6 +145,7 @@ export class ApiConstruct extends Construct {
       listFiles, getFile, renameFile, deleteFile, recentFiles,
       listTrash, restoreFile, permanentDeleteFile, emptyTrash,
       createShare, getShare, downloadShare, listShares, revokeShare,
+      listVersions, rollbackVersion,
       this.postConfirmationHandler,
     ];
     for (const fn of allHandlers) {
@@ -152,9 +157,12 @@ export class ApiConstruct extends Construct {
     props.bucket.grantRead(getDownloadUrl);  // GetObject for presigned URLs
     props.bucket.grantRead(confirmUpload);   // HeadObject to verify upload
     props.bucket.grantRead(downloadShare);  // GetObject for public presigned download URLs
+    props.bucket.grantRead(listVersions);   // ListBucketVersions for version history
+    props.bucket.grantReadWrite(rollbackVersion); // CopyObject and HeadObject for version rollback
     props.bucket.grantDelete(deleteFile);    // DeleteObject for cleanup
     props.bucket.grantDelete(permanentDeleteFile); // DeleteObject for trash cleanup
     props.bucket.grantDelete(emptyTrash);          // DeleteObject for emptying trash
+
 
     // --- API Routes (all behind JWT authorizer) ---
     // Folders
@@ -238,6 +246,21 @@ export class ApiConstruct extends Construct {
       integration: new HttpLambdaIntegration('RestoreFileIntegration', restoreFile),
       authorizer,
     });
+
+    // Versions (Authenticated)
+    this.api.addRoutes({
+      path: '/files/{id}/versions',
+      methods: [HttpMethod.GET],
+      integration: new HttpLambdaIntegration('ListVersionsIntegration', listVersions),
+      authorizer,
+    });
+    this.api.addRoutes({
+      path: '/files/{id}/rollback',
+      methods: [HttpMethod.POST],
+      integration: new HttpLambdaIntegration('RollbackVersionIntegration', rollbackVersion),
+      authorizer,
+    });
+
 
     // Shares (Authenticated)
     this.api.addRoutes({

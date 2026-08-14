@@ -17,10 +17,14 @@ import { ToastService } from '../../shared/components/toast/toast.service';
 import { FileItem } from '../../core/models/file-item.model';
 import { Folder } from '../../core/models/folder.model';
 import { UploadDialog, UploadDialogData } from './upload-dialog/upload-dialog';
+
 import { ConfirmDialog, ConfirmDialogData } from '../../shared/components/confirm-dialog/confirm-dialog';
 import { InputDialog, InputDialogData } from '../../shared/components/input-dialog/input-dialog';
 import { FilePreviewComponent, FilePreviewDialogData } from './file-preview/file-preview.component';
 import { ShareDialog, ShareDialogData } from '../../shared/components/share-dialog/share-dialog';
+import { VersionHistoryComponent, VersionHistoryData, VersionHistoryResult } from './version-history/version-history.component';
+
+
 
 
 /**
@@ -121,10 +125,12 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
   readonly fileContextMenuItems: ContextMenuItem[] = [
     { label: 'Open', icon: 'visibility', action: 'preview' },
     { label: 'Share', icon: 'share', action: 'share' },
+    { label: 'Version History', icon: 'history', action: 'versions' },
     { label: 'Download', icon: 'download', action: 'download' },
     { label: 'Rename', icon: 'edit', action: 'rename' },
     { label: 'Delete', icon: 'delete_outline', action: 'delete' },
   ];
+
 
   /** Context menu items for folders. */
   readonly folderContextMenuItems: ContextMenuItem[] = [
@@ -214,6 +220,12 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
       case 'preview':
         this.openPreviewDialog(event.file);
         break;
+      case 'share':
+        this.openShareDialog(event.file);
+        break;
+      case 'versions':
+        this.openVersionHistoryDialog(event.file);
+        break;
       case 'download':
         this.fileService.downloadFile(event.file.fileId);
         break;
@@ -224,6 +236,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
         this.openDeleteFileDialog(event.file);
         break;
     }
+
   }
 
   /**
@@ -421,6 +434,26 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
       ariaLabel: `Share ${file.fileName} dialog`,
     });
   }
+
+  /**
+   * Opens the version history dialog for viewing timeline and rolling back versions.
+   * @param file The file whose versions to inspect.
+   */
+  openVersionHistoryDialog(file: FileItem): void {
+    const data: VersionHistoryData = { file };
+    this.dialog.open(VersionHistoryComponent, {
+      width: '560px',
+      panelClass: 'drive-dialog',
+      data,
+      ariaLabel: `Version history for ${file.fileName}`,
+    }).afterClosed().subscribe((res: VersionHistoryResult | undefined) => {
+      if (res?.rolledBack) {
+        // Reload files in current folder to ensure UI freshness
+        this.fileService.listFiles(this.currentFolderId());
+      }
+    });
+  }
+
 
   /**
    * Opens a confirmation dialog for file deletion.

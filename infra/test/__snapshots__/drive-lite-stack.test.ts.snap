@@ -2568,6 +2568,83 @@ exports[`DriveLiteStack CDK Infrastructure > matches CloudFormation template sna
       },
       "Type": "AWS::Lambda::Permission",
     },
+    "ApiHttpApiGETfilesidversionsBD392601": {
+      "Properties": {
+        "ApiId": {
+          "Ref": "ApiHttpApi4C294DC0",
+        },
+        "AuthorizationType": "JWT",
+        "AuthorizerId": {
+          "Ref": "ApiHttpApiCognitoAuthorizerB58DB3E4",
+        },
+        "RouteKey": "GET /files/{id}/versions",
+        "Target": {
+          "Fn::Join": [
+            "",
+            [
+              "integrations/",
+              {
+                "Ref": "ApiHttpApiGETfilesidversionsListVersionsIntegrationF4F7878F",
+              },
+            ],
+          ],
+        },
+      },
+      "Type": "AWS::ApiGatewayV2::Route",
+    },
+    "ApiHttpApiGETfilesidversionsListVersionsIntegrationF4F7878F": {
+      "Properties": {
+        "ApiId": {
+          "Ref": "ApiHttpApi4C294DC0",
+        },
+        "IntegrationType": "AWS_PROXY",
+        "IntegrationUri": {
+          "Fn::GetAtt": [
+            "ApiListVersionsFnB05F3F2C",
+            "Arn",
+          ],
+        },
+        "PayloadFormatVersion": "2.0",
+      },
+      "Type": "AWS::ApiGatewayV2::Integration",
+    },
+    "ApiHttpApiGETfilesidversionsListVersionsIntegrationPermission0E5E0337": {
+      "Properties": {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "ApiListVersionsFnB05F3F2C",
+            "Arn",
+          ],
+        },
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Join": [
+            "",
+            [
+              "arn:",
+              {
+                "Ref": "AWS::Partition",
+              },
+              ":execute-api:",
+              {
+                "Ref": "AWS::Region",
+              },
+              ":",
+              {
+                "Ref": "AWS::AccountId",
+              },
+              ":",
+              {
+                "Ref": "ApiHttpApi4C294DC0",
+              },
+              "/*/*/files/{id}/versions",
+            ],
+          ],
+        },
+      },
+      "Type": "AWS::Lambda::Permission",
+    },
     "ApiHttpApiGETfilesrecent2F6DDF66": {
       "Properties": {
         "ApiId": {
@@ -3252,6 +3329,83 @@ exports[`DriveLiteStack CDK Infrastructure > matches CloudFormation template sna
                 "Ref": "ApiHttpApi4C294DC0",
               },
               "/*/*/files/{id}/restore",
+            ],
+          ],
+        },
+      },
+      "Type": "AWS::Lambda::Permission",
+    },
+    "ApiHttpApiPOSTfilesidrollbackC6AE9CAF": {
+      "Properties": {
+        "ApiId": {
+          "Ref": "ApiHttpApi4C294DC0",
+        },
+        "AuthorizationType": "JWT",
+        "AuthorizerId": {
+          "Ref": "ApiHttpApiCognitoAuthorizerB58DB3E4",
+        },
+        "RouteKey": "POST /files/{id}/rollback",
+        "Target": {
+          "Fn::Join": [
+            "",
+            [
+              "integrations/",
+              {
+                "Ref": "ApiHttpApiPOSTfilesidrollbackRollbackVersionIntegration034FB7E3",
+              },
+            ],
+          ],
+        },
+      },
+      "Type": "AWS::ApiGatewayV2::Route",
+    },
+    "ApiHttpApiPOSTfilesidrollbackRollbackVersionIntegration034FB7E3": {
+      "Properties": {
+        "ApiId": {
+          "Ref": "ApiHttpApi4C294DC0",
+        },
+        "IntegrationType": "AWS_PROXY",
+        "IntegrationUri": {
+          "Fn::GetAtt": [
+            "ApiRollbackVersionFn07A2EB7D",
+            "Arn",
+          ],
+        },
+        "PayloadFormatVersion": "2.0",
+      },
+      "Type": "AWS::ApiGatewayV2::Integration",
+    },
+    "ApiHttpApiPOSTfilesidrollbackRollbackVersionIntegrationPermissionCAD10CAF": {
+      "Properties": {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "ApiRollbackVersionFn07A2EB7D",
+            "Arn",
+          ],
+        },
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Join": [
+            "",
+            [
+              "arn:",
+              {
+                "Ref": "AWS::Partition",
+              },
+              ":execute-api:",
+              {
+                "Ref": "AWS::Region",
+              },
+              ":",
+              {
+                "Ref": "AWS::AccountId",
+              },
+              ":",
+              {
+                "Ref": "ApiHttpApi4C294DC0",
+              },
+              "/*/*/files/{id}/rollback",
             ],
           ],
         },
@@ -4166,6 +4320,188 @@ exports[`DriveLiteStack CDK Infrastructure > matches CloudFormation template sna
         "Roles": [
           {
             "Ref": "ApiListTrashFnServiceRole9EA82F12",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "ApiListVersionsFnB05F3F2C": {
+      "DependsOn": [
+        "ApiListVersionsFnServiceRoleDefaultPolicyFE0C823F",
+        "ApiListVersionsFnServiceRole99776F63",
+      ],
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
+          },
+          "S3Key": "ae7bb3de6167501843e6c50f5bada493e077fba44926f31fc40326b44a73826c.zip",
+        },
+        "Environment": {
+          "Variables": {
+            "ALLOWED_ORIGINS": "http://localhost:4200",
+            "BUCKET_NAME": {
+              "Ref": "StorageFilesBucket28699C44",
+            },
+            "REGION": {
+              "Ref": "AWS::Region",
+            },
+            "TABLE_NAME": {
+              "Ref": "StorageMetadataTableFA6FB852",
+            },
+          },
+        },
+        "Handler": "index.handler",
+        "MemorySize": 256,
+        "Role": {
+          "Fn::GetAtt": [
+            "ApiListVersionsFnServiceRole99776F63",
+            "Arn",
+          ],
+        },
+        "Runtime": "nodejs20.x",
+        "Timeout": 30,
+      },
+      "Type": "AWS::Lambda::Function",
+    },
+    "ApiListVersionsFnServiceRole99776F63": {
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "ManagedPolicyArns": [
+          {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition",
+                },
+                ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+              ],
+            ],
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "ApiListVersionsFnServiceRoleDefaultPolicyFE0C823F": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "dynamodb:BatchGetItem",
+                "dynamodb:Query",
+                "dynamodb:GetItem",
+                "dynamodb:Scan",
+                "dynamodb:ConditionCheckItem",
+                "dynamodb:BatchWriteItem",
+                "dynamodb:PutItem",
+                "dynamodb:UpdateItem",
+                "dynamodb:DeleteItem",
+                "dynamodb:DescribeTable",
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "StorageMetadataTableFA6FB852",
+                    "Arn",
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::GetAtt": [
+                          "StorageMetadataTableFA6FB852",
+                          "Arn",
+                        ],
+                      },
+                      "/index/*",
+                    ],
+                  ],
+                },
+              ],
+            },
+            {
+              "Action": [
+                "dynamodb:GetRecords",
+                "dynamodb:GetShardIterator",
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "StorageMetadataTableFA6FB852",
+                    "Arn",
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::GetAtt": [
+                          "StorageMetadataTableFA6FB852",
+                          "Arn",
+                        ],
+                      },
+                      "/index/*",
+                    ],
+                  ],
+                },
+              ],
+            },
+            {
+              "Action": [
+                "s3:GetObject*",
+                "s3:GetBucket*",
+                "s3:List*",
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "StorageFilesBucket28699C44",
+                    "Arn",
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::GetAtt": [
+                          "StorageFilesBucket28699C44",
+                          "Arn",
+                        ],
+                      },
+                      "/*",
+                    ],
+                  ],
+                },
+              ],
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "ApiListVersionsFnServiceRoleDefaultPolicyFE0C823F",
+        "Roles": [
+          {
+            "Ref": "ApiListVersionsFnServiceRole99776F63",
           },
         ],
       },
@@ -5248,6 +5584,195 @@ exports[`DriveLiteStack CDK Infrastructure > matches CloudFormation template sna
         "Roles": [
           {
             "Ref": "ApiRevokeShareFnServiceRole258AB589",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "ApiRollbackVersionFn07A2EB7D": {
+      "DependsOn": [
+        "ApiRollbackVersionFnServiceRoleDefaultPolicyCBCA8D53",
+        "ApiRollbackVersionFnServiceRole4FAEEACF",
+      ],
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
+          },
+          "S3Key": "1683fd82a0138be861acb0ab323ca09a1e4d951f46d79f87bc12202af86fe53a.zip",
+        },
+        "Environment": {
+          "Variables": {
+            "ALLOWED_ORIGINS": "http://localhost:4200",
+            "BUCKET_NAME": {
+              "Ref": "StorageFilesBucket28699C44",
+            },
+            "REGION": {
+              "Ref": "AWS::Region",
+            },
+            "TABLE_NAME": {
+              "Ref": "StorageMetadataTableFA6FB852",
+            },
+          },
+        },
+        "Handler": "index.handler",
+        "MemorySize": 256,
+        "Role": {
+          "Fn::GetAtt": [
+            "ApiRollbackVersionFnServiceRole4FAEEACF",
+            "Arn",
+          ],
+        },
+        "Runtime": "nodejs20.x",
+        "Timeout": 30,
+      },
+      "Type": "AWS::Lambda::Function",
+    },
+    "ApiRollbackVersionFnServiceRole4FAEEACF": {
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "ManagedPolicyArns": [
+          {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition",
+                },
+                ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+              ],
+            ],
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "ApiRollbackVersionFnServiceRoleDefaultPolicyCBCA8D53": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "dynamodb:BatchGetItem",
+                "dynamodb:Query",
+                "dynamodb:GetItem",
+                "dynamodb:Scan",
+                "dynamodb:ConditionCheckItem",
+                "dynamodb:BatchWriteItem",
+                "dynamodb:PutItem",
+                "dynamodb:UpdateItem",
+                "dynamodb:DeleteItem",
+                "dynamodb:DescribeTable",
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "StorageMetadataTableFA6FB852",
+                    "Arn",
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::GetAtt": [
+                          "StorageMetadataTableFA6FB852",
+                          "Arn",
+                        ],
+                      },
+                      "/index/*",
+                    ],
+                  ],
+                },
+              ],
+            },
+            {
+              "Action": [
+                "dynamodb:GetRecords",
+                "dynamodb:GetShardIterator",
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "StorageMetadataTableFA6FB852",
+                    "Arn",
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::GetAtt": [
+                          "StorageMetadataTableFA6FB852",
+                          "Arn",
+                        ],
+                      },
+                      "/index/*",
+                    ],
+                  ],
+                },
+              ],
+            },
+            {
+              "Action": [
+                "s3:GetObject*",
+                "s3:GetBucket*",
+                "s3:List*",
+                "s3:DeleteObject*",
+                "s3:PutObject",
+                "s3:PutObjectLegalHold",
+                "s3:PutObjectRetention",
+                "s3:PutObjectTagging",
+                "s3:PutObjectVersionTagging",
+                "s3:Abort*",
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "StorageFilesBucket28699C44",
+                    "Arn",
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::GetAtt": [
+                          "StorageFilesBucket28699C44",
+                          "Arn",
+                        ],
+                      },
+                      "/*",
+                    ],
+                  ],
+                },
+              ],
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "ApiRollbackVersionFnServiceRoleDefaultPolicyCBCA8D53",
+        "Roles": [
+          {
+            "Ref": "ApiRollbackVersionFnServiceRole4FAEEACF",
           },
         ],
       },
@@ -8273,6 +8798,83 @@ exports[`DriveLiteStack CDK Infrastructure > matches full CloudFormation templat
       },
       "Type": "AWS::Lambda::Permission",
     },
+    "ApiHttpApiGETfilesidversionsBD392601": {
+      "Properties": {
+        "ApiId": {
+          "Ref": "ApiHttpApi4C294DC0",
+        },
+        "AuthorizationType": "JWT",
+        "AuthorizerId": {
+          "Ref": "ApiHttpApiCognitoAuthorizerB58DB3E4",
+        },
+        "RouteKey": "GET /files/{id}/versions",
+        "Target": {
+          "Fn::Join": [
+            "",
+            [
+              "integrations/",
+              {
+                "Ref": "ApiHttpApiGETfilesidversionsListVersionsIntegrationF4F7878F",
+              },
+            ],
+          ],
+        },
+      },
+      "Type": "AWS::ApiGatewayV2::Route",
+    },
+    "ApiHttpApiGETfilesidversionsListVersionsIntegrationF4F7878F": {
+      "Properties": {
+        "ApiId": {
+          "Ref": "ApiHttpApi4C294DC0",
+        },
+        "IntegrationType": "AWS_PROXY",
+        "IntegrationUri": {
+          "Fn::GetAtt": [
+            "ApiListVersionsFnB05F3F2C",
+            "Arn",
+          ],
+        },
+        "PayloadFormatVersion": "2.0",
+      },
+      "Type": "AWS::ApiGatewayV2::Integration",
+    },
+    "ApiHttpApiGETfilesidversionsListVersionsIntegrationPermission0E5E0337": {
+      "Properties": {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "ApiListVersionsFnB05F3F2C",
+            "Arn",
+          ],
+        },
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Join": [
+            "",
+            [
+              "arn:",
+              {
+                "Ref": "AWS::Partition",
+              },
+              ":execute-api:",
+              {
+                "Ref": "AWS::Region",
+              },
+              ":",
+              {
+                "Ref": "AWS::AccountId",
+              },
+              ":",
+              {
+                "Ref": "ApiHttpApi4C294DC0",
+              },
+              "/*/*/files/{id}/versions",
+            ],
+          ],
+        },
+      },
+      "Type": "AWS::Lambda::Permission",
+    },
     "ApiHttpApiGETfilesrecent2F6DDF66": {
       "Properties": {
         "ApiId": {
@@ -8957,6 +9559,83 @@ exports[`DriveLiteStack CDK Infrastructure > matches full CloudFormation templat
                 "Ref": "ApiHttpApi4C294DC0",
               },
               "/*/*/files/{id}/restore",
+            ],
+          ],
+        },
+      },
+      "Type": "AWS::Lambda::Permission",
+    },
+    "ApiHttpApiPOSTfilesidrollbackC6AE9CAF": {
+      "Properties": {
+        "ApiId": {
+          "Ref": "ApiHttpApi4C294DC0",
+        },
+        "AuthorizationType": "JWT",
+        "AuthorizerId": {
+          "Ref": "ApiHttpApiCognitoAuthorizerB58DB3E4",
+        },
+        "RouteKey": "POST /files/{id}/rollback",
+        "Target": {
+          "Fn::Join": [
+            "",
+            [
+              "integrations/",
+              {
+                "Ref": "ApiHttpApiPOSTfilesidrollbackRollbackVersionIntegration034FB7E3",
+              },
+            ],
+          ],
+        },
+      },
+      "Type": "AWS::ApiGatewayV2::Route",
+    },
+    "ApiHttpApiPOSTfilesidrollbackRollbackVersionIntegration034FB7E3": {
+      "Properties": {
+        "ApiId": {
+          "Ref": "ApiHttpApi4C294DC0",
+        },
+        "IntegrationType": "AWS_PROXY",
+        "IntegrationUri": {
+          "Fn::GetAtt": [
+            "ApiRollbackVersionFn07A2EB7D",
+            "Arn",
+          ],
+        },
+        "PayloadFormatVersion": "2.0",
+      },
+      "Type": "AWS::ApiGatewayV2::Integration",
+    },
+    "ApiHttpApiPOSTfilesidrollbackRollbackVersionIntegrationPermissionCAD10CAF": {
+      "Properties": {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "ApiRollbackVersionFn07A2EB7D",
+            "Arn",
+          ],
+        },
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Join": [
+            "",
+            [
+              "arn:",
+              {
+                "Ref": "AWS::Partition",
+              },
+              ":execute-api:",
+              {
+                "Ref": "AWS::Region",
+              },
+              ":",
+              {
+                "Ref": "AWS::AccountId",
+              },
+              ":",
+              {
+                "Ref": "ApiHttpApi4C294DC0",
+              },
+              "/*/*/files/{id}/rollback",
             ],
           ],
         },
@@ -9871,6 +10550,188 @@ exports[`DriveLiteStack CDK Infrastructure > matches full CloudFormation templat
         "Roles": [
           {
             "Ref": "ApiListTrashFnServiceRole9EA82F12",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "ApiListVersionsFnB05F3F2C": {
+      "DependsOn": [
+        "ApiListVersionsFnServiceRoleDefaultPolicyFE0C823F",
+        "ApiListVersionsFnServiceRole99776F63",
+      ],
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
+          },
+          "S3Key": "ae7bb3de6167501843e6c50f5bada493e077fba44926f31fc40326b44a73826c.zip",
+        },
+        "Environment": {
+          "Variables": {
+            "ALLOWED_ORIGINS": "http://localhost:4200",
+            "BUCKET_NAME": {
+              "Ref": "StorageFilesBucket28699C44",
+            },
+            "REGION": {
+              "Ref": "AWS::Region",
+            },
+            "TABLE_NAME": {
+              "Ref": "StorageMetadataTableFA6FB852",
+            },
+          },
+        },
+        "Handler": "index.handler",
+        "MemorySize": 256,
+        "Role": {
+          "Fn::GetAtt": [
+            "ApiListVersionsFnServiceRole99776F63",
+            "Arn",
+          ],
+        },
+        "Runtime": "nodejs20.x",
+        "Timeout": 30,
+      },
+      "Type": "AWS::Lambda::Function",
+    },
+    "ApiListVersionsFnServiceRole99776F63": {
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "ManagedPolicyArns": [
+          {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition",
+                },
+                ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+              ],
+            ],
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "ApiListVersionsFnServiceRoleDefaultPolicyFE0C823F": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "dynamodb:BatchGetItem",
+                "dynamodb:Query",
+                "dynamodb:GetItem",
+                "dynamodb:Scan",
+                "dynamodb:ConditionCheckItem",
+                "dynamodb:BatchWriteItem",
+                "dynamodb:PutItem",
+                "dynamodb:UpdateItem",
+                "dynamodb:DeleteItem",
+                "dynamodb:DescribeTable",
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "StorageMetadataTableFA6FB852",
+                    "Arn",
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::GetAtt": [
+                          "StorageMetadataTableFA6FB852",
+                          "Arn",
+                        ],
+                      },
+                      "/index/*",
+                    ],
+                  ],
+                },
+              ],
+            },
+            {
+              "Action": [
+                "dynamodb:GetRecords",
+                "dynamodb:GetShardIterator",
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "StorageMetadataTableFA6FB852",
+                    "Arn",
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::GetAtt": [
+                          "StorageMetadataTableFA6FB852",
+                          "Arn",
+                        ],
+                      },
+                      "/index/*",
+                    ],
+                  ],
+                },
+              ],
+            },
+            {
+              "Action": [
+                "s3:GetObject*",
+                "s3:GetBucket*",
+                "s3:List*",
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "StorageFilesBucket28699C44",
+                    "Arn",
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::GetAtt": [
+                          "StorageFilesBucket28699C44",
+                          "Arn",
+                        ],
+                      },
+                      "/*",
+                    ],
+                  ],
+                },
+              ],
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "ApiListVersionsFnServiceRoleDefaultPolicyFE0C823F",
+        "Roles": [
+          {
+            "Ref": "ApiListVersionsFnServiceRole99776F63",
           },
         ],
       },
@@ -10953,6 +11814,195 @@ exports[`DriveLiteStack CDK Infrastructure > matches full CloudFormation templat
         "Roles": [
           {
             "Ref": "ApiRevokeShareFnServiceRole258AB589",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "ApiRollbackVersionFn07A2EB7D": {
+      "DependsOn": [
+        "ApiRollbackVersionFnServiceRoleDefaultPolicyCBCA8D53",
+        "ApiRollbackVersionFnServiceRole4FAEEACF",
+      ],
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
+          },
+          "S3Key": "1683fd82a0138be861acb0ab323ca09a1e4d951f46d79f87bc12202af86fe53a.zip",
+        },
+        "Environment": {
+          "Variables": {
+            "ALLOWED_ORIGINS": "http://localhost:4200",
+            "BUCKET_NAME": {
+              "Ref": "StorageFilesBucket28699C44",
+            },
+            "REGION": {
+              "Ref": "AWS::Region",
+            },
+            "TABLE_NAME": {
+              "Ref": "StorageMetadataTableFA6FB852",
+            },
+          },
+        },
+        "Handler": "index.handler",
+        "MemorySize": 256,
+        "Role": {
+          "Fn::GetAtt": [
+            "ApiRollbackVersionFnServiceRole4FAEEACF",
+            "Arn",
+          ],
+        },
+        "Runtime": "nodejs20.x",
+        "Timeout": 30,
+      },
+      "Type": "AWS::Lambda::Function",
+    },
+    "ApiRollbackVersionFnServiceRole4FAEEACF": {
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "ManagedPolicyArns": [
+          {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition",
+                },
+                ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+              ],
+            ],
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "ApiRollbackVersionFnServiceRoleDefaultPolicyCBCA8D53": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "dynamodb:BatchGetItem",
+                "dynamodb:Query",
+                "dynamodb:GetItem",
+                "dynamodb:Scan",
+                "dynamodb:ConditionCheckItem",
+                "dynamodb:BatchWriteItem",
+                "dynamodb:PutItem",
+                "dynamodb:UpdateItem",
+                "dynamodb:DeleteItem",
+                "dynamodb:DescribeTable",
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "StorageMetadataTableFA6FB852",
+                    "Arn",
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::GetAtt": [
+                          "StorageMetadataTableFA6FB852",
+                          "Arn",
+                        ],
+                      },
+                      "/index/*",
+                    ],
+                  ],
+                },
+              ],
+            },
+            {
+              "Action": [
+                "dynamodb:GetRecords",
+                "dynamodb:GetShardIterator",
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "StorageMetadataTableFA6FB852",
+                    "Arn",
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::GetAtt": [
+                          "StorageMetadataTableFA6FB852",
+                          "Arn",
+                        ],
+                      },
+                      "/index/*",
+                    ],
+                  ],
+                },
+              ],
+            },
+            {
+              "Action": [
+                "s3:GetObject*",
+                "s3:GetBucket*",
+                "s3:List*",
+                "s3:DeleteObject*",
+                "s3:PutObject",
+                "s3:PutObjectLegalHold",
+                "s3:PutObjectRetention",
+                "s3:PutObjectTagging",
+                "s3:PutObjectVersionTagging",
+                "s3:Abort*",
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "StorageFilesBucket28699C44",
+                    "Arn",
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::GetAtt": [
+                          "StorageFilesBucket28699C44",
+                          "Arn",
+                        ],
+                      },
+                      "/*",
+                    ],
+                  ],
+                },
+              ],
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "ApiRollbackVersionFnServiceRoleDefaultPolicyCBCA8D53",
+        "Roles": [
+          {
+            "Ref": "ApiRollbackVersionFnServiceRole4FAEEACF",
           },
         ],
       },

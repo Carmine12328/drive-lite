@@ -12,8 +12,14 @@ import { FileItem } from '../../../core/models/file-item.model';
 import { FileService } from '../../../core/services/file.service';
 import { ApiService } from '../../../core/services/api.service';
 import { FileIconPipe } from '../../../shared/pipes/file-icon.pipe';
+
 import { FileSizePipe } from '../../../shared/pipes/file-size.pipe';
 import { ShareDialog } from '../../../shared/components/share-dialog/share-dialog';
+import { VersionHistoryComponent, VersionHistoryResult } from '../version-history/version-history.component';
+
+
+
+
 
 
 /**
@@ -243,10 +249,29 @@ export class FilePreviewComponent {
   }
 
   /**
+   * Opens the version history dialog for the currently previewed file.
+   */
+  onVersionHistory(): void {
+    this.dialog.open(VersionHistoryComponent, {
+      width: '560px',
+      panelClass: 'drive-dialog',
+      data: { file: this.currentFile() },
+      ariaLabel: `Version history for ${this.currentFile().fileName}`,
+    }).afterClosed().subscribe((res: VersionHistoryResult | undefined) => {
+      if (res?.rolledBack) {
+        // Fetch new download URL and refresh current preview content
+        this.loadPreview(this.currentFile());
+      }
+    });
+  }
+
+
+  /**
    * Toggles the info sidebar visibility.
    */
   toggleInfo(): void {
     this.showInfo.update(v => !v);
   }
 }
+
 

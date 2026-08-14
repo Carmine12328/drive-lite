@@ -1,16 +1,22 @@
-import { inject, Service, signal, WritableSignal } from '@angular/core';
+import { inject, Injectable, signal, WritableSignal } from '@angular/core';
 import { HttpParams } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { FileItem } from '../models/file-item.model';
+import { FileVersion, ListVersionsResponse, RollbackVersionResponse } from '../models/file-version.model';
 import { ApiService } from './api.service';
 import { ToastService } from '../../shared/components/toast/toast.service';
+
+
 
 /**
  * Service for managing file operations and state.
  * Communicates with the backend API via ApiService.
  */
-@Service()
+@Injectable({
+  providedIn: 'root'
+})
 export class FileService {
+
   private readonly api = inject(ApiService);
   private readonly toastService = inject(ToastService);
 
@@ -373,4 +379,60 @@ export class FileService {
     this.allFiles.push(file);
     this.files.update(current => [...current, file]);
   }
+
+  /**
+   * Fetches all S3 object versions for a file.
+   * Calls GET /files/{id}/versions.
+   *
+   * @param fileId The ID of the file to list versions for.
+   * @returns Array of FileVersion objects.
+   */
+  public async listVersions(fileId: string): Promise<FileVersion[]> {
+    try {
+      const response = await firstValueFrom(
+        this.api.get<ListVersionsResponse>(`/files/${fileId}/versions`)
+      );
+      return response.versions ?? [];
+    } catch (err: unknown) {
+      console.error('[FileService] listVersions error:', err);
+      throw err;
+    }
+  }
+
+  /**
+   * Restores a file to a previous S3 version.
+   * Calls POST /files/{id}/rollback.
+   *
+   * @param fileId The ID of the file to rollback.
+   * @param versionId The target version ID to restore.
+   * @returns Details of the rolled-back version.
+   */
+  public async rollbackVersion(fileId: string, versionId: string): Promise<RollbackVersionResponse> {
+    try {
+      const response = await firstValueFrom(
+        this.api.post<RollbackVersionResponse>(`/files/${fileId}/rollback`, { versionId })
+      );
+
+      // Update local file record with new size and timestamp
+      this.files.update(list => list.map(f => {
+        if (f.fileId === fileId) {
+          return {
+            ...f,
+            fileSize: response.fileSize,
+            updatedAt: response.updatedAt
+          };
+        }
+        return f;
+      }));
+
+      this.toastService.success('File restored to selected version');
+      return response;
+    } catch (err: unknown) {
+      console.error('[FileService] rollbackVersion error:', err);
+      this.toastService.error('Failed to rollback file version');
+      throw err;
+    }
+  }
 }
+
+

@@ -12,6 +12,9 @@
     </div>
     
     <div class="actions">
+      <button mat-icon-button (click)="onVersionHistory()" aria-label="Version history" matTooltip="Version history">
+        <mat-icon>history</mat-icon>
+      </button>
       <button mat-icon-button (click)="onShare()" aria-label="Share file" matTooltip="Share file">
         <mat-icon>share</mat-icon>
       </button>
@@ -22,6 +25,7 @@
         <mat-icon>close</mat-icon>
       </button>
     </div>
+
 
   </header>
 
@@ -92,6 +96,10 @@
         </div>
         
         <div class="sidebar-actions">
+          <button mat-button (click)="onVersionHistory()" class="version-btn">
+            <mat-icon>history</mat-icon>
+            Version History
+          </button>
           <button mat-button (click)="onShare()" class="share-btn">
             <mat-icon>share</mat-icon>
             Share Link
@@ -101,6 +109,7 @@
             Download
           </button>
         </div>
+
       </aside>
     }
   </div>

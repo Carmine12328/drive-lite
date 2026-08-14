@@ -1,0 +1,128 @@
+<div class="version-history-dialog">
+  <!-- Dialog Header -->
+  <div class="dialog-header">
+    <div class="header-title-row">
+      <div class="file-icon-wrap">
+        <mat-icon>{{ file.mimeType | fileIcon }}</mat-icon>
+      </div>
+      <div class="title-details">
+        <h2 mat-dialog-title>Version History</h2>
+        <span class="file-name" [matTooltip]="file.fileName">{{ file.fileName }}</span>
+      </div>
+    </div>
+    <button mat-icon-button mat-dialog-close aria-label="Close dialog" class="close-btn">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <!-- Dialog Content -->
+  <mat-dialog-content class="dialog-content">
+    @if (isLoading()) {
+      <div class="loading-state">
+        <mat-spinner diameter="36"></mat-spinner>
+        <span>Loading version timeline...</span>
+      </div>
+    } @else if (error()) {
+      <div class="error-state">
+        <mat-icon color="warn">error_outline</mat-icon>
+        <p>{{ error() }}</p>
+        <button mat-stroked-button (click)="loadVersions()">
+          <mat-icon>refresh</mat-icon>
+          <span>Retry</span>
+        </button>
+      </div>
+    } @else if (versions().length === 0) {
+      <div class="empty-state">
+        <mat-icon>history</mat-icon>
+        <p>No previous versions found for this file.</p>
+      </div>
+    } @else {
+      <div class="timeline">
+        @for (version of versions(); track version.versionId; let isFirst = $first; let isLast = $last) {
+          <div class="timeline-item" [class.is-latest]="version.isLatest" [class.is-first]="isFirst" [class.is-last]="isLast">
+            <!-- Timeline connector & dot -->
+            <div class="timeline-axis">
+              <div class="timeline-dot" [class.latest-dot]="version.isLatest">
+                @if (version.isLatest) {
+                  <mat-icon>check</mat-icon>
+                } @else {
+                  <span class="dot-inner"></span>
+                }
+              </div>
+              @if (!isLast) {
+                <div class="timeline-line"></div>
+              }
+            </div>
+
+            <!-- Version card content -->
+            <div class="version-card">
+              <div class="version-card-header">
+                <div class="badges-row">
+                  @if (version.isLatest) {
+                    <span class="current-badge">
+                      <mat-icon>verified</mat-icon> Current Version
+                    </span>
+                  } @else {
+                    <span class="past-badge">
+                      <mat-icon>history</mat-icon> Historical
+                    </span>
+                  }
+                  <span class="version-id-badge" [matTooltip]="version.versionId">
+                    ID: {{ shortVersionId(version.versionId) }}
+                  </span>
+                </div>
+                <span class="version-time">
+                  {{ version.lastModified | date:'medium' }}
+                </span>
+              </div>
+
+              <div class="version-card-body">
+                <div class="meta-item">
+                  <span class="meta-label">Size:</span>
+                  <span class="meta-value">{{ version.size | fileSize }}</span>
+                </div>
+                @if (version.etag) {
+                  <div class="meta-item etag-item">
+                    <span class="meta-label">ETag:</span>
+                    <span class="meta-value code-font">{{ version.etag.slice(0, 12) }}...</span>
+                  </div>
+                }
+              </div>
+
+              <!-- Action Footer -->
+              <div class="version-card-actions">
+                @if (version.isLatest) {
+                  <span class="active-note">Active on Drive</span>
+                } @else {
+                  <button
+                    mat-stroked-button
+                    color="primary"
+                    class="rollback-btn"
+                    [disabled]="rollingBackVersionId() !== null"
+                    (click)="onRollback(version)"
+                    aria-label="Restore this version"
+                  >
+                    @if (rollingBackVersionId() === version.versionId) {
+                      <mat-spinner diameter="16"></mat-spinner>
+                      <span>Restoring...</span>
+                    } @else {
+                      <ng-container>
+                        <mat-icon>restore</mat-icon>
+                        <span>Restore This Version</span>
+                      </ng-container>
+                    }
+                  </button>
+                }
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </mat-dialog-content>
+
+  <!-- Dialog Actions Footer -->
+  <mat-dialog-actions align="end" class="dialog-actions">
+    <button mat-button mat-dialog-close>Close</button>
+  </mat-dialog-actions>
+</div>
