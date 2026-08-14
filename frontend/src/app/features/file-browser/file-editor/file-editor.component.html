@@ -1,0 +1,46 @@
+<div class="file-editor-container">
+  @if (isMarkdown()) {
+    <header class="editor-header">
+      <div class="header-left">
+        <mat-icon class="file-icon">description</mat-icon>
+        <span class="file-title">{{ fileName() }}</span>
+      </div>
+
+      <div class="header-right">
+        <mat-button-toggle-group
+          [value]="editorMode()"
+          (change)="editorMode.set($event.value)"
+          aria-label="Editor view mode"
+          class="mode-toggle"
+        >
+          <mat-button-toggle value="code" aria-label="Code view">
+            <mat-icon>code</mat-icon>
+            <span>Code</span>
+          </mat-button-toggle>
+          <mat-button-toggle value="preview" aria-label="Preview view">
+            <mat-icon>visibility</mat-icon>
+            <span>Preview</span>
+          </mat-button-toggle>
+        </mat-button-toggle-group>
+      </div>
+    </header>
+  }
+
+  <div class="editor-workspace" [class.preview-active]="editorMode() === 'preview'">
+    <!-- CodeMirror Editor Host -->
+    <div
+      #editorHost
+      class="cm-editor-host"
+      [class.hidden]="editorMode() === 'preview'"
+      tabindex="0"
+      aria-label="Code editor"
+    ></div>
+
+    <!-- Rendered Markdown Preview Area -->
+    @if (isMarkdown() && editorMode() === 'preview') {
+      <div class="markdown-preview-pane" role="region" aria-label="Rendered markdown preview">
+        <pre class="markdown-body">{{ getLatestContent() }}</pre>
+      </div>
+    }
+  </div>
+</div>

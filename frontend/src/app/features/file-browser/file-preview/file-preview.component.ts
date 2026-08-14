@@ -16,11 +16,8 @@ import { FileIconPipe } from '../../../shared/pipes/file-icon.pipe';
 import { FileSizePipe } from '../../../shared/pipes/file-size.pipe';
 import { ShareDialog } from '../../../shared/components/share-dialog/share-dialog';
 import { VersionHistoryComponent, VersionHistoryResult } from '../version-history/version-history.component';
-
-
-
-
-
+import { FileEditorComponent } from '../file-editor/file-editor.component';
+import { ToastService } from '../../../shared/components/toast/toast.service';
 
 /**
  * Data passed to the file preview dialog.
@@ -33,8 +30,9 @@ export interface FilePreviewDialogData {
 }
 
 /**
- * Dialog component for previewing files (images, PDFs, text, or fallback).
- * Fetches presigned download URLs from the backend to render real file content.
+ * Dialog component for previewing files (images, PDFs, text, code, or fallback).
+ * Fetches presigned download URLs from the backend to render real file content
+ * and provides in-browser editing via CodeMirror 6.
  */
 @Component({
   selector: 'app-file-preview',
@@ -46,7 +44,8 @@ export interface FilePreviewDialogData {
     MatDialogTitle,
     FileIconPipe,
     FileSizePipe,
-    DatePipe
+    DatePipe,
+    FileEditorComponent
   ],
   templateUrl: './file-preview.component.html',
   styleUrl: './file-preview.component.scss',
@@ -62,7 +61,7 @@ export class FilePreviewComponent {
   private readonly fileService = inject(FileService);
   private readonly api = inject(ApiService);
   private readonly http = inject(HttpClient);
-
+  private readonly toastService = inject(ToastService);
 
   /** All available files for navigation */
   readonly allFiles = this.data.allFiles;
@@ -76,21 +75,41 @@ export class FilePreviewComponent {
   /** Text content fetched from S3 for text/* files */
   readonly textContent = signal<string>('');
 
+  /** Whether the file is currently being edited in CodeMirror */
+  readonly isEditing = signal<boolean>(false);
+
+  /** Whether a save operation is in progress */
+  readonly isSaving = signal<boolean>(false);
+
+  /** Local edited content buffer */
+  readonly editedContent = signal<string>('');
+
   /** Whether the preview content is currently loading */
   readonly isLoadingPreview = signal<boolean>(false);
 
   /**
-   * Computed property for the preview type based on the MIME type.
+   * Computed property for the preview type based on the MIME type and file extension.
    */
   readonly previewType = computed<'image' | 'pdf' | 'text' | 'video' | 'audio' | 'unsupported'>(() => {
-    const mimeType = this.currentFile().mimeType;
+    const file = this.currentFile();
+    const mimeType = file.mimeType || '';
+    const name = file.fileName.toLowerCase();
     if (mimeType.startsWith('image/')) return 'image';
     if (mimeType === 'application/pdf') return 'pdf';
-    if (mimeType.startsWith('text/')) return 'text';
     if (mimeType.startsWith('video/')) return 'video';
     if (mimeType.startsWith('audio/')) return 'audio';
+    if (
+      mimeType.startsWith('text/') ||
+      mimeType === 'application/json' ||
+      mimeType === 'application/javascript' ||
+      mimeType === 'application/typescript' ||
+      name.match(/\.(txt|md|markdown|json|js|ts|tsx|jsx|html|htm|css|scss|sass|py|yaml|yml|xml|sh|env|sql|csv)$/i)
+    ) {
+      return 'text';
+    }
     return 'unsupported';
   });
+
 
   /**
    * Presigned URL for the current file, fetched from the backend.
@@ -267,11 +286,87 @@ export class FilePreviewComponent {
 
 
   /**
+   * Toggles in-browser editing mode for editable documents.
+   */
+  toggleEdit(): void {
+    if (!this.isEditing()) {
+      this.editedContent.set(this.textContent());
+    }
+    this.isEditing.update(v => !v);
+  }
+
+  /**
+   * Updates edited content buffer as user types in CodeMirror.
+   */
+  onContentChange(text: string): void {
+    this.editedContent.set(text);
+  }
+
+  /**
+   * Saves edited text back to S3 by creating an updated upload and confirming it.
+   * This creates a new version in S3 and updates the metadata record.
+   */
+  async onSaveContent(text?: string): Promise<void> {
+    const contentToSave = text ?? this.editedContent();
+    const file = this.currentFile();
+    if (this.isSaving()) return;
+
+    this.isSaving.set(true);
+
+    try {
+      const mime = file.mimeType || 'text/plain';
+      const blob = new Blob([contentToSave], { type: mime });
+
+      // 1. Obtain presigned upload URL
+      const uploadRes = await firstValueFrom(
+        this.api.post<{ uploadUrl: string; fileId: string; s3Key: string }>('/files/upload-url', {
+          fileName: file.fileName,
+          fileSize: blob.size,
+          mimeType: mime,
+          folderId: file.folderId || 'ROOT'
+        })
+      );
+
+      // 2. PUT updated blob directly to S3
+      const s3PutRes = await fetch(uploadRes.uploadUrl, {
+        method: 'PUT',
+        body: blob,
+        headers: {
+          'Content-Type': mime
+        }
+      });
+
+      if (!s3PutRes.ok) {
+        throw new Error(`S3 PUT failed with status ${s3PutRes.status}`);
+      }
+
+      // 3. Confirm upload with backend
+      const confirmRes = await firstValueFrom(
+        this.api.post<{ message: string; file: FileItem }>('/files/confirm-upload', {
+          fileId: uploadRes.fileId
+        })
+      );
+
+      // 4. Update local state
+      this.textContent.set(contentToSave);
+      this.currentFile.set(confirmRes.file);
+      this.isEditing.set(false);
+      this.toastService.success('File saved successfully (new version created)');
+    } catch (err: unknown) {
+      console.error('[FilePreview] Error saving file:', err);
+      this.toastService.error('Failed to save file');
+    } finally {
+      this.isSaving.set(false);
+    }
+  }
+
+  /**
    * Toggles the info sidebar visibility.
    */
   toggleInfo(): void {
     this.showInfo.update(v => !v);
   }
 }
+
 
 

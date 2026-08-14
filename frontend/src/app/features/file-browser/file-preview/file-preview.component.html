@@ -12,6 +12,17 @@
     </div>
     
     <div class="actions">
+      @if (previewType() === 'text') {
+        @if (isEditing()) {
+          <button mat-flat-button color="primary" class="save-btn" [disabled]="isSaving()" (click)="onSaveContent()" aria-label="Save changes">
+            <mat-icon>save</mat-icon>
+            {{ isSaving() ? 'Saving...' : 'Save' }}
+          </button>
+        }
+        <button mat-icon-button (click)="toggleEdit()" [class.active-edit]="isEditing()" aria-label="Toggle editor" [matTooltip]="isEditing() ? 'Preview mode' : 'Edit code'">
+          <mat-icon>{{ isEditing() ? 'visibility' : 'edit' }}</mat-icon>
+        </button>
+      }
       <button mat-icon-button (click)="onVersionHistory()" aria-label="Version history" matTooltip="Version history">
         <mat-icon>history</mat-icon>
       </button>
@@ -26,12 +37,11 @@
       </button>
     </div>
 
-
   </header>
 
   <div class="preview-body">
     <!-- Content Area -->
-    <main class="preview-content">
+    <main class="preview-content" [class.editor-mode]="previewType() === 'text' && isEditing()">
       @switch (previewType()) {
         @case ('image') {
           <img [src]="previewUrl()" [alt]="currentFile().fileName" class="preview-image">
@@ -40,7 +50,16 @@
           <iframe [src]="safePdfUrl()" title="PDF preview" class="preview-pdf"></iframe>
         }
         @case ('text') {
-          <pre class="preview-text"><code>{{ textContent() }}</code></pre>
+          @if (isEditing()) {
+            <app-file-editor
+              [content]="textContent()"
+              [fileName]="currentFile().fileName"
+              (contentChange)="onContentChange($event)"
+              (save)="onSaveContent($event)"
+            />
+          } @else {
+            <pre class="preview-text"><code>{{ textContent() }}</code></pre>
+          }
         }
         @case ('video') {
           <video class="preview-video" controls autoplay [src]="mediaUrl()" [attr.aria-label]="'Video preview: ' + currentFile().fileName">
@@ -96,6 +115,12 @@
         </div>
         
         <div class="sidebar-actions">
+          @if (previewType() === 'text') {
+            <button mat-button (click)="toggleEdit()" class="edit-sidebar-btn">
+              <mat-icon>{{ isEditing() ? 'visibility' : 'edit' }}</mat-icon>
+              {{ isEditing() ? 'Preview Mode' : 'Edit File' }}
+            </button>
+          }
           <button mat-button (click)="onVersionHistory()" class="version-btn">
             <mat-icon>history</mat-icon>
             Version History
@@ -109,9 +134,9 @@
             Download
           </button>
         </div>
-
       </aside>
     }
   </div>
+
 </div>
 

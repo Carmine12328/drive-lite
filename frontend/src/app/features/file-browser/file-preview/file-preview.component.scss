@@ -58,7 +58,14 @@
   background-color: var(--bg-primary);
   overflow: auto;
   position: relative;
+
+  &.editor-mode {
+    padding: 0;
+    align-items: stretch;
+    justify-content: stretch;
+  }
 }
+
 
 .preview-image {
   max-width: 100%;
@@ -187,7 +194,9 @@
     gap: var(--space-2);
     
     .share-btn,
-    .download-btn {
+    .download-btn,
+    .edit-sidebar-btn,
+    .version-btn {
       width: 100%;
       border-radius: var(--radius-sm);
       display: flex;
@@ -197,7 +206,8 @@
     }
 
     .share-btn,
-    .version-btn {
+    .version-btn,
+    .edit-sidebar-btn {
       border: 1px solid var(--border-color);
       color: var(--accent-primary);
 
@@ -208,6 +218,20 @@
     }
   }
 }
+
+.save-btn {
+  height: 32px !important;
+  font-size: 0.8125rem !important;
+  display: inline-flex !important;
+  align-items: center;
+  gap: 4px;
+  margin-right: 4px;
+}
+
+.active-edit {
+  color: var(--primary, #3b82f6) !important;
+}
+
 
 
 
