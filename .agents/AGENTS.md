@@ -282,6 +282,7 @@ files under `.agents/rules/`. These are loaded automatically alongside this file
 | `aws-backend.md` | Lambda handlers, DynamoDB, S3, SDK v3, error handling, Vitest |
 | `aws-cdk-infra.md` | CDK constructs, IAM, API Gateway, S3, CloudFront, LocalStack |
 | `repowise-mcp.md` | Repowise MCP tools for codebase research, symbol lookups, dead code & risk analysis |
+| `github-mcp.md` | GitHub MCP tools for PRs, issues, commits, repo operations & reviews |
 
 ---
 
