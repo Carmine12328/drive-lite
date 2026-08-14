@@ -15,6 +15,7 @@ import { FileIconPipe } from '../../pipes/file-icon.pipe';
 import { FileItem } from '../../../core/models/file-item.model';
 import { Folder } from '../../../core/models/folder.model';
 import { FilePreviewComponent, FilePreviewDialogData } from '../../../features/file-browser/file-preview/file-preview.component';
+import { CommandPaletteComponent } from '../command-palette/command-palette.component';
 
 /**
  * Navbar component for the Drive Lite application.
@@ -38,6 +39,7 @@ import { FilePreviewComponent, FilePreviewDialogData } from '../../../features/f
   styleUrl: './navbar.component.scss',
 })
 export class NavbarComponent {
+
   /** Injected authentication service. */
   readonly authService = inject(AuthService);
 
@@ -248,9 +250,27 @@ export class NavbarComponent {
   }
 
   /**
+   * Opens the Command Palette (Ctrl+K) modal.
+   */
+  openCommandPalette(): void {
+    if (this.dialog.openDialogs.some(d => d.componentInstance instanceof CommandPaletteComponent)) {
+      return;
+    }
+
+    this.dialog.open(CommandPaletteComponent, {
+      width: '560px',
+      maxWidth: '92vw',
+      panelClass: 'command-palette-dialog',
+      position: { top: '15vh' },
+      autoFocus: false,
+    });
+  }
+
+  /**
    * Signs the current user out using the authentication service.
    */
   async signOut(): Promise<void> {
     await this.authService.signOut();
   }
+
 }

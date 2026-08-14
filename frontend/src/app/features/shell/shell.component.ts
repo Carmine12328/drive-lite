@@ -1,8 +1,10 @@
 import { Component, inject } from '@angular/core';
 import { RouterOutlet, ChildrenOutletContexts } from '@angular/router';
+import { MatDialog } from '@angular/material/dialog';
 import { routeAnimations } from '../../core/animations/route.animations';
 import { NavbarComponent } from '../../shared/components/navbar/navbar.component';
 import { ViewStateService } from '../../core/services/view-state.service';
+import { CommandPaletteComponent } from '../../shared/components/command-palette/command-palette.component';
 
 /**
  * Authenticated layout shell wrapping the navbar and a router outlet.
@@ -26,7 +28,8 @@ import { ViewStateService } from '../../core/services/view-state.service';
   `,
   animations: [routeAnimations],
   host: {
-    '(document:contextmenu)': '$event.preventDefault()'
+    '(document:contextmenu)': '$event.preventDefault()',
+    '(document:keydown)': 'onGlobalKeydown($event)'
   },
   styles: [`
     :host {
@@ -60,9 +63,42 @@ export class ShellComponent {
   private readonly viewState = inject(ViewStateService);
 
   /**
+   * Injected MatDialog service to open Command Palette.
+   */
+  private readonly dialog = inject(MatDialog);
+
+  /**
    * Router contexts for animations.
    */
   private readonly contexts = inject(ChildrenOutletContexts);
+
+  /**
+   * Listens for Ctrl+K or Cmd+K to launch the Command Palette modal.
+   */
+  onGlobalKeydown(event: KeyboardEvent): void {
+    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
+      event.preventDefault();
+      this.openCommandPalette();
+    }
+  }
+
+  /**
+   * Opens the Command Palette dialog.
+   */
+  openCommandPalette(): void {
+    // Avoid opening duplicate dialogs if already open
+    if (this.dialog.openDialogs.some(d => d.componentInstance instanceof CommandPaletteComponent)) {
+      return;
+    }
+
+    this.dialog.open(CommandPaletteComponent, {
+      width: '560px',
+      maxWidth: '92vw',
+      panelClass: 'command-palette-dialog',
+      position: { top: '15vh' },
+      autoFocus: false,
+    });
+  }
 
   /**
    * Gets animation data from the active route.
@@ -71,3 +107,4 @@ export class ShellComponent {
     return this.contexts.getContext('primary')?.route?.snapshot?.data?.['animation'];
   }
 }
+

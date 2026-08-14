@@ -45,7 +45,11 @@
         <button class="search-clear" mat-icon-button (click)="clearSearch()" aria-label="Clear search">
           <mat-icon>close</mat-icon>
         </button>
+      } @else {
+        <button type="button" class="ctrl-k-badge" (click)="openCommandPalette()" aria-label="Open command palette" title="Command Palette (Ctrl+K)">Ctrl K</button>
       }
+
+
 
       <!-- Search Results Dropdown -->
       @if (showResults()) {

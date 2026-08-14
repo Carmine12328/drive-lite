@@ -1,0 +1,76 @@
+<div class="command-palette">
+  <!-- Search Input Header -->
+  <div class="palette-input-wrapper">
+    <mat-icon class="search-icon">search</mat-icon>
+    <input
+      #searchInput
+      type="text"
+      class="palette-input"
+      placeholder="Type a command or search files..."
+      [(ngModel)]="query"
+      autocomplete="off"
+      spellcheck="false"
+      aria-label="Command palette search"
+    />
+    <button type="button" class="esc-badge" (click)="close()" aria-label="Close command palette">ESC</button>
+  </div>
+
+  <!-- Results List -->
+  <div class="palette-results" role="listbox">
+    @if (filteredItems().length > 0) {
+      @for (item of filteredItems(); track item.id; let idx = $index) {
+        <div
+          class="palette-item"
+          [class.selected]="selectedIndex() === idx"
+          (click)="selectItem(item)"
+          (keydown.enter)="selectItem(item)"
+          (mouseenter)="selectedIndex.set(idx)"
+          tabindex="0"
+          role="option"
+          [attr.aria-selected]="selectedIndex() === idx"
+        >
+
+          <div class="item-left">
+            <div class="item-icon-wrapper" [class.file-category]="item.category === 'Files'">
+              <mat-icon>{{ item.icon }}</mat-icon>
+            </div>
+            <div class="item-text">
+              <span class="item-title">{{ item.title }}</span>
+              @if (item.subtitle) {
+                <span class="item-subtitle">{{ item.subtitle }}</span>
+              }
+            </div>
+          </div>
+
+          <div class="item-right">
+            @if (item.shortcut) {
+              <kbd class="item-shortcut">{{ item.shortcut }}</kbd>
+            }
+            <span class="category-tag">{{ item.category }}</span>
+          </div>
+        </div>
+      }
+    } @else {
+      <div class="empty-results">
+        <mat-icon>search_off</mat-icon>
+        <p>No commands or files matching "{{ query() }}"</p>
+      </div>
+    }
+  </div>
+
+  <!-- Palette Footer -->
+  <div class="palette-footer">
+    <div class="footer-tip">
+      <kbd>↑</kbd><kbd>↓</kbd>
+      <span>Navigate</span>
+    </div>
+    <div class="footer-tip">
+      <kbd>↵</kbd>
+      <span>Select</span>
+    </div>
+    <div class="footer-tip">
+      <kbd>ESC</kbd>
+      <span>Close</span>
+    </div>
+  </div>
+</div>
