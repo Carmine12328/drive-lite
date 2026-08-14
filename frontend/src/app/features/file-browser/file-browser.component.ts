@@ -23,9 +23,7 @@ import { InputDialog, InputDialogData } from '../../shared/components/input-dial
 import { FilePreviewComponent, FilePreviewDialogData } from './file-preview/file-preview.component';
 import { ShareDialog, ShareDialogData } from '../../shared/components/share-dialog/share-dialog';
 import { VersionHistoryComponent, VersionHistoryData, VersionHistoryResult } from './version-history/version-history.component';
-
-
-
+import { SelectionToolbarComponent } from './selection-toolbar/selection-toolbar.component';
 
 /**
  * Main file browser component providing a Google Drive–like experience.
@@ -47,14 +45,17 @@ import { VersionHistoryComponent, VersionHistoryData, VersionHistoryResult } fro
     ContextMenuComponent,
     FolderTreeComponent,
     FileListComponent,
+    SelectionToolbarComponent,
   ],
   templateUrl: './file-browser.component.html',
   styleUrl: './file-browser.component.scss',
   host: {
-    '(contextmenu)': 'onHostContextMenu($event)'
+    '(contextmenu)': 'onHostContextMenu($event)',
+    '(keydown.escape)': 'onEscapeKey($event)'
   }
 })
 export class FileBrowserComponent implements OnInit, OnDestroy {
+
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly fileService = inject(FileService);
@@ -653,4 +654,13 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
     document.body.style.userSelect = '';
     localStorage.setItem(this.SIDEBAR_WIDTH_KEY, String(this.sidebarWidth()));
   }
+
+  /** Clears selection when Escape key is pressed */
+  onEscapeKey(event: Event): void {
+    if (this.fileService.hasSelection()) {
+      event.preventDefault();
+      this.fileService.clearSelection();
+    }
+  }
 }
+

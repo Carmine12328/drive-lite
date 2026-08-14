@@ -1,7 +1,8 @@
-import { Component, computed, input, output } from '@angular/core';
+import { Component, computed, inject, input, output } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { MatIcon } from '@angular/material/icon';
 import { MatIconButton, MatFabButton } from '@angular/material/button';
+import { MatCheckbox } from '@angular/material/checkbox';
 import {
   MatTable,
   MatHeaderCell,
@@ -20,6 +21,7 @@ import { FileIconPipe } from '../../../shared/pipes/file-icon.pipe';
 import { FileSizePipe } from '../../../shared/pipes/file-size.pipe';
 import { FileItem } from '../../../core/models/file-item.model';
 import { Folder } from '../../../core/models/folder.model';
+import { FileService } from '../../../core/services/file.service';
 
 /**
  * Interface representing a row item in the list view (file or folder).
@@ -37,7 +39,6 @@ export interface FileListRow {
 /**
  * FileListComponent displays a list of files in either grid or list view.
  */
-
 @Component({
   selector: 'app-file-list',
   templateUrl: './file-list.component.html',
@@ -46,6 +47,7 @@ export interface FileListRow {
     MatIcon,
     MatIconButton,
     MatFabButton,
+    MatCheckbox,
     MatTable,
     MatHeaderCell,
     MatCell,
@@ -63,6 +65,11 @@ export interface FileListRow {
   ]
 })
 export class FileListComponent {
+  readonly fileService = inject(FileService);
+
+  /** Track last clicked file ID for Shift-selection range */
+  private lastSelectedFileId: string | null = null;
+
   /** Array of files to display */
   files = input<FileItem[]>([]);
 
@@ -171,7 +178,54 @@ export class FileListComponent {
   });
 
   /** Columns to display in the list view */
-  displayedColumns = ['icon', 'fileName', 'fileSize', 'updatedAt', 'actions'];
+  displayedColumns = ['select', 'icon', 'fileName', 'fileSize', 'updatedAt', 'actions'];
+
+  /** Whether all files are currently selected */
+  readonly isAllSelected = computed(() => {
+    const fileList = this.files();
+    return fileList.length > 0 && fileList.every(f => this.fileService.isSelected(f.fileId));
+  });
+
+  /** Whether some (but not all) files are selected (indeterminate state) */
+  readonly isPartiallySelected = computed(() => {
+    const count = this.fileService.selectionCount();
+    return count > 0 && count < this.files().length;
+  });
+
+  /** Toggles individual checkbox */
+  onCheckboxToggle(checked: boolean, fileId: string): void {
+    if (checked) {
+      if (!this.fileService.isSelected(fileId)) {
+        this.fileService.toggleSelection(fileId);
+      }
+    } else {
+      if (this.fileService.isSelected(fileId)) {
+        this.fileService.toggleSelection(fileId);
+      }
+    }
+    this.lastSelectedFileId = fileId;
+  }
+
+  /** Selects or deselects all files in current folder */
+  onToggleAll(checked: boolean): void {
+    if (checked) {
+      this.fileService.selectAll();
+    } else {
+      this.fileService.clearSelection();
+    }
+  }
+
+  /** Handles clicking on a file card in grid view */
+  onCardClick(event: MouseEvent, file: FileItem): void {
+    if (event.ctrlKey || event.metaKey) {
+      this.fileService.toggleSelection(file.fileId);
+      this.lastSelectedFileId = file.fileId;
+    } else if (event.shiftKey && this.lastSelectedFileId) {
+      this.fileService.selectRange(this.lastSelectedFileId, file.fileId);
+    } else {
+      this.onFileClick(file);
+    }
+  }
 
   /** Handles clicking on a file to preview */
   onFileClick(file: FileItem): void {
@@ -213,15 +267,20 @@ export class FileListComponent {
     this.folderContextMenu.emit({ event, folder });
   }
 
-
   /** Handles click on a row in list view */
-  onRowClick(row: FileListRow): void {
+  onRowClick(event: MouseEvent, row: FileListRow): void {
     if (row.type === 'folder') {
       this.onFolderNavigate(row.id);
+    } else if (event.ctrlKey || event.metaKey) {
+      this.fileService.toggleSelection(row.id);
+      this.lastSelectedFileId = row.id;
+    } else if (event.shiftKey && this.lastSelectedFileId) {
+      this.fileService.selectRange(this.lastSelectedFileId, row.id);
     } else {
       this.onFileClick(row.raw as FileItem);
     }
   }
+
 
   /** Handles right-click / contextmenu on a row in list view */
   onRowContextMenu(event: MouseEvent, row: FileListRow): void {

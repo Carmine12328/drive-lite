@@ -9,7 +9,6 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test --watch=false",
     "lint": "ng lint"
-
   },
   "private": true,
   "packageManager": "npm@10.9.8",
@@ -25,6 +24,7 @@
     "@angular/router": "^22.1.0",
     "@aws-sdk/client-cognito-identity-provider": "^3.1106.0",
     "aws-amplify": "^6.20.0",
+    "jszip": "^3.10.1",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0"
   },

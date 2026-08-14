@@ -1,0 +1,68 @@
+@if (fileService.hasSelection()) {
+  <aside class="selection-toolbar" role="toolbar" aria-label="Batch selection actions">
+    <div class="toolbar-content">
+      <!-- Selection Counter -->
+      <div class="count-badge">
+        <mat-icon>check_circle</mat-icon>
+        <span><strong>{{ fileService.selectionCount() }}</strong> selected</span>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Quick Select All -->
+      <button
+        mat-button
+        class="action-btn"
+        (click)="onSelectAll()"
+        aria-label="Select all files in folder"
+      >
+        <mat-icon>select_all</mat-icon>
+        <span>Select All</span>
+      </button>
+
+      <!-- Download as ZIP -->
+      <button
+        mat-flat-button
+        color="primary"
+        class="action-btn zip-btn"
+        [disabled]="isZipping()"
+        (click)="onDownloadZip()"
+        aria-label="Download selected files as ZIP"
+      >
+        @if (isZipping()) {
+          <mat-spinner diameter="18"></mat-spinner>
+          <span>Creating ZIP...</span>
+        } @else {
+          <ng-container>
+            <mat-icon>archive</mat-icon>
+            <span>Download ZIP</span>
+          </ng-container>
+        }
+      </button>
+
+      <!-- Batch Delete -->
+      <button
+        mat-stroked-button
+        color="warn"
+        class="action-btn delete-btn"
+        [disabled]="isZipping()"
+        (click)="onBatchDelete()"
+        aria-label="Move selected files to trash"
+      >
+        <mat-icon>delete_outline</mat-icon>
+        <span>Delete</span>
+      </button>
+
+      <!-- Clear / Close -->
+      <button
+        mat-icon-button
+        class="clear-btn"
+        (click)="onClearSelection()"
+        matTooltip="Clear selection (Esc)"
+        aria-label="Clear file selection"
+      >
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+  </aside>
+}

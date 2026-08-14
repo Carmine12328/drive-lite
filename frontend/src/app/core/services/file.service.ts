@@ -1,12 +1,11 @@
-import { inject, Injectable, signal, WritableSignal } from '@angular/core';
+import { computed, inject, Injectable, signal, WritableSignal } from '@angular/core';
 import { HttpParams } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
+import JSZip from 'jszip';
 import { FileItem } from '../models/file-item.model';
 import { FileVersion, ListVersionsResponse, RollbackVersionResponse } from '../models/file-version.model';
 import { ApiService } from './api.service';
 import { ToastService } from '../../shared/components/toast/toast.service';
-
-
 
 /**
  * Service for managing file operations and state.
@@ -16,7 +15,6 @@ import { ToastService } from '../../shared/components/toast/toast.service';
   providedIn: 'root'
 })
 export class FileService {
-
   private readonly api = inject(ApiService);
   private readonly toastService = inject(ToastService);
 
@@ -29,6 +27,29 @@ export class FileService {
    * Signal holding the currently loaded files for the active folder view.
    */
   public files: WritableSignal<FileItem[]> = signal<FileItem[]>([]);
+
+  /**
+   * Set of currently selected file IDs.
+   */
+  public readonly selectedFileIds: WritableSignal<Set<string>> = signal<Set<string>>(new Set<string>());
+
+  /**
+   * Computed boolean indicating if any files are currently selected.
+   */
+  public readonly hasSelection = computed(() => this.selectedFileIds().size > 0);
+
+  /**
+   * Number of selected files.
+   */
+  public readonly selectionCount = computed(() => this.selectedFileIds().size);
+
+  /**
+   * Array of selected FileItem objects.
+   */
+  public readonly selectedFiles = computed(() =>
+    this.files().filter(f => this.selectedFileIds().has(f.fileId))
+  );
+
 
   /**
    * Signal holding the currently active folder ID.
@@ -433,6 +454,147 @@ export class FileService {
       throw err;
     }
   }
+
+  /**
+   * Toggles selection for a single file ID.
+   */
+  public toggleSelection(fileId: string): void {
+    this.selectedFileIds.update(current => {
+      const next = new Set(current);
+      if (next.has(fileId)) {
+        next.delete(fileId);
+      } else {
+        next.add(fileId);
+      }
+      return next;
+    });
+  }
+
+  /**
+   * Selects a range of files between two file IDs based on current display order.
+   */
+  public selectRange(fromId: string, toId: string): void {
+    const list = this.files();
+    const fromIdx = list.findIndex(f => f.fileId === fromId);
+    const toIdx = list.findIndex(f => f.fileId === toId);
+    if (fromIdx < 0 || toIdx < 0) return;
+
+    const start = Math.min(fromIdx, toIdx);
+    const end = Math.max(fromIdx, toIdx);
+
+    this.selectedFileIds.update(current => {
+      const next = new Set(current);
+      for (let i = start; i <= end; i++) {
+        const item = list[i];
+        if (item) next.add(item.fileId);
+      }
+      return next;
+    });
+  }
+
+  /**
+   * Selects all currently loaded files in the folder.
+   */
+  public selectAll(): void {
+    const allIds = this.files().map(f => f.fileId);
+    this.selectedFileIds.set(new Set(allIds));
+  }
+
+  /**
+   * Clears any active file selection.
+   */
+  public clearSelection(): void {
+    this.selectedFileIds.set(new Set<string>());
+  }
+
+  /**
+   * Checks if a file ID is selected.
+   */
+  public isSelected(fileId: string): boolean {
+    return this.selectedFileIds().has(fileId);
+  }
+
+  /**
+   * Batch deletes multiple files by moving them to trash.
+   *
+   * @param fileIds Array of file IDs to delete
+   */
+  public async batchDelete(fileIds: string[]): Promise<void> {
+    if (fileIds.length === 0) return;
+    this.isLoading.set(true);
+
+    let deletedCount = 0;
+    const errors: string[] = [];
+
+    for (const id of fileIds) {
+      try {
+        await firstValueFrom(
+          this.api.delete<{ message: string; file: FileItem }>(`/files/${id}`)
+        );
+        deletedCount++;
+      } catch (err: unknown) {
+        console.error(`[FileService] batchDelete error for file ${id}:`, err);
+        errors.push(id);
+      }
+    }
+
+    const successfulIds = new Set(fileIds.filter(id => !errors.includes(id)));
+    this.files.update(list => list.filter(f => !successfulIds.has(f.fileId)));
+    this.allFiles = this.allFiles.filter(f => !successfulIds.has(f.fileId));
+    this.clearSelection();
+    this.isLoading.set(false);
+
+    if (deletedCount > 0) {
+      this.toastService.success(`Moved ${deletedCount} item${deletedCount > 1 ? 's' : ''} to trash`);
+    }
+    if (errors.length > 0) {
+      this.toastService.error(`Failed to delete ${errors.length} item${errors.length > 1 ? 's' : ''}`);
+    }
+  }
+
+  /**
+   * Generates a ZIP bundle client-side using JSZip and triggers a browser download.
+   * Zero Lambda execution / S3 egress costs.
+   *
+   * @param files Array of FileItem objects to bundle into ZIP
+   */
+  public async downloadAsZip(files: FileItem[]): Promise<void> {
+    if (files.length === 0) return;
+
+    const zip = new JSZip();
+
+    for (const file of files) {
+      try {
+        // Obtain presigned download URL
+        const res = await firstValueFrom(
+          this.api.post<{ downloadUrl: string }>(`/files/${file.fileId}/download-url`, {})
+        );
+
+        // Fetch binary data in browser
+        const response = await fetch(res.downloadUrl);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch file: ${file.fileName}`);
+        }
+        const blob = await response.blob();
+        zip.file(file.fileName, blob);
+      } catch (err: unknown) {
+        console.error(`[FileService] Error bundling file ${file.fileName}:`, err);
+      }
+    }
+
+    const zipBlob = await zip.generateAsync({ type: 'blob' });
+    const blobUrl = URL.createObjectURL(zipBlob);
+    const link = document.createElement('a');
+    link.href = blobUrl;
+    link.download = `drive-lite-bundle-${new Date().toISOString().slice(0, 10)}.zip`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(blobUrl);
+
+    this.toastService.success(`Downloaded ${files.length} files as ZIP bundle`);
+  }
 }
+
 
 

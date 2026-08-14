@@ -1,0 +1,132 @@
+.selection-toolbar {
+  position: fixed;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+  animation: slideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  max-width: 90vw;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 20px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+.toolbar-content {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  background: var(--bg-surface-elevated, #1e293b);
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.12));
+  border-radius: 9999px;
+  padding: 0.45rem 0.75rem 0.45rem 1.125rem;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(12px);
+
+  .count-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: 0.875rem;
+    color: var(--text-primary, #f8fafc);
+    white-space: nowrap;
+
+    mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+      color: var(--primary, #3b82f6);
+    }
+  }
+
+  .divider {
+    width: 1px;
+    height: 20px;
+    background: var(--border-color, rgba(255, 255, 255, 0.12));
+    margin: 0 0.25rem;
+  }
+
+  .action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    height: 34px;
+    line-height: 34px;
+    border-radius: 9999px;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    padding: 0 0.875rem;
+    white-space: nowrap;
+
+    mat-icon {
+      font-size: 17px;
+      width: 17px;
+      height: 17px;
+      margin-right: 2px;
+    }
+
+    &.zip-btn {
+      background: var(--primary, #3b82f6);
+      color: #ffffff;
+    }
+
+    &.delete-btn {
+      color: var(--color-warn, #ef4444);
+      border-color: rgba(239, 68, 68, 0.4);
+
+      &:hover {
+        background: rgba(239, 68, 68, 0.08);
+      }
+    }
+  }
+
+  .clear-btn {
+    color: var(--text-secondary, #94a3b8);
+    width: 32px;
+    height: 32px;
+    line-height: 32px;
+
+    mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+    }
+  }
+}
+
+@media screen and (max-width: 600px) {
+  .selection-toolbar {
+    bottom: 1rem;
+    width: 94vw;
+  }
+
+  .toolbar-content {
+    justify-content: space-between;
+    padding: 0.375rem 0.625rem;
+
+    .count-badge span span {
+      display: none;
+    }
+
+    .action-btn span {
+      display: none;
+    }
+
+    .action-btn {
+      padding: 0;
+      width: 34px;
+      justify-content: center;
+
+      mat-icon {
+        margin: 0;
+      }
+    }
+  }
+}

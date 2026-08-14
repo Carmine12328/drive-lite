@@ -3,7 +3,6 @@
   width: 100%;
 }
 
-// --- Empty state ---
 .empty-state {
   display: flex;
   flex-direction: column;
@@ -34,7 +33,6 @@
   }
 }
 
-// --- Grid view ---
 .file-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
@@ -47,9 +45,14 @@
   flex-direction: column;
   padding: var(--space-4);
   cursor: pointer;
-  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast);
   position: relative;
   overflow: hidden;
+
+  &.selected {
+    border-color: var(--primary, #3b82f6) !important;
+    background: rgba(59, 130, 246, 0.08);
+  }
   
   &:hover, &:focus-visible {
     transform: translateY(-2px);
@@ -60,6 +63,20 @@
   &:focus-visible {
     outline: 2px solid var(--accent-primary);
     outline-offset: 2px;
+  }
+
+  .card-select {
+    position: absolute;
+    top: var(--space-2);
+    left: var(--space-2);
+    z-index: 2;
+    opacity: 0;
+    transition: opacity var(--transition-fast);
+
+    .file-card:hover &,
+    .file-card.selected & {
+      opacity: 1;
+    }
   }
 }
 
@@ -133,7 +150,6 @@
   }
 }
 
-// --- List / Table view ---
 .file-table-container {
   overflow-x: auto;
 }
@@ -142,7 +158,6 @@
   width: 100%;
   background: transparent;
   
-  // Remove default Material table background
   .mat-mdc-header-row {
     background: var(--bg-surface);
   }
@@ -154,6 +169,20 @@
     &:hover {
       background-color: var(--bg-hover);
     }
+
+    &.selected-row {
+      background-color: rgba(59, 130, 246, 0.1) !important;
+    }
+  }
+}
+
+.select-column {
+  width: 44px;
+  padding: 0 4px 0 12px !important;
+
+  mat-checkbox {
+    display: inline-flex;
+    vertical-align: middle;
   }
 }
 
@@ -206,18 +235,13 @@
   justify-content: flex-end;
 }
 
-.file-row {
-  &:focus-visible {
-    outline: 2px solid var(--accent-primary);
-    outline-offset: -2px;
-  }
+.file-row:focus-visible {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: -2px;
 }
 
-// --- Folder items ---
-.folder-card {
-  .folder-icon {
-    color: var(--accent-primary, #5c6bc0);
-  }
+.folder-card .folder-icon {
+  color: var(--accent-primary, #5c6bc0);
 }
 
 .folder-table-row {
@@ -238,7 +262,6 @@
   color: var(--text-primary);
 }
 
-// --- Responsive ---
 @media (min-width: 768px) and (max-width: 1024px) {
   .file-grid {
     grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
@@ -248,14 +271,20 @@
 @media (max-width: 768px) {
   .file-grid {
     grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-    gap: var(--space-3);
+    gap: var(--space-2);
   }
   
-  .card-actions {
-    opacity: 1;  // Always show on touch devices
+  .file-card {
+    padding: var(--space-2);
   }
   
-  .actions-column {
-    width: 80px;
+  .card-icon {
+    padding: var(--space-4) 0;
+    
+    .type-icon {
+      font-size: 36px;
+      width: 36px;
+      height: 36px;
+    }
   }
 }
