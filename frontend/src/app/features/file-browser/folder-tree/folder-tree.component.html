@@ -30,7 +30,7 @@
            (keydown.enter)="onFolderClick(node.folder.folderId)"
            tabindex="0"
            (contextmenu)="onContextMenu($event, node.folder)">
-        <button mat-icon-button matTreeNodeToggle class="toggle-btn">
+        <button mat-icon-button class="toggle-btn" (click)="toggleNode(node, $event)" [attr.aria-label]="'Toggle ' + node.folder.folderName">
           <mat-icon>{{ tree.isExpanded(node) ? 'expand_more' : 'chevron_right' }}</mat-icon>
         </button>
         <mat-icon class="folder-icon">folder</mat-icon>
@@ -52,4 +52,3 @@
     <span>Trash</span>
   </div>
 </div>
-

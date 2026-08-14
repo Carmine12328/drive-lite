@@ -1,0 +1,211 @@
+<div class="share-dialog-container">
+  <div class="dialog-header">
+    <div class="header-left">
+      <div class="icon-badge">
+        <mat-icon>share</mat-icon>
+      </div>
+      <div>
+        <h2 mat-dialog-title class="dialog-title">Share File</h2>
+        <p class="dialog-subtitle" [matTooltip]="file.fileName">{{ file.fileName }}</p>
+      </div>
+    </div>
+    <button mat-icon-button (click)="close()" aria-label="Close dialog">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <mat-dialog-content class="dialog-body">
+    <!-- Generated Share URL Box -->
+    @if (generatedShare(); as gen) {
+      <div class="generated-link-card">
+        <div class="link-card-header">
+          <mat-icon class="success-icon">check_circle</mat-icon>
+          <span>Share Link Generated!</span>
+        </div>
+        <div class="link-input-group">
+          <input type="text" readonly [value]="gen.shareUrl" class="link-input" />
+          <button
+            mat-flat-button
+            color="primary"
+            class="copy-btn"
+            (click)="copyToClipboard(gen.shareUrl)"
+          >
+            <mat-icon>{{ copied() ? 'done' : 'content_copy' }}</mat-icon>
+            {{ copied() ? 'Copied' : 'Copy' }}
+          </button>
+        </div>
+        <div class="link-meta-tags">
+          <span class="meta-tag">
+            <mat-icon>timer</mat-icon> Expires: {{ gen.expiresAt | date:'medium' }}
+          </span>
+          @if (gen.passwordProtected) {
+            <span class="meta-tag password-tag">
+              <mat-icon>lock</mat-icon> Password Protected
+            </span>
+          }
+          @if (gen.maxDownloads) {
+            <span class="meta-tag">
+              <mat-icon>download</mat-icon> Max {{ gen.maxDownloads }} downloads
+            </span>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- Create Share Form -->
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" class="share-form">
+      <h3 class="section-heading">Create a New Link</h3>
+
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Expiration</mat-label>
+          <mat-select formControlName="expiresInHours">
+            @for (opt of expirationOptions; track opt.hours) {
+              <mat-option [value]="opt.hours">{{ opt.label }}</mat-option>
+            }
+          </mat-select>
+          <mat-icon matPrefix>schedule</mat-icon>
+        </mat-form-field>
+      </div>
+
+      <div class="toggle-section">
+        <div class="toggle-row">
+          <mat-slide-toggle formControlName="enablePassword" color="primary">
+            Protect with password
+          </mat-slide-toggle>
+        </div>
+
+        @if (form.get('enablePassword')?.value) {
+          <mat-form-field appearance="outline" class="full-width password-field">
+            <mat-label>Password</mat-label>
+            <input matInput type="password" formControlName="password" placeholder="Enter share password" />
+            <mat-icon matPrefix>lock</mat-icon>
+            @if (form.get('password')?.hasError('required')) {
+              <mat-error>Password is required</mat-error>
+            }
+            @if (form.get('password')?.hasError('minlength')) {
+              <mat-error>Must be at least 4 characters</mat-error>
+            }
+          </mat-form-field>
+        }
+      </div>
+
+      <div class="toggle-section">
+        <div class="toggle-row">
+          <mat-slide-toggle formControlName="enableMaxDownloads" color="primary">
+            Limit download count
+          </mat-slide-toggle>
+        </div>
+
+        @if (form.get('enableMaxDownloads')?.value) {
+          <mat-form-field appearance="outline" class="full-width max-downloads-field">
+            <mat-label>Maximum Downloads</mat-label>
+            <input matInput type="number" formControlName="maxDownloads" min="1" max="1000" />
+            <mat-icon matPrefix>download</mat-icon>
+            @if (form.get('maxDownloads')?.hasError('required')) {
+              <mat-error>Download limit is required</mat-error>
+            }
+            @if (form.get('maxDownloads')?.hasError('min')) {
+              <mat-error>Must be at least 1</mat-error>
+            }
+          </mat-form-field>
+        }
+      </div>
+
+      <div class="form-actions">
+        <button
+          mat-flat-button
+          color="primary"
+          type="submit"
+          class="create-link-btn"
+          [disabled]="form.invalid || isCreating()"
+        >
+          @if (isCreating()) {
+            <mat-spinner diameter="18"></mat-spinner>
+            <span>Generating...</span>
+          } @else {
+            <ng-container>
+              <mat-icon>link</mat-icon>
+              <span>Create Share Link</span>
+            </ng-container>
+          }
+        </button>
+
+      </div>
+    </form>
+
+    <!-- Active Shares List -->
+    <div class="active-shares-section">
+      <h3 class="section-heading">Active Links ({{ activeShares().length }})</h3>
+
+      @if (isLoadingShares()) {
+        <div class="loading-state">
+          <mat-spinner diameter="24"></mat-spinner>
+          <span>Loading active links...</span>
+        </div>
+      } @else if (activeShares().length === 0) {
+        <div class="empty-state">
+          <mat-icon>link_off</mat-icon>
+          <span>No active share links for this file.</span>
+        </div>
+      } @else {
+        <div class="shares-list">
+          @for (s of activeShares(); track s.shareToken) {
+            <div class="share-item" [class.expired]="s.isExpired || s.isMaxReached || s.isLocked">
+              <div class="share-info">
+                <div class="share-title-row">
+                  <span class="token-code">{{ s.shareToken.substring(0, 12) }}...</span>
+                  @if (s.passwordProtected) {
+                    <span class="badge badge-lock" matTooltip="Password protected">
+                      <mat-icon>lock</mat-icon> Password
+                    </span>
+                  }
+                  @if (s.isExpired) {
+                    <span class="badge badge-expired">Expired</span>
+                  } @else if (s.isMaxReached) {
+                    <span class="badge badge-expired">Max downloads</span>
+                  } @else if (s.isLocked) {
+                    <span class="badge badge-expired">Locked</span>
+                  } @else {
+                    <span class="badge badge-active">Active</span>
+                  }
+                </div>
+
+                <div class="share-sub-info">
+                  <span>Expires: {{ s.expiresAt | date:'short' }}</span>
+                  <span>•</span>
+                  <span>Downloads: {{ s.downloadCount }}{{ s.maxDownloads ? ' / ' + s.maxDownloads : '' }}</span>
+                </div>
+              </div>
+
+              <div class="share-actions">
+                <button
+                  mat-icon-button
+                  matTooltip="Copy Link"
+                  [disabled]="s.isExpired || s.isMaxReached || s.isLocked"
+                  (click)="copyToClipboard(s.shareUrl)"
+                  aria-label="Copy share link"
+                >
+                  <mat-icon>content_copy</mat-icon>
+                </button>
+                <button
+                  mat-icon-button
+                  color="warn"
+                  matTooltip="Revoke Link"
+                  (click)="revokeShare(s.shareToken)"
+                  aria-label="Revoke share link"
+                >
+                  <mat-icon>delete_outline</mat-icon>
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end" class="dialog-footer">
+    <button mat-button (click)="close()">Close</button>
+  </mat-dialog-actions>
+</div>

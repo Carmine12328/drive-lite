@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { ConfirmDialog } from './confirm-dialog';
 
 describe('ConfirmDialog', () => {
@@ -9,6 +9,16 @@ describe('ConfirmDialog', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [ConfirmDialog],
+      providers: [
+        { provide: MatDialogRef, useValue: { close: vi.fn() } },
+        {
+          provide: MAT_DIALOG_DATA,
+          useValue: {
+            title: 'Confirm Delete',
+            message: 'Are you sure?',
+          },
+        },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ConfirmDialog);

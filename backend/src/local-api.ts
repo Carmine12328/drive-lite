@@ -29,7 +29,12 @@
 
 import express from 'express';
 import type { Request, Response } from 'express';
-import type { APIGatewayProxyEventV2, APIGatewayProxyResultV2 } from 'aws-lambda';
+import type {
+  APIGatewayProxyEventV2,
+  APIGatewayProxyResultV2,
+  PostConfirmationConfirmSignUpTriggerEvent,
+} from 'aws-lambda';
+
 
 // ---------------------------------------------------------------------------
 // Resolve infrastructure names from LocalStack before importing handlers.
@@ -89,7 +94,7 @@ function extractUserIdFromJwt(authHeader?: string): string {
     const payloadJson = Buffer.from(payloadB64, 'base64url').toString();
     const payload = JSON.parse(payloadJson);
     return payload.sub || 'local-dev-user';
-  } catch (e) {
+  } catch {
     return 'local-dev-user';
   }
 }
@@ -107,10 +112,11 @@ function extractEmailFromJwt(authHeader?: string): string {
     const payloadJson = Buffer.from(payloadB64, 'base64url').toString();
     const payload = JSON.parse(payloadJson);
     return payload.email || 'unknown@local.dev';
-  } catch (e) {
+  } catch {
     return 'unknown@local.dev';
   }
 }
+
 
 /**
  * Build an API Gateway v2 event from an Express request.
@@ -233,6 +239,14 @@ async function main(): Promise<void> {
   const { handler: deleteFile }     = await import('./handlers/files/delete-file.js');
   const { handler: recentFiles }    = await import('./handlers/files/recent-files.js');
   const { handler: listTrash }      = await import('./handlers/files/list-trash.js');
+  const { handler: restoreFile }    = await import('./handlers/files/restore-file.js');
+  const { handler: permanentDeleteFile } = await import('./handlers/files/permanent-delete-file.js');
+  const { handler: emptyTrash }     = await import('./handlers/files/empty-trash.js');
+  const { handler: createShare }    = await import('./handlers/shares/create-share.js');
+  const { handler: getShare }       = await import('./handlers/shares/get-share.js');
+  const { handler: downloadShare }  = await import('./handlers/shares/download-share.js');
+  const { handler: listShares }     = await import('./handlers/shares/list-shares.js');
+  const { handler: revokeShare }    = await import('./handlers/shares/revoke-share.js');
   const { handler: postConfirmation } = await import('./handlers/auth/post-confirmation.js');
 
   // 3. Express app
@@ -258,10 +272,18 @@ async function main(): Promise<void> {
   app.patch('/folders/:id', lambdaRoute(renameFolder));
   app.delete('/folders/:id', lambdaRoute(deleteFolder));
 
+  // Shares (specific routes before parameterized files)
+  app.post('/files/:id/share',       lambdaRoute(createShare));
+  app.get('/files/:id/shares',       lambdaRoute(listShares));
+  app.get('/share/:token',           lambdaRoute(getShare));
+  app.post('/share/:token/download', lambdaRoute(downloadShare));
+  app.delete('/share/:token',        lambdaRoute(revokeShare));
+
   // Files — specific routes BEFORE parameterized routes
   app.post('/files/upload-url',       lambdaRoute(getUploadUrl));
   app.post('/files/confirm-upload',   lambdaRoute(confirmUpload));
   app.post('/files/:id/download-url', lambdaRoute(getDownloadUrl));
+  app.post('/files/:id/restore',      lambdaRoute(restoreFile));
   app.get('/files/recent',            lambdaRoute(recentFiles));
   app.get('/files',                   lambdaRoute(listFiles));
   app.get('/files/:id',               lambdaRoute(getFile));
@@ -270,6 +292,9 @@ async function main(): Promise<void> {
 
   // Trash
   app.get('/trash/files',             lambdaRoute(listTrash));
+  app.delete('/trash/files/:id',      lambdaRoute(permanentDeleteFile));
+  app.delete('/trash/files',          lambdaRoute(emptyTrash));
+
 
   // Auth — profile initialization after sign-up confirmation
   app.post('/auth/init-profile', async (req: Request, res: Response) => {
@@ -298,8 +323,9 @@ async function main(): Promise<void> {
         response: {},
       };
 
-      await postConfirmation(event as any);
+      await postConfirmation(event as unknown as PostConfirmationConfirmSignUpTriggerEvent);
       console.log(`Profile initialized for user ${userId} (${email})`);
+
       res.json({ message: 'Profile initialized', userId });
     } catch (err) {
       console.error('init-profile error:', err);
@@ -380,7 +406,13 @@ async function main(): Promise<void> {
     console.log('║    GET    /folders                                  ║');
     console.log('║    PATCH  /folders/:id                              ║');
     console.log('║    DELETE /folders/:id                              ║');
+    console.log('║    POST   /files/:id/share                          ║');
+    console.log('║    GET    /files/:id/shares                         ║');
+    console.log('║    GET    /share/:token                             ║');
+    console.log('║    POST   /share/:token/download                    ║');
+    console.log('║    DELETE /share/:token                             ║');
     console.log('║    POST   /files/upload-url                        ║');
+
     console.log('║    POST   /files/confirm-upload                    ║');
     console.log('║    POST   /files/:id/download-url                  ║');
     console.log('║    GET    /files                                    ║');

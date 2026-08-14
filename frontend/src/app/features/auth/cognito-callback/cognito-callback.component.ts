@@ -67,10 +67,10 @@ export class CognitoCallbackComponent implements OnInit {
   }
 
   /** Processes the OAuth redirect callback from Cognito. */
-  private processCallback(): void {
+  private async processCallback(): Promise<void> {
     this.isLoading.set(true);
     try {
-      this.authService.handleCognitoCallback();
+      await this.authService.handleCognitoCallback();
       // AuthService.handleCognitoCallback() navigates to /dashboard on success
     } catch (error: unknown) {
       this.isLoading.set(false);

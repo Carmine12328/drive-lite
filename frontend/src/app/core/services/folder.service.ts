@@ -1,5 +1,4 @@
 import { inject, Service, signal, WritableSignal } from '@angular/core';
-import { HttpParams } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { Folder } from '../models/folder.model';
 import { ApiService } from './api.service';
@@ -41,33 +40,30 @@ export class FolderService {
   private readonly folderVersion: WritableSignal<number> = signal<number>(0);
 
   /**
-   * Lists folders by parent ID from the backend API.
-   * Updates the `folders` signal and merges results into the internal cache.
+   * Lists folders from the backend API.
+   * Fetches all user folders to keep the sidebar tree and breadcrumb paths
+   * fully populated (even on direct page refreshes to subfolders), and sets
+   * the `folders` signal to the subfolders matching `parentId`.
    *
-   * @param parentId The ID of the parent folder to filter by. Defaults to 'ROOT'.
+   * @param parentId The ID of the parent folder to filter by for the current view. Defaults to 'ROOT'.
    */
   async listFolders(parentId = 'ROOT'): Promise<void> {
     this.isLoading.set(true);
     this.error.set(null);
 
     try {
-      const params = new HttpParams().set('parentFolderId', parentId);
       const response = await firstValueFrom(
-        this.api.get<{ folders: Folder[] }>('/folders', params)
+        this.api.get<{ folders: Folder[] }>('/folders')
       );
 
-      const folders = response.folders ?? [];
-      this.folders.set(folders);
+      const allUserFolders = response.folders ?? [];
+      this.knownFolders = allUserFolders;
 
-      // Merge into the known folders cache (upsert by folderId)
-      for (const folder of folders) {
-        const idx = this.knownFolders.findIndex(f => f.folderId === folder.folderId);
-        if (idx >= 0) {
-          this.knownFolders[idx] = folder;
-        } else {
-          this.knownFolders.push(folder);
-        }
-      }
+      // Filter subfolders for the active parentId view
+      const currentSubFolders = allUserFolders.filter(
+        f => f.parentFolderId === parentId
+      );
+      this.folders.set(currentSubFolders);
       this.folderVersion.update(v => v + 1);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Failed to load folders';

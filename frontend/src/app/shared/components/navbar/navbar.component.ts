@@ -6,12 +6,15 @@ import { MatIcon } from '@angular/material/icon';
 import { MatMenu, MatMenuItem, MatMenuTrigger } from '@angular/material/menu';
 import { MatDivider } from '@angular/material/divider';
 import { FormsModule } from '@angular/forms';
+import { MatDialog } from '@angular/material/dialog';
 import { AuthService } from '../../../core/auth/auth.service';
 import { ViewStateService } from '../../../core/services/view-state.service';
 import { SearchService, SearchResult } from '../../../core/services/search.service';
+import { FileService } from '../../../core/services/file.service';
 import { FileIconPipe } from '../../pipes/file-icon.pipe';
 import { FileItem } from '../../../core/models/file-item.model';
 import { Folder } from '../../../core/models/folder.model';
+import { FilePreviewComponent, FilePreviewDialogData } from '../../../features/file-browser/file-preview/file-preview.component';
 
 /**
  * Navbar component for the Drive Lite application.
@@ -49,6 +52,12 @@ export class NavbarComponent {
 
   /** Router for navigation */
   readonly router = inject(Router);
+
+  /** Injected MatDialog service. */
+  private readonly dialog = inject(MatDialog);
+
+  /** Injected FileService. */
+  private readonly fileService = inject(FileService);
 
   /** Current theme state. */
   readonly isDarkMode = signal<boolean>(true);
@@ -159,14 +168,41 @@ export class NavbarComponent {
 
   /**
    * Navigates to the selected search result.
+   * If the result is a folder, navigates into that folder.
+   * If the result is a file, navigates to its parent folder and opens the preview dialog.
+   *
    * @param result The clicked search result.
    */
   onResultClick(result: SearchResult): void {
     if (result.resultType === 'folder') {
-      this.router.navigate(['/drive/folder', result.folderId]);
+      const folder = result as Folder;
+      if (folder.folderId === 'ROOT') {
+        this.router.navigate(['/drive']);
+      } else {
+        this.router.navigate(['/drive/folder', folder.folderId]);
+      }
     } else {
-      // In a real app we might preview or download the file, or go to its folder
-      this.router.navigate(['/drive/folder', result.folderId]);
+      const file = result as FileItem;
+      if (file.folderId === 'ROOT') {
+        this.router.navigate(['/drive']);
+      } else {
+        this.router.navigate(['/drive/folder', file.folderId]);
+      }
+
+      const data: FilePreviewDialogData = {
+        file,
+        allFiles: this.fileService.getAllFiles(),
+      };
+
+      this.dialog.open(FilePreviewComponent, {
+        width: '95vw',
+        maxWidth: '95vw',
+        height: '90vh',
+        maxHeight: '95vh',
+        panelClass: 'file-preview-dialog-panel',
+        autoFocus: false,
+        data,
+      });
     }
     this.clearSearch();
   }
@@ -214,7 +250,7 @@ export class NavbarComponent {
   /**
    * Signs the current user out using the authentication service.
    */
-  signOut(): void {
-    this.authService.signOut();
+  async signOut(): Promise<void> {
+    await this.authService.signOut();
   }
 }

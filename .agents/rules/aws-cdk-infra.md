@@ -144,3 +144,10 @@ infra/
 - Cross-construct references (e.g., API construct needs the DynamoDB table)
   flow through the main stack: `storageConstruct.table` → passed as a prop to
   `ApiConstruct`.
+
+## Documentation Synchronization (Mandatory)
+
+Whenever adding, updating, or removing CDK constructs, IAM policies, stack outputs, or API routes:
+- Update `docs/architecture.md` with construct architecture changes, stack outputs, and Mermaid flow diagrams.
+- Update `docs/api-routes-and-communication-matrix.md` with new CDK integration names and IAM permissions.
+

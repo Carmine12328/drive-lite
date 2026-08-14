@@ -20,8 +20,9 @@
 
   <!-- Backdrop overlay (mobile only) — closes sidebar when tapped -->
   @if (sidebarOpen()) {
-    <div class="sidebar-backdrop" (click)="toggleSidebar()"></div>
+    <div class="sidebar-backdrop" (click)="toggleSidebar()" (keydown.escape)="toggleSidebar()" role="button" tabindex="0" aria-label="Close sidebar"></div>
   }
+
 
   <!-- Resize handle -->
   <div class="resize-handle"

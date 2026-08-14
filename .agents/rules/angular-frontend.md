@@ -100,3 +100,10 @@ Angular-specific conventions.
 - Use `--skip-tests` only when explicitly told to skip test generation.
 - Specify the full path relative to `src/app/` (e.g.,
   `ng g service core/services/upload` or `ng g component features/drive/components/file-preview`).
+
+## Documentation Synchronization (Mandatory)
+
+Whenever creating, modifying, or removing Angular components, services, signals, models, pipes, or dialogs:
+- Update `docs/frontend-components-and-architecture.md` with the new component inputs/outputs, signals, models, dialog interfaces, or pipes.
+- If HTTP API calls are involved, update `docs/api-routes-and-communication-matrix.md` to reflect frontend caller methods.
+

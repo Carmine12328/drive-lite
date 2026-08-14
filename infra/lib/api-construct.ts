@@ -115,6 +115,17 @@ export class ApiConstruct extends Construct {
     const renameFile = createHandler('RenameFileFn', '../../backend/src/handlers/files/rename-file.ts');
     const deleteFile = createHandler('DeleteFileFn', '../../backend/src/handlers/files/delete-file.ts');
     const recentFiles = createHandler('RecentFilesFn', '../../backend/src/handlers/files/recent-files.ts');
+    const listTrash = createHandler('ListTrashFn', '../../backend/src/handlers/files/list-trash.ts');
+    const restoreFile = createHandler('RestoreFileFn', '../../backend/src/handlers/files/restore-file.ts');
+    const permanentDeleteFile = createHandler('PermanentDeleteFileFn', '../../backend/src/handlers/files/permanent-delete-file.ts');
+    const emptyTrash = createHandler('EmptyTrashFn', '../../backend/src/handlers/files/empty-trash.ts');
+
+    // --- Share Handlers ---
+    const createShare = createHandler('CreateShareFn', '../../backend/src/handlers/shares/create-share.ts');
+    const getShare = createHandler('GetShareFn', '../../backend/src/handlers/shares/get-share.ts');
+    const downloadShare = createHandler('DownloadShareFn', '../../backend/src/handlers/shares/download-share.ts');
+    const listShares = createHandler('ListSharesFn', '../../backend/src/handlers/shares/list-shares.ts');
+    const revokeShare = createHandler('RevokeShareFn', '../../backend/src/handlers/shares/revoke-share.ts');
 
     // --- Auth Handler (Cognito trigger, not an API route) ---
     this.postConfirmationHandler = createHandler(
@@ -128,6 +139,8 @@ export class ApiConstruct extends Construct {
       createFolder, listFolders, renameFolder, deleteFolder,
       getUploadUrl, confirmUpload, getDownloadUrl,
       listFiles, getFile, renameFile, deleteFile, recentFiles,
+      listTrash, restoreFile, permanentDeleteFile, emptyTrash,
+      createShare, getShare, downloadShare, listShares, revokeShare,
       this.postConfirmationHandler,
     ];
     for (const fn of allHandlers) {
@@ -138,7 +151,10 @@ export class ApiConstruct extends Construct {
     props.bucket.grantPut(getUploadUrl);     // PutObject for presigned URLs
     props.bucket.grantRead(getDownloadUrl);  // GetObject for presigned URLs
     props.bucket.grantRead(confirmUpload);   // HeadObject to verify upload
+    props.bucket.grantRead(downloadShare);  // GetObject for public presigned download URLs
     props.bucket.grantDelete(deleteFile);    // DeleteObject for cleanup
+    props.bucket.grantDelete(permanentDeleteFile); // DeleteObject for trash cleanup
+    props.bucket.grantDelete(emptyTrash);          // DeleteObject for emptying trash
 
     // --- API Routes (all behind JWT authorizer) ---
     // Folders
@@ -216,5 +232,64 @@ export class ApiConstruct extends Construct {
       integration: new HttpLambdaIntegration('DeleteFileIntegration', deleteFile),
       authorizer,
     });
+    this.api.addRoutes({
+      path: '/files/{id}/restore',
+      methods: [HttpMethod.POST],
+      integration: new HttpLambdaIntegration('RestoreFileIntegration', restoreFile),
+      authorizer,
+    });
+
+    // Shares (Authenticated)
+    this.api.addRoutes({
+      path: '/files/{id}/share',
+      methods: [HttpMethod.POST],
+      integration: new HttpLambdaIntegration('CreateShareIntegration', createShare),
+      authorizer,
+    });
+    this.api.addRoutes({
+      path: '/files/{id}/shares',
+      methods: [HttpMethod.GET],
+      integration: new HttpLambdaIntegration('ListSharesIntegration', listShares),
+      authorizer,
+    });
+    this.api.addRoutes({
+      path: '/share/{token}',
+      methods: [HttpMethod.DELETE],
+      integration: new HttpLambdaIntegration('RevokeShareIntegration', revokeShare),
+      authorizer,
+    });
+
+    // Public Shares (No Authorizer — secured by cryptographic token + rate limiter + password lockout)
+    this.api.addRoutes({
+      path: '/share/{token}',
+      methods: [HttpMethod.GET],
+      integration: new HttpLambdaIntegration('GetShareIntegration', getShare),
+    });
+    this.api.addRoutes({
+      path: '/share/{token}/download',
+      methods: [HttpMethod.POST],
+      integration: new HttpLambdaIntegration('DownloadShareIntegration', downloadShare),
+    });
+
+    // Trash
+    this.api.addRoutes({
+      path: '/trash/files',
+      methods: [HttpMethod.GET],
+      integration: new HttpLambdaIntegration('ListTrashIntegration', listTrash),
+      authorizer,
+    });
+    this.api.addRoutes({
+      path: '/trash/files/{id}',
+      methods: [HttpMethod.DELETE],
+      integration: new HttpLambdaIntegration('PermanentDeleteFileIntegration', permanentDeleteFile),
+      authorizer,
+    });
+    this.api.addRoutes({
+      path: '/trash/files',
+      methods: [HttpMethod.DELETE],
+      integration: new HttpLambdaIntegration('EmptyTrashIntegration', emptyTrash),
+      authorizer,
+    });
   }
 }
+

@@ -1,21 +1,19 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { MatIcon } from '@angular/material/icon';
 import { MatIconButton } from '@angular/material/button';
-import { AuthService } from '../../../core/auth/auth.service';
 
 /**
- * Landing page component serving as the Dual Auth Gateway.
+ * Landing page component serving as the application entry gateway.
  */
 @Component({
   selector: 'app-landing',
   templateUrl: './landing.component.html',
   styleUrls: ['./landing.component.scss'],
-  imports: [MatIcon, MatIconButton, RouterLink]
+  imports: [MatIcon, MatIconButton]
 })
 export class LandingComponent implements OnInit {
   private readonly router = inject(Router);
-  private readonly authService = inject(AuthService);
 
   readonly isDarkTheme = signal(true);
 
@@ -46,16 +44,16 @@ export class LandingComponent implements OnInit {
   }
 
   /**
-   * Navigates to custom register form.
+   * Navigates to registration form.
    */
-  navigateToCustomRegister(): void {
+  navigateToRegister(): void {
     this.router.navigate(['/auth/register']);
   }
 
   /**
-   * Triggers Cognito Hosted UI sign in.
+   * Navigates to sign in form.
    */
-  signInWithCognito(): void {
-    this.authService.signInWithCognito();
+  navigateToLogin(): void {
+    this.router.navigate(['/auth/login']);
   }
 }

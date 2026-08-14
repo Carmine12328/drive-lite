@@ -37,6 +37,7 @@
         (blur)="onSearchBlur()"
         role="combobox"
         aria-autocomplete="list"
+        aria-controls="search-results-listbox"
         [attr.aria-expanded]="showResults()"
         aria-label="Search files and folders"
       />
@@ -48,14 +49,14 @@
 
       <!-- Search Results Dropdown -->
       @if (showResults()) {
-        <div class="search-results-dropdown" role="listbox">
+        <div class="search-results-dropdown" id="search-results-listbox" role="listbox">
           @if (searchService.isSearching()) {
             <div class="search-loading">Searching...</div>
           } @else if (searchService.searchResults().length === 0) {
             <div class="search-no-results">No results found</div>
           } @else {
             @for (result of searchService.searchResults(); track resultId(result)) {
-              <button class="search-result-item" role="option" (click)="onResultClick(result)">
+              <button class="search-result-item" role="option" [attr.aria-selected]="false" (click)="onResultClick(result)">
                 <mat-icon class="result-icon">
                   {{ resultIcon(result) }}
                 </mat-icon>
@@ -66,6 +67,7 @@
           }
         </div>
       }
+
     </div>
   </div>
 

@@ -87,6 +87,13 @@
               }
             </mat-form-field>
 
+            @if (errorMessage()) {
+              <div class="error-message">
+                <mat-icon>error_outline</mat-icon>
+                <span>{{ errorMessage() }}</span>
+              </div>
+            }
+
             <button mat-flat-button class="btn-accent submit-btn" type="submit" [disabled]="isLoading()">
               @if (isLoading()) {
                 <mat-spinner diameter="24"></mat-spinner>
@@ -118,6 +125,13 @@
               >
             }
           </div>
+
+          @if (errorMessage()) {
+            <div class="error-message">
+              <mat-icon>error_outline</mat-icon>
+              <span>{{ errorMessage() }}</span>
+            </div>
+          }
           
           <button mat-flat-button class="btn-accent submit-btn" (click)="onCodeSubmit()" [disabled]="isLoading()">
             @if (isLoading()) {

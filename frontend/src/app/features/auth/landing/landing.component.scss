@@ -172,11 +172,6 @@
       background: color-mix(in srgb, var(--accent-primary) 10%, transparent);
       color: var(--accent-primary);
     }
-    
-    &.cognito-icon {
-      background: color-mix(in srgb, var(--accent-secondary) 10%, transparent);
-      color: var(--accent-secondary);
-    }
   }
 
   h2 {
@@ -189,54 +184,6 @@
     color: var(--text-muted);
     font-size: 1rem;
     margin: 0;
-  }
-}
-
-.table-container {
-  width: 100%;
-  max-width: 800px;
-  overflow-x: auto;
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--border-color);
-  background: var(--bg-surface);
-  margin-bottom: var(--space-12);
-  box-shadow: var(--shadow-md);
-}
-
-.comparison-table {
-  width: 100%;
-  border-collapse: collapse;
-  text-align: left;
-  
-  th, td {
-    padding: var(--space-4) var(--space-6);
-    border-bottom: 1px solid var(--divider-color);
-  }
-  
-  th {
-    font-weight: 600;
-    color: var(--text-primary);
-    background: color-mix(in srgb, var(--text-primary) 2%, transparent);
-    
-    &:not(:first-child) {
-      width: 35%;
-    }
-  }
-  
-  tr:last-child td {
-    border-bottom: none;
-  }
-  
-  td {
-    color: var(--text-secondary);
-  }
-  
-  .row-header {
-    color: var(--text-primary);
-  }
-  
-  .emoji {
-    font-family: "Segoe UI Emoji", "Apple Color Emoji", sans-serif;
   }
 }
 

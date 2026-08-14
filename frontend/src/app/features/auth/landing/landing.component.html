@@ -13,71 +13,31 @@
         <mat-icon class="animated-cloud">cloud</mat-icon>
       </div>
       <h1 class="gradient-text title">Drive Lite</h1>
-      <p class="tagline">Secure cloud storage, built with Angular & AWS</p>
+      <p class="tagline">Secure cloud storage & asset management, built with Angular 22 & AWS</p>
     </header>
 
     <!-- CTAs -->
     <div class="cta-container">
-      <div class="glass-panel cta-card" (click)="navigateToCustomRegister()" tabindex="0" role="button" (keydown.enter)="navigateToCustomRegister()">
+      <div class="glass-panel cta-card" (click)="navigateToRegister()" tabindex="0" role="button" (keydown.enter)="navigateToRegister()">
         <div class="card-icon custom-icon">
-          <mat-icon>mail</mat-icon>
+          <mat-icon>person_add</mat-icon>
         </div>
-        <h2>Sign Up with Email</h2>
-        <p>Custom Angular forms, full UI control</p>
+        <h2>Create Account</h2>
+        <p>Sign up to start managing your files and folders securely</p>
       </div>
 
-      <div class="glass-panel cta-card" (click)="signInWithCognito()" tabindex="0" role="button" (keydown.enter)="signInWithCognito()">
-        <div class="card-icon cognito-icon">
-          <mat-icon>cloud_queue</mat-icon>
+      <div class="glass-panel cta-card" (click)="navigateToLogin()" tabindex="0" role="button" (keydown.enter)="navigateToLogin()">
+        <div class="card-icon custom-icon">
+          <mat-icon>login</mat-icon>
         </div>
-        <h2>Sign Up with Cognito</h2>
-        <p>AWS Hosted UI, zero frontend code</p>
+        <h2>Sign In</h2>
+        <p>Access your existing drive, files, and workspace</p>
       </div>
-    </div>
-
-    <!-- Comparison Table -->
-    <div class="table-container fade-in slide-up">
-      <table class="comparison-table">
-        <thead>
-          <tr>
-            <th></th>
-            <th>Custom Angular Form</th>
-            <th>Cognito Hosted UI</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td class="row-header"><strong>UX</strong></td>
-            <td>Stays in app</td>
-            <td>Redirects to AWS</td>
-          </tr>
-          <tr>
-            <td class="row-header"><strong>Branding</strong></td>
-            <td>Full CSS control</td>
-            <td>Limited</td>
-          </tr>
-          <tr>
-            <td class="row-header"><strong>Effort</strong></td>
-            <td>More code</td>
-            <td>Near-zero</td>
-          </tr>
-          <tr>
-            <td class="row-header"><strong>Social Login</strong></td>
-            <td>Extra OAuth setup</td>
-            <td>Built-in</td>
-          </tr>
-          <tr>
-            <td class="row-header"><strong>Result</strong></td>
-            <td>Same JWT <span class="emoji">✅</span></td>
-            <td>Same JWT <span class="emoji">✅</span></td>
-          </tr>
-        </tbody>
-      </table>
     </div>
 
     <!-- Footer -->
     <footer class="footer">
-      <p>Already have an account? <a routerLink="/auth/login" class="login-link">Sign In</a></p>
+      <p>Drive Lite &copy; 2026 — Secure Cloud Asset Manager</p>
     </footer>
   </div>
 </div>

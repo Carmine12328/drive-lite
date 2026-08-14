@@ -76,14 +76,15 @@
               <span class="file-date">{{ file.formattedDate }}</span>
               <span class="file-size">{{ file.formattedSize }}</span>
             </div>
-            <div class="file-actions" (click)="$event.stopPropagation()">
-              <button mat-icon-button matTooltip="Download" (click)="onDownloadFile(file)" aria-label="Download file">
+            <div class="file-actions">
+              <button mat-icon-button matTooltip="Download" (click)="$event.stopPropagation(); onDownloadFile(file)" aria-label="Download file">
                 <mat-icon>download</mat-icon>
               </button>
-              <button mat-icon-button matTooltip="Delete" (click)="onDeleteFile(file)" aria-label="Delete file">
+              <button mat-icon-button matTooltip="Delete" (click)="$event.stopPropagation(); onDeleteFile(file)" aria-label="Delete file">
                 <mat-icon>delete</mat-icon>
               </button>
             </div>
+
           </div>
         }
       </div>

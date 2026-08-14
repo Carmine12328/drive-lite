@@ -66,3 +66,39 @@ export function trashPK(userId: string): string {
 export function s3Key(userId: string, fileId: string, fileName: string): string {
   return `users/${userId}/files/${fileId}/${fileName}`;
 }
+
+/**
+ * Build the partition key for a share link.
+ * @param shareToken - Unique share token
+ * @returns `SHARE#${shareToken}`
+ */
+export function sharePK(shareToken: string): string {
+  return `SHARE#${shareToken}`;
+}
+
+/**
+ * Build the sort key for a share link.
+ * @returns `LINK`
+ */
+export function shareSK(): string {
+  return 'LINK';
+}
+
+/**
+ * Build the GSI1 partition key for listing shares owned by a user.
+ * @param userId - Cognito user sub
+ * @returns `USER#${userId}`
+ */
+export function shareGSI1PK(userId: string): string {
+  return `USER#${userId}`;
+}
+
+/**
+ * Build the GSI1 sort key for listing shares for a specific file.
+ * @param fileId - File ID (ULID)
+ * @param shareToken - Unique share token
+ * @returns `SHARE#${fileId}#${shareToken}`
+ */
+export function shareGSI1SK(fileId: string, shareToken: string): string {
+  return `SHARE#${fileId}#${shareToken}`;
+}

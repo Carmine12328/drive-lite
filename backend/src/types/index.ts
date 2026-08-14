@@ -2,7 +2,7 @@
 export type UploadStatus = 'PENDING' | 'COMPLETED' | 'FAILED';
 
 /** Entity type discriminator */
-export type EntityType = 'FILE' | 'FOLDER' | 'USER_PROFILE';
+export type EntityType = 'FILE' | 'FOLDER' | 'USER_PROFILE' | 'SHARE_LINK';
 
 /** DynamoDB folder item */
 export interface FolderItem {
@@ -103,3 +103,66 @@ export class ValidationError extends Error {
     this.name = 'ValidationError';
   }
 }
+
+/** DynamoDB share link item */
+export interface ShareLinkItem {
+  PK: string;                     // SHARE#{shareToken}
+  SK: string;                     // LINK
+  GSI1PK: string;                 // USER#{userId}
+  GSI1SK: string;                 // SHARE#{fileId}#{shareToken}
+  entityType: 'SHARE_LINK';
+  shareToken: string;
+  fileId: string;
+  userId: string;
+  fileName: string;
+  fileSize: number;
+  mimeType: string;
+  s3Key: string;
+  passwordHash?: string;
+  salt?: string;
+  failedPasswordAttempts: number;
+  maxDownloads?: number;
+  downloadCount: number;
+  expiresAt: string;              // ISO 8601
+  ttl: number;                    // Unix epoch timestamp
+  createdAt: string;              // ISO 8601
+}
+
+/** Request body for creating a share link */
+export interface CreateShareRequest {
+  expiresInHours: number;         // e.g. 1, 24, 168 (7d), 720 (30d)
+  password?: string;
+  maxDownloads?: number;
+}
+
+/** Response from creating a share link */
+export interface ShareLinkResponse {
+  shareToken: string;
+  shareUrl: string;
+  expiresAt: string;
+  passwordProtected: boolean;
+  maxDownloads?: number;
+}
+
+/** Public metadata response for a share link */
+export interface ShareMetaResponse {
+  fileName: string;
+  fileSize: number;
+  mimeType: string;
+  passwordProtected: boolean;
+  expiresAt: string;
+  maxDownloads?: number;
+  downloadCount: number;
+}
+
+/** Request body for downloading via share link */
+export interface DownloadShareRequest {
+  password?: string;
+}
+
+/** Response from downloading via share link */
+export interface DownloadShareResponse {
+  downloadUrl: string;
+  fileName: string;
+}
+

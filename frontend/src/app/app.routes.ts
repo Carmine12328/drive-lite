@@ -52,6 +52,16 @@ export const routes: Routes = [
     ],
   },
 
+  // --- Public share download route (no guard) ---
+  {
+    path: 'share/:token',
+    loadComponent: () =>
+      import('./features/share/share-download.component').then(
+        (m) => m.ShareDownloadComponent,
+      ),
+    data: { animation: 'SharePage' },
+  },
+
   // --- Authenticated routes (guarded, wrapped in ShellComponent) ---
   {
     path: '',

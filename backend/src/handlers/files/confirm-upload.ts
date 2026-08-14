@@ -19,7 +19,10 @@ export const handler = async (event: APIGatewayProxyEventV2): Promise<APIGateway
   try {
     const userId = getUserId(event);
     const body = parseBody<ConfirmUploadRequest>(event);
-    const fileId = body.fileId;
+    const fileId = body?.fileId;
+    if (!fileId) {
+      throw new ValidationError('File ID is required', 400);
+    }
 
     const queryResult = await docClient.send(new QueryCommand({
       TableName: config.TABLE_NAME,

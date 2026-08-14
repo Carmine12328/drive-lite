@@ -1,9 +1,10 @@
 import { Component, computed, effect, inject, signal } from '@angular/core';
-import { MAT_DIALOG_DATA, MatDialogRef, MatDialogTitle } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialog, MatDialogRef, MatDialogTitle } from '@angular/material/dialog';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { HttpClient } from '@angular/common/http';
 import { MatIcon } from '@angular/material/icon';
 import { MatIconButton, MatButton } from '@angular/material/button';
+import { MatTooltip } from '@angular/material/tooltip';
 import { DatePipe } from '@angular/common';
 import { firstValueFrom } from 'rxjs';
 
@@ -12,6 +13,8 @@ import { FileService } from '../../../core/services/file.service';
 import { ApiService } from '../../../core/services/api.service';
 import { FileIconPipe } from '../../../shared/pipes/file-icon.pipe';
 import { FileSizePipe } from '../../../shared/pipes/file-size.pipe';
+import { ShareDialog } from '../../../shared/components/share-dialog/share-dialog';
+
 
 /**
  * Data passed to the file preview dialog.
@@ -33,6 +36,7 @@ export interface FilePreviewDialogData {
     MatIcon,
     MatIconButton,
     MatButton,
+    MatTooltip,
     MatDialogTitle,
     FileIconPipe,
     FileSizePipe,
@@ -46,11 +50,13 @@ export interface FilePreviewDialogData {
 })
 export class FilePreviewComponent {
   private readonly dialogRef = inject(MatDialogRef<FilePreviewComponent>);
+  private readonly dialog = inject(MatDialog);
   private readonly data = inject<FilePreviewDialogData>(MAT_DIALOG_DATA);
   private readonly sanitizer = inject(DomSanitizer);
   private readonly fileService = inject(FileService);
   private readonly api = inject(ApiService);
   private readonly http = inject(HttpClient);
+
 
   /** All available files for navigation */
   readonly allFiles = this.data.allFiles;
@@ -225,9 +231,22 @@ export class FilePreviewComponent {
   }
 
   /**
+   * Opens the share dialog for the currently previewed file.
+   */
+  onShare(): void {
+    this.dialog.open(ShareDialog, {
+      width: '540px',
+      panelClass: 'drive-dialog',
+      data: { file: this.currentFile() },
+      ariaLabel: `Share ${this.currentFile().fileName} dialog`,
+    });
+  }
+
+  /**
    * Toggles the info sidebar visibility.
    */
   toggleInfo(): void {
     this.showInfo.update(v => !v);
   }
 }
+

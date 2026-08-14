@@ -20,6 +20,8 @@ import { UploadDialog, UploadDialogData } from './upload-dialog/upload-dialog';
 import { ConfirmDialog, ConfirmDialogData } from '../../shared/components/confirm-dialog/confirm-dialog';
 import { InputDialog, InputDialogData } from '../../shared/components/input-dialog/input-dialog';
 import { FilePreviewComponent, FilePreviewDialogData } from './file-preview/file-preview.component';
+import { ShareDialog, ShareDialogData } from '../../shared/components/share-dialog/share-dialog';
+
 
 /**
  * Main file browser component providing a Google Drive–like experience.
@@ -118,6 +120,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
   /** Context menu items for files. */
   readonly fileContextMenuItems: ContextMenuItem[] = [
     { label: 'Open', icon: 'visibility', action: 'preview' },
+    { label: 'Share', icon: 'share', action: 'share' },
     { label: 'Download', icon: 'download', action: 'download' },
     { label: 'Rename', icon: 'edit', action: 'rename' },
     { label: 'Delete', icon: 'delete_outline', action: 'delete' },
@@ -402,6 +405,20 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
         this.fileService.renameFile(file.fileId, newName);
         this.toastService.success(`Renamed to "${newName}"`);
       }
+    });
+  }
+
+  /**
+   * Opens the share dialog for generating and managing expiring share links.
+   * @param file The file to share.
+   */
+  openShareDialog(file: FileItem): void {
+    const data: ShareDialogData = { file };
+    this.dialog.open(ShareDialog, {
+      width: '540px',
+      panelClass: 'drive-dialog',
+      data,
+      ariaLabel: `Share ${file.fileName} dialog`,
     });
   }
 

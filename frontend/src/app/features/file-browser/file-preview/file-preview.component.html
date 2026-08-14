@@ -12,6 +12,9 @@
     </div>
     
     <div class="actions">
+      <button mat-icon-button (click)="onShare()" aria-label="Share file" matTooltip="Share file">
+        <mat-icon>share</mat-icon>
+      </button>
       <button mat-icon-button (click)="toggleInfo()" class="info-toggle" aria-label="Toggle info">
         <mat-icon>info</mat-icon>
       </button>
@@ -19,6 +22,7 @@
         <mat-icon>close</mat-icon>
       </button>
     </div>
+
   </header>
 
   <div class="preview-body">
@@ -88,6 +92,10 @@
         </div>
         
         <div class="sidebar-actions">
+          <button mat-button (click)="onShare()" class="share-btn">
+            <mat-icon>share</mat-icon>
+            Share Link
+          </button>
           <button mat-button (click)="onDownload()" class="download-btn">
             <mat-icon>download</mat-icon>
             Download
@@ -97,3 +105,4 @@
     }
   </div>
 </div>
+

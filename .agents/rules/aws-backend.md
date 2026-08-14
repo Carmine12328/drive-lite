@@ -139,3 +139,10 @@ backend/src/
   handlers call `lib/` utilities directly.
 - Shared types go in `src/types/index.ts`. Handler-specific types can live in
   the handler file if they are not reused.
+
+## Documentation Synchronization (Mandatory)
+
+Whenever adding, updating, or removing Lambda handlers, DynamoDB key patterns, or S3 operations:
+- Update `docs/backend-handlers-and-architecture.md` with the new/modified handler specifications, DynamoDB queries, transaction boundaries, and IAM requirements.
+- Update `docs/api-routes-and-communication-matrix.md` with the updated route paths, HTTP schemas, and frontend caller mapping.
+

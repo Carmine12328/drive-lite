@@ -22,8 +22,22 @@ import { FileItem } from '../../../core/models/file-item.model';
 import { Folder } from '../../../core/models/folder.model';
 
 /**
+ * Interface representing a row item in the list view (file or folder).
+ */
+export interface FileListRow {
+  id: string;
+  name: string;
+  type: 'folder' | 'file';
+  size: number;
+  updatedAt: string;
+  mimeType: string;
+  raw: FileItem | Folder;
+}
+
+/**
  * FileListComponent displays a list of files in either grid or list view.
  */
+
 @Component({
   selector: 'app-file-list',
   templateUrl: './file-list.component.html',
@@ -199,43 +213,45 @@ export class FileListComponent {
     this.folderContextMenu.emit({ event, folder });
   }
 
+
   /** Handles click on a row in list view */
-  onRowClick(row: any): void {
+  onRowClick(row: FileListRow): void {
     if (row.type === 'folder') {
       this.onFolderNavigate(row.id);
     } else {
-      this.onFileClick(row.raw);
+      this.onFileClick(row.raw as FileItem);
     }
   }
 
   /** Handles right-click / contextmenu on a row in list view */
-  onRowContextMenu(event: MouseEvent, row: any): void {
+  onRowContextMenu(event: MouseEvent, row: FileListRow): void {
     if (row.type === 'folder') {
-      this.onFolderRightClick(event, row.raw);
+      this.onFolderRightClick(event, row.raw as Folder);
     } else {
-      this.onContextMenu(event, row.raw);
+      this.onContextMenu(event, row.raw as FileItem);
     }
   }
 
   /** Handles row-level rename action */
-  onRenameRow(event: Event, row: any): void {
+  onRenameRow(event: Event, row: FileListRow): void {
     event.stopPropagation();
     if (row.type === 'file') {
-      this.fileAction.emit({ action: 'rename', file: row.raw });
+      this.fileAction.emit({ action: 'rename', file: row.raw as FileItem });
     } else {
-      this.folderAction.emit({ action: 'rename', folder: row.raw });
+      this.folderAction.emit({ action: 'rename', folder: row.raw as Folder });
     }
   }
 
   /** Handles row-level delete action */
-  onDeleteRow(event: Event, row: any): void {
+  onDeleteRow(event: Event, row: FileListRow): void {
     event.stopPropagation();
     if (row.type === 'file') {
-      this.fileAction.emit({ action: 'delete', file: row.raw });
+      this.fileAction.emit({ action: 'delete', file: row.raw as FileItem });
     } else {
-      this.folderAction.emit({ action: 'delete', folder: row.raw });
+      this.folderAction.emit({ action: 'delete', folder: row.raw as Folder });
     }
   }
+
 
   /** Handles column sort toggling */
   onSort(field: string): void {

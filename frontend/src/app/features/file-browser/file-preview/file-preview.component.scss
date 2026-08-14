@@ -182,12 +182,32 @@
   .sidebar-actions {
     margin-top: auto;
     padding-top: var(--space-4);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
     
+    .share-btn,
     .download-btn {
       width: 100%;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-2);
+    }
+
+    .share-btn {
+      border: 1px solid var(--border-color);
+      color: var(--accent-primary);
+
+      &:hover {
+        background: var(--bg-elevated);
+        border-color: var(--border-color-hover);
+      }
     }
   }
 }
+
 
 .info-toggle {
   display: none; // Hidden by default, shown on mobile

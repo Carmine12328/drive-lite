@@ -50,9 +50,13 @@ export class TrashComponent implements OnInit {
    * Restores a file to its original location
    * @param file The file item to restore
    */
-  restoreFile(file: FileItem): void {
-    this.fileService.restoreFile(file.fileId);
-    this.toastService.success(`Restored ${file.fileName}`);
+  async restoreFile(file: FileItem): Promise<void> {
+    try {
+      await this.fileService.restoreFile(file.fileId);
+      this.toastService.success(`Restored ${file.fileName}`);
+    } catch {
+      this.toastService.error(`Failed to restore ${file.fileName}`);
+    }
   }
 
   /**
@@ -69,10 +73,14 @@ export class TrashComponent implements OnInit {
       }
     });
 
-    dialogRef.afterClosed().subscribe((result) => {
+    dialogRef.afterClosed().subscribe(async (result) => {
       if (result) {
-        this.fileService.permanentlyDeleteFile(file.fileId);
-        this.toastService.success(`Permanently deleted ${file.fileName}`);
+        try {
+          await this.fileService.permanentlyDeleteFile(file.fileId);
+          this.toastService.success(`Permanently deleted ${file.fileName}`);
+        } catch {
+          this.toastService.error(`Failed to delete ${file.fileName}`);
+        }
       }
     });
   }
@@ -90,10 +98,14 @@ export class TrashComponent implements OnInit {
       }
     });
 
-    dialogRef.afterClosed().subscribe((result) => {
+    dialogRef.afterClosed().subscribe(async (result) => {
       if (result) {
-        this.fileService.emptyTrash();
-        this.toastService.success('Trash emptied');
+        try {
+          await this.fileService.emptyTrash();
+          this.toastService.success('Trash emptied');
+        } catch {
+          this.toastService.error('Failed to empty trash');
+        }
       }
     });
   }

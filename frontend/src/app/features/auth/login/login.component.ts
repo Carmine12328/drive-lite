@@ -91,9 +91,4 @@ export class LoginComponent implements OnInit {
     }
     // On success, AuthService navigates to /dashboard internally
   }
-
-  /** Initiates Cognito Hosted UI sign in */
-  signInWithCognito() {
-    this.authService.signInWithCognito();
-  }
 }

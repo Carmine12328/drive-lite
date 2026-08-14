@@ -1,0 +1,117 @@
+<div class="share-landing-container">
+  <!-- Minimal Top Navigation -->
+  <header class="top-nav">
+    <a routerLink="/auth/landing" class="brand-link">
+      <div class="logo-icon">
+        <mat-icon>cloud_queue</mat-icon>
+      </div>
+      <span class="brand-title">Drive<span class="brand-highlight">Lite</span></span>
+    </a>
+
+    <div class="nav-right">
+      <a routerLink="/auth/login" mat-button class="nav-btn">Sign In</a>
+      <a routerLink="/auth/register" mat-flat-button color="primary" class="nav-btn-primary">Get Started</a>
+    </div>
+  </header>
+
+  <!-- Main Content Card -->
+  <main class="main-content">
+    <div class="glow-bg"></div>
+
+    @if (isLoading()) {
+      <div class="status-card glass-panel">
+        <mat-spinner diameter="40"></mat-spinner>
+        <p class="status-text">Fetching file details...</p>
+      </div>
+    } @else if (errorMessage(); as errorMsg) {
+      <div class="status-card error-card glass-panel">
+        <div class="error-icon-wrapper">
+          <mat-icon>link_off</mat-icon>
+        </div>
+        <h2 class="card-title">Link Unavailable</h2>
+        <p class="card-description">{{ errorMsg }}</p>
+        <button mat-flat-button color="primary" class="cta-btn" (click)="goToLanding()">
+          <mat-icon>home</mat-icon> Return Home
+        </button>
+      </div>
+    } @else if (shareMeta(); as meta) {
+      <div class="file-download-card glass-panel">
+        <div class="card-top">
+          <div class="file-type-icon">
+            <mat-icon>{{ meta.mimeType | fileIcon }}</mat-icon>
+          </div>
+          <div class="file-details">
+            <h1 class="file-title" [title]="meta.fileName">{{ meta.fileName }}</h1>
+            <div class="file-meta-pills">
+              <span class="meta-pill">
+                <mat-icon>straighten</mat-icon> {{ meta.fileSize | fileSize }}
+              </span>
+              <span class="meta-pill">
+                <mat-icon>schedule</mat-icon> Expires: {{ meta.expiresAt | date:'mediumDate' }}
+              </span>
+              @if (meta.maxDownloads) {
+                <span class="meta-pill">
+                  <mat-icon>download</mat-icon> {{ meta.downloadCount }} of {{ meta.maxDownloads }} downloads
+                </span>
+              }
+            </div>
+          </div>
+        </div>
+
+        <div class="card-divider"></div>
+
+        <div class="card-bottom">
+          @if (meta.passwordProtected) {
+            <div class="password-box">
+              <div class="password-label">
+                <mat-icon class="lock-icon">lock</mat-icon>
+                <span>This file is password protected</span>
+              </div>
+              <mat-form-field appearance="outline" class="password-input-field">
+                <mat-label>Enter Password</mat-label>
+                <input
+                  matInput
+                  type="password"
+                  [formControl]="passwordCtrl"
+                  placeholder="Password"
+                  (keyup.enter)="onDownload()"
+                />
+                <mat-icon matPrefix>key</mat-icon>
+                @if (passwordError(); as passErr) {
+                  <mat-error>{{ passErr }}</mat-error>
+                }
+              </mat-form-field>
+            </div>
+          }
+
+          <button
+            mat-flat-button
+            color="primary"
+            class="download-action-btn"
+            [disabled]="isDownloading() || (meta.passwordProtected && !passwordCtrl.value)"
+            (click)="onDownload()"
+          >
+            @if (isDownloading()) {
+              <mat-spinner diameter="20"></mat-spinner>
+              <span>Preparing Download...</span>
+            } @else {
+              <ng-container>
+                <mat-icon>download</mat-icon>
+                <span>Download File ({{ meta.fileSize | fileSize }})</span>
+              </ng-container>
+            }
+          </button>
+
+
+          <p class="safe-note">
+            <mat-icon>verified_user</mat-icon> Direct, encrypted transfer from Amazon S3
+          </p>
+        </div>
+      </div>
+    }
+  </main>
+
+  <footer class="footer">
+    <p>Powered by <strong>Drive Lite</strong> — Cloud Asset Manager</p>
+  </footer>
+</div>

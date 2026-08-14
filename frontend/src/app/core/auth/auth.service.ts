@@ -280,6 +280,55 @@ export class AuthService {
     await this.router.navigate(['/auth/landing']);
   }
 
+  // ── Cognito Hosted UI Callback ────────────────────────────────────────
+
+  /**
+   * Handles the OAuth redirect callback from Cognito Hosted UI.
+   * Extracts tokens from URL hash/search params, initializes user profile,
+   * and navigates to the dashboard.
+   */
+  public async handleCognitoCallback(): Promise<void> {
+    try {
+      const hash = window.location.hash.startsWith('#')
+        ? window.location.hash.substring(1)
+        : window.location.hash;
+      const search = window.location.search.startsWith('?')
+        ? window.location.search.substring(1)
+        : window.location.search;
+      const params = new URLSearchParams(hash || search);
+
+      const idToken = params.get('id_token');
+      const accessToken = params.get('access_token');
+      const refreshToken = params.get('refresh_token') ?? '';
+      const expiresIn = parseInt(params.get('expires_in') ?? '3600', 10);
+
+      if (idToken && accessToken) {
+        const tokenSet: TokenSet = {
+          idToken,
+          accessToken,
+          refreshToken,
+          expiresAt: Date.now() + expiresIn * 1000,
+        };
+        this.tokens.set(tokenSet);
+        this.persistTokens(tokenSet);
+
+        const user = this.extractUserFromToken(idToken);
+        this.currentUser.set(user);
+        this.isAuthenticated.set(true);
+
+        await this.initializeProfile(user.userId, user.email);
+        await this.router.navigate(['/dashboard']);
+        return;
+      }
+
+      // If no valid tokens found in the URL params, navigate to login
+      await this.router.navigate(['/auth/login']);
+    } catch (error) {
+      console.error('[AuthService] handleCognitoCallback error:', error);
+      throw error;
+    }
+  }
+
   // ── Token Access ─────────────────────────────────────────────────────
 
   /**
