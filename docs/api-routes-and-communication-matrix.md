@@ -25,7 +25,7 @@ This document provides an exhaustive, bidirectional communication specification 
 | `GET` | `/trash/files` | `ListTrashIntegration` | `handlers/files/list-trash.ts` | `table.grantReadWriteData` | `QueryCommand` (`PK = TRASH#...`) | — | `FileService.loadTrash()` |
 | `DELETE` | `/trash/files/{id}` | `PermanentDeleteFileIntegration` | `handlers/files/permanent-delete-file.ts` | `table.grantReadWriteData`, `bucket.grantDelete` | `GetCommand`, `DeleteCommand` | `DeleteObjectCommand` | `FileService.permanentlyDeleteFile(fileId)` |
 | `DELETE` | `/trash/files` | `EmptyTrashIntegration` | `handlers/files/empty-trash.ts` | `table.grantReadWriteData`, `bucket.grantDelete` | `QueryCommand`, `DeleteCommand` (all) | `DeleteObjectCommand` (all) | `FileService.emptyTrash()` |
-| `POST` | `/auth/init-profile` *(proxy)* | *(Dev Express Proxy)* | `handlers/auth/post-confirmation.ts` | `table.grantReadWriteData` | `TransactWriteCommand` (`PROFILE` + `FOLDER#ROOT`) | — | `AuthService.initializeProfile(userId, email)` |
+| `POST` | `/auth/init-profile` | `InitProfileIntegration` | `handlers/auth/init-profile.ts` | `table.grantReadWriteData` | `TransactWriteCommand` (`PROFILE` + `FOLDER#ROOT`) | — | `AuthService.initializeProfile(userId, email)` |
 | `GET` | `/auth/confirmation-code` *(proxy)*| *(Dev Express Proxy)* | *(Reads `.cognito/db/*.json`)* | — | — | — | `AuthService.fetchAndLogConfirmationCode(email)` |
 | `POST` | `/files/{id}/share` | `CreateShareIntegration` | `handlers/shares/create-share.ts` | `table.grantReadWriteData` | `PutCommand` (`SHARE#{token}`) | — | `ShareService.createShare(fileId, opts)` |
 | `GET` | `/files/{id}/shares` | `ListSharesIntegration` | `handlers/shares/list-shares.ts` | `table.grantReadWriteData` | `QueryCommand` (GSI1) | — | `ShareService.listShares(fileId)` |
@@ -370,17 +370,17 @@ This document provides an exhaustive, bidirectional communication specification 
 
 ### 2.4. Authentication & Development Helper Routes
 
-#### `POST /auth/init-profile` — Initialize Profile (Dev & Post-Confirmation)
-- **Description**: Initializes the user profile and root folder in DynamoDB. Called idempotently by `AuthService` on login in local development.
+#### `POST /auth/init-profile` — Initialize Profile (Dev & Cloud Sign-In)
+- **Description**: Initializes the user profile and root folder in DynamoDB. Called idempotently by `AuthService` on login in local development and cloud OAuth/Cognito sign-ins.
 - **Frontend Caller**: `AuthService.initializeProfile(userId, email)` (`frontend/src/app/core/auth/auth.service.ts`)
 - **HTTP Request**:
   - Method: `POST`
   - URL: `${environment.apiUrl}/auth/init-profile`
-  - Headers: `Content-Type: application/json`
+  - Headers: `Authorization: Bearer <jwt-token>`, `Content-Type: application/json`
   - Body: `{ "userId": "<sub-uuid>", "email": "user@example.com" }`
-- **Backend Handler**: Proxied in `backend/src/local-api.ts` &rarr; invokes `backend/src/handlers/auth/post-confirmation.ts`.
-- **Database Operations**: `TransactWriteCommand` inserting `USER_PROFILE` and `FOLDER#ROOT` ("My Drive").
-- **Response**: `200 OK` with `{ "message": "Profile initialized", "userId": "..." }`.
+- **Backend Handler**: `backend/src/handlers/auth/init-profile.ts` (`InitProfileIntegration` in API Gateway) & local proxy in `backend/src/local-api.ts`.
+- **Database Operations**: `TransactWriteCommand` inserting `USER_PROFILE` and `FOLDER#ROOT` ("My Drive") with `attribute_not_exists(PK)` condition.
+- **Response**: `200 OK` with `{ "message": "Profile initialized successfully" }` (or `{ "message": "Profile already initialized" }`).
 
 ---
 

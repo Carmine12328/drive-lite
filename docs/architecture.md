@@ -210,6 +210,7 @@ Composes all constructs in strict dependency order:
 | `MoveFileFn` | `grantReadWriteData` | — | Transact move file between folders |
 | `GenerateThumbnailFn` | `grantReadWriteData` | `bucket.grantReadWrite` | S3-triggered image resize (Not an API route) |
 | `SummarizeFileFn` | `grantReadWriteData` | `bucket.grantRead` | AI file summarization |
+| `InitProfileFn` | `grantReadWriteData` | — | Idempotent user profile and ROOT folder initialization API route |
 
 ---
 

@@ -29,7 +29,8 @@
 | Login UI (email/password form) | `frontend/src/app/features/auth/login/login.component.ts` |
 | Register UI (2-step + confirmation code) | `frontend/src/app/features/auth/register/register.component.ts` |
 | Cognito Hosted UI callback handler | `frontend/src/app/features/auth/cognito-callback/cognito-callback.component.ts` |
-| Post-registration Lambda (creates DynamoDB profile) | `backend/src/handlers/auth/post-confirmation.ts` |
+| Post-registration Lambda (Cognito trigger) | `backend/src/handlers/auth/post-confirmation.ts` |
+| Idempotent Profile Init Lambda (API route) | `backend/src/handlers/auth/init-profile.ts` |
 | Cognito User Pool CDK construct | `infra/lib/auth-construct.ts` |
 
 ### File Operations

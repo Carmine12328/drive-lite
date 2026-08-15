@@ -104,8 +104,6 @@ export class ApiConstruct extends Construct {
           format: OutputFormat.ESM,
           mainFields: ['module', 'main'],
           banner: "import { createRequire } from 'module';const require = createRequire(import.meta.url);",
-          // Externalize SDK for Lambda runtime (reduces bundle size)
-          externalModules: ['@aws-sdk/*'],
           nodeModules: extraNodeModules,
         },
       });
@@ -149,7 +147,7 @@ export class ApiConstruct extends Construct {
     const generateThumbnail = createHandler('GenerateThumbnailFn', '../../backend/src/handlers/files/generate-thumbnail.ts', 60, ['sharp']);
 
     // --- AI Summarization Handler ---
-    const summarizeFile = createHandler('SummarizeFileFn', '../../backend/src/handlers/files/summarize-file.ts', 60, ['pdf-parse']);
+    const summarizeFile = createHandler('SummarizeFileFn', '../../backend/src/handlers/files/summarize-file.ts', 60);
     summarizeFile.addToRolePolicy(new iam.PolicyStatement({
       actions: ['bedrock:InvokeModel'],
       resources: ['*'],
@@ -162,6 +160,9 @@ export class ApiConstruct extends Construct {
       '../../backend/src/handlers/auth/post-confirmation.ts'
     );
 
+    // --- Auth Handlers (API route for frontend/dev idempotent profile initialization) ---
+    const initProfile = createHandler('InitProfileFn', '../../backend/src/handlers/auth/init-profile.ts');
+
     // --- IAM Permissions ---
     // All handlers get DynamoDB read/write
     const allHandlers = [
@@ -171,7 +172,7 @@ export class ApiConstruct extends Construct {
       listTrash, restoreFile, permanentDeleteFile, emptyTrash,
       createShare, getShare, downloadShare, listShares, revokeShare,
       listVersions, rollbackVersion, generateThumbnail, summarizeFile,
-      this.postConfirmationHandler,
+      initProfile, this.postConfirmationHandler,
     ];
     for (const fn of allHandlers) {
       props.table.grantReadWriteData(fn);
@@ -346,6 +347,14 @@ export class ApiConstruct extends Construct {
       path: '/trash/files',
       methods: [HttpMethod.DELETE],
       integration: new HttpLambdaIntegration('EmptyTrashIntegration', emptyTrash),
+      authorizer,
+    });
+
+    // Auth
+    this.api.addRoutes({
+      path: '/auth/init-profile',
+      methods: [HttpMethod.POST],
+      integration: new HttpLambdaIntegration('InitProfileIntegration', initProfile),
       authorizer,
     });
   }

@@ -109,6 +109,17 @@ PBKDF2 hashing (100K iterations, SHA-256) and constant-time verification via tim
 - **Error Handling**: Non-fatal catch to ensure Cognito user confirmation is not aborted if records already exist.
 - **Returns**: Unmodified Cognito event (required by AWS Cognito trigger contract).
 
+#### `InitProfileHandler`: `backend/src/handlers/auth/init-profile.ts`
+- **CDK Integration**: `InitProfileFn` &rarr; `InitProfileIntegration`
+- **IAM Grants**: `table.grantReadWriteData`
+- **Route**: `POST /auth/init-profile`
+- **Auth**: JWT claims `sub` &rarr; `userId` (or request body fallback in dev)
+- **Workflow**:
+  1. Extracts `userId` and `email` from JWT claims (or body).
+  2. Idempotently executes `TransactWriteCommand` to insert `USER_PROFILE` and `FOLDER#ROOT` ("My Drive").
+  3. Catches `TransactionCanceledException` / `ConditionalCheckFailedException` cleanly to return 200 OK.
+- **Response**: `200 OK` with `{ message: "Profile initialized successfully" }`.
+
 ---
 
 ### 3.2. Folder Handlers

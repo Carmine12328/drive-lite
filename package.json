@@ -17,7 +17,7 @@
     "build:frontend": "npm run build -w frontend",
     "build:frontend:aws": "npm run build:aws -w frontend",
     "deploy:frontend": "node scripts/deploy-frontend.mjs",
-    "deploy:infra": "npm --prefix infra run cdk deploy -- --context dev=true --context skipCloudFront=true --profile drive-lite",
+    "deploy:infra": "npm --prefix infra run cdk deploy -- --context dev=true --context skipCloudFront=true --profile drive-lite --require-approval never",
     "test": "npm run test --workspaces --if-present",
     "lint": "npm run lint --workspaces --if-present"
   },

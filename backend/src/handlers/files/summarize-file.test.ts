@@ -34,7 +34,6 @@ vi.mock('pdf-parse', () => ({
   })),
 }));
 
-
 import { handler } from './summarize-file';
 import { s3Client } from '../../lib/s3-client';
 import { docClient } from '../../lib/dynamo-client';
@@ -76,6 +75,63 @@ describe('SummarizeFile Handler', () => {
     expect(JSON.parse(result.body as string)).toEqual({ message: 'File not found' });
   });
 
+  it('returns 404 when file is marked as deleted', async () => {
+    vi.mocked(docClient.send).mockResolvedValueOnce({
+      Items: [
+        {
+          PK: 'USER#user-123#FOLDER#ROOT',
+          SK: 'FILE#file-123',
+          fileId: 'file-123',
+          fileName: 'notes.txt',
+          mimeType: 'text/plain',
+          isDeleted: true,
+          uploadStatus: 'COMPLETED',
+        },
+      ],
+    } as never);
+
+    const event = {
+      pathParameters: { id: 'file-123' },
+      requestContext: {
+        authorizer: {
+          jwt: { claims: { sub: 'user-123' } },
+        },
+      },
+    } as unknown as APIGatewayProxyEventV2;
+
+    const result = await handler(event);
+    expect(result.statusCode).toBe(404);
+    expect(JSON.parse(result.body as string)).toEqual({ message: 'File not found' });
+  });
+
+  it('returns 400 when file upload is not completed', async () => {
+    vi.mocked(docClient.send).mockResolvedValueOnce({
+      Items: [
+        {
+          PK: 'USER#user-123#FOLDER#ROOT',
+          SK: 'FILE#file-123',
+          fileId: 'file-123',
+          fileName: 'notes.txt',
+          mimeType: 'text/plain',
+          uploadStatus: 'PENDING',
+        },
+      ],
+    } as never);
+
+    const event = {
+      pathParameters: { id: 'file-123' },
+      requestContext: {
+        authorizer: {
+          jwt: { claims: { sub: 'user-123' } },
+        },
+      },
+    } as unknown as APIGatewayProxyEventV2;
+
+    const result = await handler(event);
+    expect(result.statusCode).toBe(400);
+    expect(JSON.parse(result.body as string)).toEqual({ message: 'File upload not yet completed' });
+  });
+
   it('generates summary for a text file', async () => {
     vi.mocked(docClient.send).mockResolvedValueOnce({
       Items: [
@@ -85,6 +141,7 @@ describe('SummarizeFile Handler', () => {
           fileId: 'file-123',
           fileName: 'notes.txt',
           mimeType: 'text/plain',
+          uploadStatus: 'COMPLETED',
           s3Key: 'users/user-123/files/file-123/notes.txt',
         },
       ],
@@ -125,6 +182,7 @@ describe('SummarizeFile Handler', () => {
           fileId: 'file-456',
           fileName: 'report.pdf',
           mimeType: 'application/pdf',
+          uploadStatus: 'COMPLETED',
           s3Key: 'users/user-123/files/file-456/report.pdf',
         },
       ],

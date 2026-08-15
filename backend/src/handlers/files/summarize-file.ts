@@ -43,19 +43,23 @@ export const handler = async (event: APIGatewayProxyEventV2): Promise<APIGateway
       KeyConditionExpression: 'GSI1PK = :pk AND GSI1SK = :sk',
       ExpressionAttributeValues: {
         ':pk': userPK(userId),
-        ':sk': fileSK(fileId)
-      }
+        ':sk': fileSK(fileId),
+      },
     }));
 
     const file = queryResult.Items?.[0];
-    if (!file) {
+    if (!file || file.isDeleted) {
       return error(404, 'File not found');
+    }
+
+    if (file.uploadStatus !== 'COMPLETED') {
+      return error(400, 'File upload not yet completed');
     }
 
     // 2. Fetch binary stream from S3
     const s3Res = await s3Client.send(new GetObjectCommand({
       Bucket: config.BUCKET_NAME,
-      Key: file.s3Key
+      Key: file.s3Key,
     }));
 
     if (!s3Res.Body) {
@@ -69,6 +73,12 @@ export const handler = async (event: APIGatewayProxyEventV2): Promise<APIGateway
     let text = '';
     const mime = (file.mimeType || '').toLowerCase();
     const isPdf = mime === 'application/pdf' || file.fileName.toLowerCase().endsWith('.pdf');
+    const isText = mime.startsWith('text/') ||
+      mime.includes('json') ||
+      mime.includes('xml') ||
+      mime.includes('javascript') ||
+      mime.includes('typescript') ||
+      /\.(txt|md|markdown|json|ts|js|jsx|tsx|css|scss|html|htm|py|java|c|cpp|h|rb|go|rs|sh|yaml|yml|xml|csv|tsv|sql|log|env)$/i.test(file.fileName);
 
     if (isPdf) {
       try {
@@ -80,11 +90,12 @@ export const handler = async (event: APIGatewayProxyEventV2): Promise<APIGateway
         console.error('[SummarizeFile] Error parsing PDF text:', pdfErr);
         return error(422, 'Could not extract readable text from PDF');
       }
-    } else {
+    } else if (isText) {
       // Treat as plain text / code
       text = buffer.toString('utf-8');
+    } else {
+      return error(422, 'Only text documents and PDF files can be summarized');
     }
-
 
     const cleanedText = text.replace(/\r\n/g, '\n').trim();
     if (!cleanedText) {
@@ -110,15 +121,15 @@ export const handler = async (event: APIGatewayProxyEventV2): Promise<APIGateway
           textGenerationConfig: {
             maxTokenCount: 512,
             temperature: 0.3,
-            topP: 0.9
-          }
+            topP: 0.9,
+          },
         };
 
         const bedrockRes = await client.send(new InvokeModelCommand({
           modelId,
           contentType: 'application/json',
           accept: 'application/json',
-          body: Buffer.from(JSON.stringify(payload))
+          body: Buffer.from(JSON.stringify(payload)),
         }));
 
         if (bedrockRes.body) {
@@ -147,7 +158,7 @@ export const handler = async (event: APIGatewayProxyEventV2): Promise<APIGateway
       modelUsed,
       sourceLength: cleanedText.length,
       wordCount,
-      readingTimeMinutes
+      readingTimeMinutes,
     };
 
     return success<SummarizeResponse>(200, responseData);

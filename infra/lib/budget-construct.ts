@@ -84,7 +84,6 @@ export class BudgetConstruct extends Construct {
           format: OutputFormat.ESM,
           mainFields: ['module', 'main'],
           banner: "import { createRequire } from 'module';const require = createRequire(import.meta.url);",
-          externalModules: ['@aws-sdk/*'],
         },
       });
 
