@@ -21,6 +21,22 @@ export interface UploadTask {
   s3Key?: string;
 }
 
+/**
+ * Generates a unique UUID v4.
+ * Uses crypto.randomUUID() when in a Secure Context (HTTPS/localhost),
+ * and provides a fallback when running on plain HTTP (e.g. S3 website endpoints).
+ */
+function generateUUID(): string {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+    const r = (Math.random() * 16) | 0;
+    const v = c === 'x' ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}
+
 /** Response from POST /files/upload-url */
 interface UploadUrlResponse {
   uploadUrl: string;
@@ -102,7 +118,7 @@ export class Upload {
       throw new Error(errorMsg);
     }
 
-    const taskId = crypto.randomUUID();
+    const taskId = generateUUID();
     const task: UploadTask = {
       id: taskId,
       file,
@@ -270,7 +286,7 @@ export class Upload {
 
     // Add the file to local state so it appears in the UI immediately
     const newFileItem: FileItem = {
-      fileId: task.fileId || crypto.randomUUID(),
+      fileId: task.fileId || generateUUID(),
       fileName: task.fileName,
       fileSize: task.fileSize,
       mimeType: task.mimeType,

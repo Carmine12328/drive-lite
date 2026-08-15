@@ -34,6 +34,8 @@ describe('AuthService', () => {
   afterEach(() => {
     httpMock.verify();
     sessionStorage.clear();
+    TestBed.resetTestingModule();
+    vi.restoreAllMocks();
   });
 
   it('should be initialized with default unauthenticated state', () => {
@@ -120,6 +122,10 @@ describe('AuthService', () => {
       const navigateSpy = vi.spyOn(router, 'navigate').mockResolvedValue(true);
 
       const signInPromise = service.signIn('user@example.com', 'Secret123!');
+
+      // Allow async initiateAuth promise to resolve and trigger initializeProfile HTTP request
+      await Promise.resolve();
+      await Promise.resolve();
 
       // Flush the init-profile HTTP call triggered during authenticateUser
       const req = httpMock.expectOne(`${environment.apiUrl}/auth/init-profile`);

@@ -1,43 +1,649 @@
-<div class="landing-container">
-  <!-- Top Right Actions -->
-  <div class="top-actions">
-    <button mat-icon-button (click)="toggleTheme()" aria-label="Toggle theme">
-      <mat-icon>{{ isDarkTheme() ? 'light_mode' : 'dark_mode' }}</mat-icon>
-    </button>
-  </div>
+<div class="landing-page">
+  <!-- Top Navigation Header -->
+  <header class="top-nav">
+    <div class="nav-brand">
+      <mat-icon class="brand-icon">cloud</mat-icon>
+      <span class="brand-name">Drive<span class="brand-highlight">Lite</span></span>
+      <span class="brand-badge">AWS + Angular 22</span>
+    </div>
 
-  <div class="content-wrapper">
-    <!-- Hero Section -->
-    <header class="hero-section">
-      <div class="logo-container">
-        <mat-icon class="animated-cloud">cloud</mat-icon>
+    <nav class="nav-links">
+      <button class="nav-link-btn" (click)="scrollToSection('showcase')">Showcase</button>
+      <button class="nav-link-btn" (click)="scrollToSection('architecture')">Architecture</button>
+      <button class="nav-link-btn" (click)="scrollToSection('stack')">Tech Stack</button>
+    </nav>
+
+    <div class="nav-actions">
+      <button mat-icon-button (click)="toggleTheme()" [attr.aria-label]="isDarkTheme() ? 'Switch to light theme' : 'Switch to dark theme'">
+        <mat-icon>{{ isDarkTheme() ? 'light_mode' : 'dark_mode' }}</mat-icon>
+      </button>
+      <button mat-button class="nav-login-btn" (click)="navigateToLogin()">Sign In</button>
+      <button mat-flat-button class="nav-cta-btn" (click)="navigateToRegister()">Get Started</button>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="hero-badge">
+      <mat-icon class="badge-icon">auto_awesome</mat-icon>
+      <span>Senior Full-Stack Cloud Portfolio Project</span>
+    </div>
+
+    <h1 class="hero-title">
+      High-Performance Cloud Drive <br />
+      <span class="gradient-text">Engineered for Scale & Security</span>
+    </h1>
+
+    <p class="hero-subtitle">
+      A modern serverless cloud asset manager featuring <strong>direct-to-S3 3-phase presigned uploads</strong>,
+      in-browser <strong>CodeMirror 6 code & media previews</strong>, intelligent <strong>storage analytics</strong>,
+      and single-table <strong>DynamoDB architecture</strong>.
+    </p>
+
+    <div class="hero-cta-group">
+      <button mat-flat-button class="hero-btn primary-btn" (click)="navigateToLogin()">
+        <mat-icon>rocket_launch</mat-icon>
+        <span>Launch Live Application</span>
+      </button>
+      <button mat-stroked-button class="hero-btn secondary-btn" (click)="scrollToSection('showcase')">
+        <mat-icon>visibility</mat-icon>
+        <span>Explore Interactive Showcase</span>
+      </button>
+    </div>
+
+    <!-- Quick Architecture Metric Badges -->
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-value">0ms</div>
+        <div class="kpi-label">Backend Upload Proxy Lag (Direct S3)</div>
       </div>
-      <h1 class="gradient-text title">Drive Lite</h1>
-      <p class="tagline">Secure cloud storage & asset management, built with Angular 22 & AWS</p>
-    </header>
-
-    <!-- CTAs -->
-    <div class="cta-container">
-      <div class="glass-panel cta-card" (click)="navigateToRegister()" tabindex="0" role="button" (keydown.enter)="navigateToRegister()">
-        <div class="card-icon custom-icon">
-          <mat-icon>person_add</mat-icon>
-        </div>
-        <h2>Create Account</h2>
-        <p>Sign up to start managing your files and folders securely</p>
+      <div class="kpi-card">
+        <div class="kpi-value">100%</div>
+        <div class="kpi-label">Type-Safe (Angular 22 + CDK + ESM)</div>
       </div>
+      <div class="kpi-card">
+        <div class="kpi-value">&lt; 10ms</div>
+        <div class="kpi-label">Single-Table DynamoDB Query Latency</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-value">M3</div>
+        <div class="kpi-label">Angular Material Theming & Signals</div>
+      </div>
+    </div>
+  </section>
 
-      <div class="glass-panel cta-card" (click)="navigateToLogin()" tabindex="0" role="button" (keydown.enter)="navigateToLogin()">
-        <div class="card-icon custom-icon">
-          <mat-icon>login</mat-icon>
-        </div>
-        <h2>Sign In</h2>
-        <p>Access your existing drive, files, and workspace</p>
+  <!-- Interactive Live App Studio Showcase -->
+  <section id="showcase" class="showcase-section">
+    <div class="section-header">
+      <span class="section-tag">Interactive Feature Tour</span>
+      <h2 class="section-title">See Drive Lite Capabilities in Action</h2>
+      <p class="section-desc">
+        Click between the interactive tabs below to inspect how the core features and UI workflows are built.
+      </p>
+    </div>
+
+    <!-- Feature Switcher Tabs -->
+    <div class="feature-tabs-wrapper">
+      <div class="feature-tabs" role="tablist">
+        <button
+          class="feature-tab-btn"
+          [class.active]="activeFeature() === 'browser'"
+          (click)="selectFeature('browser')"
+          role="tab"
+          [attr.aria-selected]="activeFeature() === 'browser'"
+        >
+          <mat-icon>folder_open</mat-icon>
+          <span>Smart File Browser</span>
+        </button>
+
+        <button
+          class="feature-tab-btn"
+          [class.active]="activeFeature() === 'upload'"
+          (click)="selectFeature('upload')"
+          role="tab"
+          [attr.aria-selected]="activeFeature() === 'upload'"
+        >
+          <mat-icon>cloud_upload</mat-icon>
+          <span>3-Phase S3 Uploads</span>
+        </button>
+
+        <button
+          class="feature-tab-btn"
+          [class.active]="activeFeature() === 'preview'"
+          (click)="selectFeature('preview')"
+          role="tab"
+          [attr.aria-selected]="activeFeature() === 'preview'"
+        >
+          <mat-icon>code</mat-icon>
+          <span>In-App Code & Media</span>
+        </button>
+
+        <button
+          class="feature-tab-btn"
+          [class.active]="activeFeature() === 'analytics'"
+          (click)="selectFeature('analytics')"
+          role="tab"
+          [attr.aria-selected]="activeFeature() === 'analytics'"
+        >
+          <mat-icon>pie_chart</mat-icon>
+          <span>Storage & Cleanup</span>
+        </button>
+
+        <button
+          class="feature-tab-btn"
+          [class.active]="activeFeature() === 'sharing'"
+          (click)="selectFeature('sharing')"
+          role="tab"
+          [attr.aria-selected]="activeFeature() === 'sharing'"
+        >
+          <mat-icon>share</mat-icon>
+          <span>Tokenized Sharing</span>
+        </button>
       </div>
     </div>
 
-    <!-- Footer -->
-    <footer class="footer">
-      <p>Drive Lite &copy; 2026 — Secure Cloud Asset Manager</p>
-    </footer>
-  </div>
+    <!-- Interactive Mock Window Container -->
+    <div class="mockup-window glass-panel">
+      <!-- Window Titlebar -->
+      <div class="window-titlebar">
+        <div class="window-dots">
+          <span class="dot close"></span>
+          <span class="dot minimize"></span>
+          <span class="dot maximize"></span>
+        </div>
+        <div class="window-address-bar">
+          <mat-icon class="lock-icon">lock</mat-icon>
+          <span class="address-text">
+            @if (activeFeature() === 'browser') { drivelite.aws/drive/folder/Q3-Projects }
+            @if (activeFeature() === 'upload') { drivelite.aws/uploads/direct-s3-stream }
+            @if (activeFeature() === 'preview') { drivelite.aws/preview/s3-presigned-url-handler.ts }
+            @if (activeFeature() === 'analytics') { drivelite.aws/dashboard/storage-analytics }
+            @if (activeFeature() === 'sharing') { drivelite.aws/share/token-8f92a4bc }
+          </span>
+        </div>
+        <div class="window-right-actions">
+          <span class="status-indicator live">Live Mock</span>
+        </div>
+      </div>
+
+      <!-- Window Content Stage -->
+      <div class="window-stage">
+
+        <!-- TAB 1: Smart File Browser -->
+        @if (activeFeature() === 'browser') {
+          <div class="stage-view browser-view fade-in">
+            <div class="stage-toolbar">
+              <div class="mock-search-bar">
+                <mat-icon>search</mat-icon>
+                <input type="text" value="architecture" readonly placeholder="Real-time debounced search..." />
+                <span class="search-badge">Debounce: 300ms</span>
+              </div>
+              <div class="mock-toolbar-actions">
+                <button class="mock-btn secondary"><mat-icon>create_new_folder</mat-icon> New Folder</button>
+                <button class="mock-btn primary"><mat-icon>upload</mat-icon> Upload</button>
+              </div>
+            </div>
+
+            <!-- Breadcrumb Trail -->
+            <div class="mock-breadcrumbs">
+              <span class="crumb"><mat-icon>home</mat-icon> Drive</span>
+              <span class="sep">/</span>
+              <span class="crumb">Engineering</span>
+              <span class="sep">/</span>
+              <span class="crumb active">Architecture-2026</span>
+            </div>
+
+            <!-- Mock File Table -->
+            <div class="mock-table">
+              <div class="mock-table-head">
+                <div class="col-name">Name</div>
+                <div class="col-size">Size</div>
+                <div class="col-type">MIME Type</div>
+                <div class="col-date">Updated</div>
+                <div class="col-actions">Actions</div>
+              </div>
+
+              <div class="mock-table-row">
+                <div class="col-name">
+                  <mat-icon class="file-icon ts">code</mat-icon>
+                  <span class="row-file-name">upload-presigned-handler.ts</span>
+                </div>
+                <div class="col-size">14.2 KB</div>
+                <div class="col-type">text/typescript</div>
+                <div class="col-date">Today at 10:42</div>
+                <div class="col-actions">
+                  <mat-icon class="action-icon">visibility</mat-icon>
+                  <mat-icon class="action-icon">share</mat-icon>
+                  <mat-icon class="action-icon">download</mat-icon>
+                </div>
+              </div>
+
+              <div class="mock-table-row">
+                <div class="col-name">
+                  <mat-icon class="file-icon pdf">picture_as_pdf</mat-icon>
+                  <span class="row-file-name">system-architecture-spec.pdf</span>
+                </div>
+                <div class="col-size">3.8 MB</div>
+                <div class="col-type">application/pdf</div>
+                <div class="col-date">Yesterday</div>
+                <div class="col-actions">
+                  <mat-icon class="action-icon">visibility</mat-icon>
+                  <mat-icon class="action-icon">share</mat-icon>
+                  <mat-icon class="action-icon">download</mat-icon>
+                </div>
+              </div>
+
+              <div class="mock-table-row">
+                <div class="col-name">
+                  <mat-icon class="file-icon img">image</mat-icon>
+                  <span class="row-file-name">dynamodb-single-table-diagram.png</span>
+                </div>
+                <div class="col-size">2.1 MB</div>
+                <div class="col-type">image/png</div>
+                <div class="col-date">3 days ago</div>
+                <div class="col-actions">
+                  <mat-icon class="action-icon">visibility</mat-icon>
+                  <mat-icon class="action-icon">share</mat-icon>
+                  <mat-icon class="action-icon">download</mat-icon>
+                </div>
+              </div>
+
+              <div class="mock-table-row">
+                <div class="col-name">
+                  <mat-icon class="file-icon json">data_object</mat-icon>
+                  <span class="row-file-name">cloud-storage-metrics.json</span>
+                </div>
+                <div class="col-size">68.4 KB</div>
+                <div class="col-type">application/json</div>
+                <div class="col-date">5 days ago</div>
+                <div class="col-actions">
+                  <mat-icon class="action-icon">visibility</mat-icon>
+                  <mat-icon class="action-icon">share</mat-icon>
+                  <mat-icon class="action-icon">download</mat-icon>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- TAB 2: 3-Phase S3 Upload Protocol -->
+        @if (activeFeature() === 'upload') {
+          <div class="stage-view upload-view fade-in">
+            <div class="protocol-steps">
+              <div class="step-card completed">
+                <div class="step-num"><mat-icon>check</mat-icon></div>
+                <div class="step-info">
+                  <span class="step-title">Phase 1: Initiate</span>
+                  <span class="step-desc"><code>POST /files/upload-url</code> generates HMAC-signed S3 PUT URL</span>
+                </div>
+              </div>
+
+              <div class="step-card active">
+                <div class="step-num">2</div>
+                <div class="step-info">
+                  <span class="step-title">Phase 2: Direct S3 Stream</span>
+                  <span class="step-desc">Zero-proxy browser PUT directly to S3 with live RxJS Progress</span>
+                </div>
+              </div>
+
+              <div class="step-card pending">
+                <div class="step-num">3</div>
+                <div class="step-info">
+                  <span class="step-title">Phase 3: Finalize</span>
+                  <span class="step-desc"><code>POST /files/confirm</code> registers item in DynamoDB</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Active Upload Stream Card -->
+            <div class="upload-stream-card">
+              <div class="stream-header">
+                <div class="stream-file-info">
+                  <mat-icon class="stream-file-icon">archive</mat-icon>
+                  <div>
+                    <div class="stream-filename">enterprise-cloud-backup-2026.tar.gz</div>
+                    <div class="stream-meta">184.5 MB &bull; Target: S3 Standard us-east-1 &bull; Transfer: 24.2 MB/s</div>
+                  </div>
+                </div>
+                <div class="stream-badge">78% Transferred</div>
+              </div>
+
+              <div class="stream-progress-bar-container">
+                <div class="stream-progress-bar" style="width: 78%;"></div>
+              </div>
+
+              <div class="stream-footer">
+                <span>Transferred: <strong>143.9 MB / 184.5 MB</strong></span>
+                <span>Time Remaining: <strong>~ 1.6s</strong></span>
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- TAB 3: In-App Code & Media Preview -->
+        @if (activeFeature() === 'preview') {
+          <div class="stage-view preview-view fade-in">
+            <div class="preview-subnav">
+              <button class="subnav-tab" [class.active]="activePreviewTab() === 'code'" (click)="selectPreviewTab('code')">
+                <mat-icon>code</mat-icon> CodeMirror 6 Editor
+              </button>
+              <button class="subnav-tab" [class.active]="activePreviewTab() === 'pdf'" (click)="selectPreviewTab('pdf')">
+                <mat-icon>picture_as_pdf</mat-icon> PDF Viewer
+              </button>
+              <button class="subnav-tab" [class.active]="activePreviewTab() === 'image'" (click)="selectPreviewTab('image')">
+                <mat-icon>image</mat-icon> Image Lightbox
+              </button>
+            </div>
+
+            @if (activePreviewTab() === 'code') {
+              <div class="code-preview-frame">
+                <div class="code-header">
+                  <span class="file-name">upload-url.handler.ts</span>
+                  <span class="syntax-badge">TypeScript &bull; CodeMirror 6</span>
+                </div>
+                <pre class="code-snippet"><code><span class="kw">import</span> &#123; <span class="cls">S3Client</span>, <span class="cls">PutObjectCommand</span> &#125; <span class="kw">from</span> <span class="str">'@aws-sdk/client-s3'</span>;
+<span class="kw">import</span> &#123; <span class="cls">getSignedUrl</span> &#125; <span class="kw">from</span> <span class="str">'@aws-sdk/s3-request-presigner'</span>;
+
+<span class="doc">/** Generates a short-lived S3 PUT presigned URL for direct browser uploads */</span>
+<span class="kw">export const</span> <span class="fn">handler</span> = <span class="kw">async</span> (event: <span class="cls">APIGatewayProxyEvent</span>) =&gt; &#123;
+  <span class="kw">const</span> &#123; fileName, fileSize, mimeType &#125; = <span class="cls">JSON</span>.parse(event.body!);
+  <span class="kw">const</span> s3Key = <span class="str">`users/$&#123;userId&#125;/files/$&#123;fileId&#125;/$&#123;fileName&#125;`</span>;
+
+  <span class="kw">const</span> command = <span class="kw">new</span> <span class="cls">PutObjectCommand</span>(&#123;
+    Bucket: process.env.<span class="prop">FILES_BUCKET_NAME</span>,
+    Key: s3Key,
+    ContentType: mimeType,
+  &#125;);
+
+  <span class="kw">const</span> uploadUrl = <span class="kw">await</span> <span class="fn">getSignedUrl</span>(s3Client, command, &#123; expiresIn: <span class="num">900</span> &#125;);
+  <span class="kw">return</span> &#123; statusCode: <span class="num">200</span>, body: <span class="cls">JSON</span>.stringify(&#123; uploadUrl, fileId, s3Key &#125;) &#125;;
+&#125;;</code></pre>
+              </div>
+            }
+
+            @if (activePreviewTab() === 'pdf') {
+              <div class="pdf-preview-mock">
+                <div class="pdf-toolbar">
+                  <span>Page 1 of 12</span>
+                  <div class="pdf-controls">
+                    <mat-icon>zoom_in</mat-icon>
+                    <mat-icon>zoom_out</mat-icon>
+                    <mat-icon>fullscreen</mat-icon>
+                  </div>
+                </div>
+                <div class="pdf-document-card">
+                  <div class="pdf-mock-page">
+                    <h3>Architecture Whitepaper — Drive Lite</h3>
+                    <p class="pdf-lead">High-availability cloud storage using single-table DynamoDB and decoupled S3 PUT pipelines.</p>
+                    <div class="pdf-line-skeleton"></div>
+                    <div class="pdf-line-skeleton short"></div>
+                    <div class="pdf-line-skeleton"></div>
+                  </div>
+                </div>
+              </div>
+            }
+
+            @if (activePreviewTab() === 'image') {
+              <div class="image-preview-mock">
+                <div class="image-box">
+                  <mat-icon class="large-img-icon">landscape</mat-icon>
+                  <span class="image-name">dynamodb-single-table-diagram.png</span>
+                  <div class="image-meta-chips">
+                    <span class="chip">3840 &times; 2160 px</span>
+                    <span class="chip">PNG Image</span>
+                    <span class="chip">2.1 MB</span>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        }
+
+        <!-- TAB 4: Storage Analytics & Cleanup Assistant -->
+        @if (activeFeature() === 'analytics') {
+          <div class="stage-view analytics-view fade-in">
+            <div class="quota-summary-card">
+              <div class="quota-top">
+                <span class="quota-title">Total Cloud Storage Quota</span>
+                <span class="quota-figures"><strong>1.85 GB</strong> / 5.00 GB (37% Used)</span>
+              </div>
+              <div class="segmented-bar">
+                <div class="segment img" style="width: 45%;" title="Images (832 MB)"></div>
+                <div class="segment doc" style="width: 25%;" title="Documents (462 MB)"></div>
+                <div class="segment code" style="width: 20%;" title="Code & Data (370 MB)"></div>
+                <div class="segment other" style="width: 10%;" title="Others (185 MB)"></div>
+              </div>
+              <div class="quota-legend">
+                <span class="legend-item"><span class="color-dot img"></span> Images (45%)</span>
+                <span class="legend-item"><span class="color-dot doc"></span> Documents (25%)</span>
+                <span class="legend-item"><span class="color-dot code"></span> Code & Data (20%)</span>
+                <span class="legend-item"><span class="color-dot other"></span> Others (10%)</span>
+              </div>
+            </div>
+
+            <div class="cleanup-assistant-mock">
+              <div class="assistant-header">
+                <mat-icon class="sparkle-icon">auto_fix_high</mat-icon>
+                <span>Automated Cleanup Assistant Suggestions</span>
+              </div>
+              <div class="cleanup-items">
+                <div class="cleanup-card">
+                  <mat-icon class="cleanup-icon warning">copy_all</mat-icon>
+                  <div class="cleanup-text">
+                    <strong>3 Duplicate Files Detected</strong>
+                    <span>Release 42.8 MB of redundant data</span>
+                  </div>
+                  <button class="cleanup-btn">Review</button>
+                </div>
+                <div class="cleanup-card">
+                  <mat-icon class="cleanup-icon info">folder_zip</mat-icon>
+                  <div class="cleanup-text">
+                    <strong>2 Large Archives &gt; 100 MB</strong>
+                    <span>Review archives unused in the last 60 days</span>
+                  </div>
+                  <button class="cleanup-btn">Clean Up</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- TAB 5: Tokenized Sharing -->
+        @if (activeFeature() === 'sharing') {
+          <div class="stage-view sharing-view fade-in">
+            <div class="share-card">
+              <div class="share-header">
+                <mat-icon class="share-icon">link</mat-icon>
+                <div>
+                  <h3 class="share-title">Create Secure Public Share Link</h3>
+                  <span class="share-subtitle">Generates a tokenized URL with cryptographic S3 presigned downloads</span>
+                </div>
+              </div>
+
+              <div class="mock-input-group">
+                <label>Share URL</label>
+                <div class="mock-copy-field">
+                  <code>https://drivelite.aws/share/sh_9f82bc1a83e047f2</code>
+                  <button class="mock-btn primary sm"><mat-icon>content_copy</mat-icon> Copy</button>
+                </div>
+              </div>
+
+              <div class="share-options-grid">
+                <div class="share-opt-badge active">
+                  <mat-icon>timer</mat-icon> Expires in 24 Hours
+                </div>
+                <div class="share-opt-badge active">
+                  <mat-icon>download</mat-icon> Max 50 Downloads
+                </div>
+                <div class="share-opt-badge active">
+                  <mat-icon>shield</mat-icon> S3 Direct HMAC Signed
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Senior Architecture Highlights Section -->
+  <section id="architecture" class="architecture-section">
+    <div class="section-header">
+      <span class="section-tag">Senior Full-Stack Design</span>
+      <h2 class="section-title">Production-Grade AWS & Angular Architecture</h2>
+      <p class="section-desc">
+        Built with strict adherence to AWS Well-Architected and modern Angular 22 best practices.
+      </p>
+    </div>
+
+    <div class="arch-grid">
+      <!-- Card 1: Angular Signals -->
+      <div class="arch-card glass-panel">
+        <div class="arch-card-icon">
+          <mat-icon>bolt</mat-icon>
+        </div>
+        <h3>Angular 22 Signals State</h3>
+        <p>
+          Fine-grained reactive state management using <code>signal</code>, <code>computed</code>, and <code>effect</code> with zoneless readiness and lazy-loaded routing bundles.
+        </p>
+      </div>
+
+      <!-- Card 2: 3-Phase S3 Protocol -->
+      <div class="arch-card glass-panel">
+        <div class="arch-card-icon">
+          <mat-icon>cloud_sync</mat-icon>
+        </div>
+        <h3>Zero-Proxy Direct S3 Uploads</h3>
+        <p>
+          3-Phase presigned URL protocol. Client streams files directly to S3 via PUT requests, eliminating Lambda compute execution time and memory limits for large uploads.
+        </p>
+      </div>
+
+      <!-- Card 3: DynamoDB Single-Table -->
+      <div class="arch-card glass-panel">
+        <div class="arch-card-icon">
+          <mat-icon>table_chart</mat-icon>
+        </div>
+        <h3>Single-Table DynamoDB</h3>
+        <p>
+          Optimized single-table design with composite partition/sort keys (<code>PK/SK</code>) and Global Secondary Indexes (<code>GSI1/GSI2</code>) for sub-10ms queries.
+        </p>
+      </div>
+
+      <!-- Card 4: AWS Cognito & Auth -->
+      <div class="arch-card glass-panel">
+        <div class="arch-card-icon">
+          <mat-icon>security</mat-icon>
+        </div>
+        <h3>Cognito JWT Security</h3>
+        <p>
+          API Gateway JWT Authorizer validation, short-lived tokens, cryptographic token revocation via <code>RevokeTokenCommand</code>, and secure <code>sessionStorage</code> isolation.
+        </p>
+      </div>
+
+      <!-- Card 5: AWS CDK IaC -->
+      <div class="arch-card glass-panel">
+        <div class="arch-card-icon">
+          <mat-icon>code_blocks</mat-icon>
+        </div>
+        <h3>100% TypeScript AWS CDK</h3>
+        <p>
+          Repeatable Infrastructure as Code (IaC) defining S3 buckets, DynamoDB tables, Lambda ESM handlers, and least-privilege IAM policies.
+        </p>
+      </div>
+
+      <!-- Card 6: Automated Testing -->
+      <div class="arch-card glass-panel">
+        <div class="arch-card-icon">
+          <mat-icon>verified</mat-icon>
+        </div>
+        <h3>Comprehensive Testing Suite</h3>
+        <p>
+          Unit testing with Vitest for backend Lambda handlers and Angular TestBed for components, guards, and services with 100% route verification.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Tech Stack Grid Section -->
+  <section id="stack" class="stack-section">
+    <div class="section-header">
+      <span class="section-tag">Ecosystem</span>
+      <h2 class="section-title">Core Technology Stack</h2>
+    </div>
+
+    <div class="stack-badges-container">
+      <div class="stack-badge">
+        <span class="badge-tech">Angular 22</span>
+        <span class="badge-role">Frontend SPA & Signals</span>
+      </div>
+      <div class="stack-badge">
+        <span class="badge-tech">AWS Lambda</span>
+        <span class="badge-role">Node.js 20 ESM Handlers</span>
+      </div>
+      <div class="stack-badge">
+        <span class="badge-tech">Amazon S3</span>
+        <span class="badge-role">Cloud Object Storage</span>
+      </div>
+      <div class="stack-badge">
+        <span class="badge-tech">Amazon DynamoDB</span>
+        <span class="badge-role">Single-Table Database</span>
+      </div>
+      <div class="stack-badge">
+        <span class="badge-tech">Amazon Cognito</span>
+        <span class="badge-role">User Pool & JWT Auth</span>
+      </div>
+      <div class="stack-badge">
+        <span class="badge-tech">AWS CDK</span>
+        <span class="badge-role">Infrastructure as Code</span>
+      </div>
+      <div class="stack-badge">
+        <span class="badge-tech">CodeMirror 6</span>
+        <span class="badge-role">In-Browser Syntax Editor</span>
+      </div>
+      <div class="stack-badge">
+        <span class="badge-tech">Vitest</span>
+        <span class="badge-role">Fast Unit Testing</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Recruiter Fast-Track Callout Banner -->
+  <section class="recruiter-banner-section">
+    <div class="recruiter-card glass-panel">
+      <div class="recruiter-content">
+        <div class="recruiter-badge">
+          <mat-icon>badge</mat-icon> Recruiter & Reviewer Fast-Track
+        </div>
+        <h2>Ready to explore the live cloud environment?</h2>
+        <p>
+          Sign in or create an account in seconds to test file uploads, code previews, and folder management directly against the live AWS cloud stack.
+        </p>
+      </div>
+      <div class="recruiter-actions">
+        <button mat-flat-button class="cta-primary-large" (click)="navigateToLogin()">
+          <mat-icon>login</mat-icon> Sign In
+        </button>
+        <button mat-stroked-button class="cta-secondary-large" (click)="navigateToRegister()">
+          <mat-icon>person_add</mat-icon> Create Account
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="landing-footer">
+    <div class="footer-content">
+      <div class="footer-brand">
+        <mat-icon class="footer-icon">cloud</mat-icon>
+        <span>Drive Lite &copy; 2026</span>
+      </div>
+      <p class="footer-tagline">Architected with Angular 22 & AWS Serverless Cloud Services</p>
+      <div class="footer-actions">
+        <button class="footer-link" (click)="navigateToLogin()">Sign In</button>
+        <button class="footer-link" (click)="navigateToRegister()">Register</button>
+      </div>
+    </div>
+  </footer>
 </div>

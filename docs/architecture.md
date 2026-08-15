@@ -77,20 +77,28 @@ infra/lib/
 ├── drive-lite-stack.ts       # Root Stack composing all constructs & stack outputs
 ├── storage-construct.ts      # S3 FilesBucket + DynamoDB single-table
 ├── auth-construct.ts         # Cognito User Pool + Web Client (SPA)
-├── api-construct.ts          # HTTP API Gateway + 17 Lambda functions + IAM grants
-└── frontend-construct.ts     # S3 HostingBucket + CloudFront Distribution (OAC)
+├── api-construct.ts          # HTTP API Gateway + 17 Lambda functions + IAM grants + Rate Limiting
+├── frontend-construct.ts     # S3 HostingBucket + CloudFront Distribution (OAC)
+└── budget-construct.ts       # AWS Monthly Budget ($2.50) + SNS Topic + Kill-Switch Lambda
 ```
 
 ### 2.1. Root Stack: `DriveLiteStack` (`infra/lib/drive-lite-stack.ts`)
 Composes all constructs in strict dependency order:
 1. **`StorageConstruct`**: Creates DynamoDB table and S3 files bucket.
 2. **`AuthConstruct`**: Creates Cognito User Pool (instantiated prior to API so JWT Authorizer can reference the User Pool ID).
-3. **`ApiConstruct`**: Creates HTTP API Gateway, Lambda functions, IAM role bindings, and routes.
+3. **`ApiConstruct`**: Creates HTTP API Gateway (with 10 req/s rate limiting), Lambda functions, IAM role bindings, and routes.
 4. **Cognito Trigger Binding**: Invokes `auth.addPostConfirmationTrigger(api.postConfirmationHandler)` to wire the post-confirmation Lambda.
-5. **`FrontendConstruct`**: Creates CloudFront distribution and S3 frontend bucket (conditionally skipped when `localstack=true`).
+5. **`FrontendConstruct`**: Creates S3 static website hosting bucket and CloudFront distribution (conditionally skipped when `localstack=true`).
+6. **`BudgetConstruct`**: Creates AWS Monthly Budget ($2.50 limit), SNS cost alerts to `carmine12328@gmail.com`, and automated Kill-Switch Lambda.
+
+#### Cost Protection: 3-Layer Architecture
+1. **Layer 1: Edge Rate Limiting**: `ApiConstruct` configures `defaultRouteSettings` on API Gateway with `throttlingRateLimit: 10` req/s and `throttlingBurstLimit: 20` req/s. Excessive bot traffic is rejected with HTTP 429 for $0.
+2. **Layer 2: AWS Monthly Budget**: `BudgetConstruct` provisions an `AWS::Budgets::Budget` capped at $2.50 USD/month. Sends email alerts at 80% ($2.00) actual spend and 100% ($2.50) forecasted spend.
+3. **Layer 3: Automated Kill-Switch**: Upon reaching 100% actual budget breach ($2.50), AWS Budgets publishes to an SNS topic that invokes `kill-switch.ts`, issuing an automated `cloudformation:DeleteStack` to tear down all resources and guarantee zero ongoing charges.
 
 #### Context Flags & Environment Modes
 - `localstack=true`: Forces dev mode and skips CloudFront provisioning.
+- `skipCloudFront=true`: Skips CloudFront/Frontend bucket provisioning (useful for accounts awaiting CloudFront verification or local-frontend + live-backend setups).
 - `dev=true`: Applies `RemovalPolicy.DESTROY` and `autoDeleteObjects: true` on S3 buckets and DynamoDB tables.
 - **Production (default)**: Applies `RemovalPolicy.RETAIN` on storage resources.
 

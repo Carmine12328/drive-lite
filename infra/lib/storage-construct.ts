@@ -42,7 +42,7 @@ export class StorageConstruct extends Construct {
         {
           allowedHeaders: ['*'],
           allowedMethods: [s3.HttpMethods.PUT, s3.HttpMethods.GET, s3.HttpMethods.HEAD],
-          allowedOrigins: ['http://localhost:4200'], // Dev origin
+          allowedOrigins: ['http://localhost:4200', '*'],
           maxAge: 3600,
         },
       ],

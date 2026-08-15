@@ -73,7 +73,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches CloudFormation template sna
         },
         "Environment": {
           "Variables": {
-            "ALLOWED_ORIGINS": "http://localhost:4200",
+            "ALLOWED_ORIGINS": "*",
             "BUCKET_NAME": {
               "Ref": "StorageFilesBucket28699C44",
             },
@@ -255,7 +255,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches CloudFormation template sna
         },
         "Environment": {
           "Variables": {
-            "ALLOWED_ORIGINS": "http://localhost:4200",
+            "ALLOWED_ORIGINS": "*",
             "BUCKET_NAME": {
               "Ref": "StorageFilesBucket28699C44",
             },
@@ -407,7 +407,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches CloudFormation template sna
         },
         "Environment": {
           "Variables": {
-            "ALLOWED_ORIGINS": "http://localhost:4200",
+            "ALLOWED_ORIGINS": "*",
             "BUCKET_NAME": {
               "Ref": "StorageFilesBucket28699C44",
             },
@@ -559,7 +559,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches CloudFormation template sna
         },
         "Environment": {
           "Variables": {
-            "ALLOWED_ORIGINS": "http://localhost:4200",
+            "ALLOWED_ORIGINS": "*",
             "BUCKET_NAME": {
               "Ref": "StorageFilesBucket28699C44",
             },
@@ -729,7 +729,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches CloudFormation template sna
         },
         "Environment": {
           "Variables": {
-            "ALLOWED_ORIGINS": "http://localhost:4200",
+            "ALLOWED_ORIGINS": "*",
             "BUCKET_NAME": {
               "Ref": "StorageFilesBucket28699C44",
             },
@@ -881,7 +881,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches CloudFormation template sna
         },
         "Environment": {
           "Variables": {
-            "ALLOWED_ORIGINS": "http://localhost:4200",
+            "ALLOWED_ORIGINS": "*",
             "BUCKET_NAME": {
               "Ref": "StorageFilesBucket28699C44",
             },
@@ -1063,7 +1063,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches CloudFormation template sna
         },
         "Environment": {
           "Variables": {
-            "ALLOWED_ORIGINS": "http://localhost:4200",
+            "ALLOWED_ORIGINS": "*",
             "BUCKET_NAME": {
               "Ref": "StorageFilesBucket28699C44",
             },
@@ -1229,11 +1229,11 @@ exports[`DriveLiteStack CDK Infrastructure > matches CloudFormation template sna
           "S3Bucket": {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "527ae4818386c1de5db9a754641e6da0216d7baa349da05e638fa31a356fbc97.zip",
+          "S3Key": "148079db07b75f8072368fe9286c966f077699cb79104e4c7027970b521643a5.zip",
         },
         "Environment": {
           "Variables": {
-            "ALLOWED_ORIGINS": "http://localhost:4200",
+            "ALLOWED_ORIGINS": "*",
             "BUCKET_NAME": {
               "Ref": "StorageFilesBucket28699C44",
             },
@@ -1422,7 +1422,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches CloudFormation template sna
         },
         "Environment": {
           "Variables": {
-            "ALLOWED_ORIGINS": "http://localhost:4200",
+            "ALLOWED_ORIGINS": "*",
             "BUCKET_NAME": {
               "Ref": "StorageFilesBucket28699C44",
             },
@@ -1604,7 +1604,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches CloudFormation template sna
         },
         "Environment": {
           "Variables": {
-            "ALLOWED_ORIGINS": "http://localhost:4200",
+            "ALLOWED_ORIGINS": "*",
             "BUCKET_NAME": {
               "Ref": "StorageFilesBucket28699C44",
             },
@@ -1756,7 +1756,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches CloudFormation template sna
         },
         "Environment": {
           "Variables": {
-            "ALLOWED_ORIGINS": "http://localhost:4200",
+            "ALLOWED_ORIGINS": "*",
             "BUCKET_NAME": {
               "Ref": "StorageFilesBucket28699C44",
             },
@@ -1908,7 +1908,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches CloudFormation template sna
         },
         "Environment": {
           "Variables": {
-            "ALLOWED_ORIGINS": "http://localhost:4200",
+            "ALLOWED_ORIGINS": "*",
             "BUCKET_NAME": {
               "Ref": "StorageFilesBucket28699C44",
             },
@@ -2088,6 +2088,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches CloudFormation template sna
           ],
           "AllowOrigins": [
             "http://localhost:4200",
+            "*",
           ],
           "MaxAge": 3600,
         },
@@ -2522,6 +2523,10 @@ exports[`DriveLiteStack CDK Infrastructure > matches CloudFormation template sna
           "Ref": "ApiHttpApi4C294DC0",
         },
         "AutoDeploy": true,
+        "DefaultRouteSettings": {
+          "ThrottlingBurstLimit": 20,
+          "ThrottlingRateLimit": 10,
+        },
         "StageName": "$default",
       },
       "Type": "AWS::ApiGatewayV2::Stage",
@@ -3997,7 +4002,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches CloudFormation template sna
         },
         "Environment": {
           "Variables": {
-            "ALLOWED_ORIGINS": "http://localhost:4200",
+            "ALLOWED_ORIGINS": "*",
             "BUCKET_NAME": {
               "Ref": "StorageFilesBucket28699C44",
             },
@@ -4149,7 +4154,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches CloudFormation template sna
         },
         "Environment": {
           "Variables": {
-            "ALLOWED_ORIGINS": "http://localhost:4200",
+            "ALLOWED_ORIGINS": "*",
             "BUCKET_NAME": {
               "Ref": "StorageFilesBucket28699C44",
             },
@@ -4301,7 +4306,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches CloudFormation template sna
         },
         "Environment": {
           "Variables": {
-            "ALLOWED_ORIGINS": "http://localhost:4200",
+            "ALLOWED_ORIGINS": "*",
             "BUCKET_NAME": {
               "Ref": "StorageFilesBucket28699C44",
             },
@@ -4453,7 +4458,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches CloudFormation template sna
         },
         "Environment": {
           "Variables": {
-            "ALLOWED_ORIGINS": "http://localhost:4200",
+            "ALLOWED_ORIGINS": "*",
             "BUCKET_NAME": {
               "Ref": "StorageFilesBucket28699C44",
             },
@@ -4605,7 +4610,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches CloudFormation template sna
         },
         "Environment": {
           "Variables": {
-            "ALLOWED_ORIGINS": "http://localhost:4200",
+            "ALLOWED_ORIGINS": "*",
             "BUCKET_NAME": {
               "Ref": "StorageFilesBucket28699C44",
             },
@@ -4787,7 +4792,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches CloudFormation template sna
         },
         "Environment": {
           "Variables": {
-            "ALLOWED_ORIGINS": "http://localhost:4200",
+            "ALLOWED_ORIGINS": "*",
             "BUCKET_NAME": {
               "Ref": "StorageFilesBucket28699C44",
             },
@@ -4957,7 +4962,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches CloudFormation template sna
         },
         "Environment": {
           "Variables": {
-            "ALLOWED_ORIGINS": "http://localhost:4200",
+            "ALLOWED_ORIGINS": "*",
             "BUCKET_NAME": {
               "Ref": "StorageFilesBucket28699C44",
             },
@@ -5109,7 +5114,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches CloudFormation template sna
         },
         "Environment": {
           "Variables": {
-            "ALLOWED_ORIGINS": "http://localhost:4200",
+            "ALLOWED_ORIGINS": "*",
             "BUCKET_NAME": {
               "Ref": "StorageFilesBucket28699C44",
             },
@@ -5261,7 +5266,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches CloudFormation template sna
         },
         "Environment": {
           "Variables": {
-            "ALLOWED_ORIGINS": "http://localhost:4200",
+            "ALLOWED_ORIGINS": "*",
             "BUCKET_NAME": {
               "Ref": "StorageFilesBucket28699C44",
             },
@@ -5413,7 +5418,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches CloudFormation template sna
         },
         "Environment": {
           "Variables": {
-            "ALLOWED_ORIGINS": "http://localhost:4200",
+            "ALLOWED_ORIGINS": "*",
             "BUCKET_NAME": {
               "Ref": "StorageFilesBucket28699C44",
             },
@@ -5565,7 +5570,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches CloudFormation template sna
         },
         "Environment": {
           "Variables": {
-            "ALLOWED_ORIGINS": "http://localhost:4200",
+            "ALLOWED_ORIGINS": "*",
             "BUCKET_NAME": {
               "Ref": "StorageFilesBucket28699C44",
             },
@@ -5717,7 +5722,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches CloudFormation template sna
         },
         "Environment": {
           "Variables": {
-            "ALLOWED_ORIGINS": "http://localhost:4200",
+            "ALLOWED_ORIGINS": "*",
             "BUCKET_NAME": {
               "Ref": "StorageFilesBucket28699C44",
             },
@@ -5869,7 +5874,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches CloudFormation template sna
         },
         "Environment": {
           "Variables": {
-            "ALLOWED_ORIGINS": "http://localhost:4200",
+            "ALLOWED_ORIGINS": "*",
             "BUCKET_NAME": {
               "Ref": "StorageFilesBucket28699C44",
             },
@@ -6054,11 +6059,11 @@ exports[`DriveLiteStack CDK Infrastructure > matches CloudFormation template sna
           "S3Bucket": {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "27ebc68ff95826af76714c24e63cff5a653d259f61031a3abdb67c23e4dcbca8.zip",
+          "S3Key": "fe5ab75f0ea8a16492353d67809d933e96477e55901dd82d6cec63ed86bfd2ed.zip",
         },
         "Environment": {
           "Variables": {
-            "ALLOWED_ORIGINS": "http://localhost:4200",
+            "ALLOWED_ORIGINS": "*",
             "BUCKET_NAME": {
               "Ref": "StorageFilesBucket28699C44",
             },
@@ -6324,6 +6329,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches CloudFormation template sna
         ],
         "ClientName": "drive-lite-web-client",
         "ExplicitAuthFlows": [
+          "ALLOW_USER_PASSWORD_AUTH",
           "ALLOW_USER_SRP_AUTH",
           "ALLOW_REFRESH_TOKEN_AUTH",
         ],
@@ -6423,6 +6429,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches CloudFormation template sna
               ],
               "AllowedOrigins": [
                 "http://localhost:4200",
+                "*",
               ],
               "MaxAge": 3600,
             },
@@ -6715,6 +6722,12 @@ exports[`DriveLiteStack CDK Infrastructure > matches full CloudFormation templat
         ],
       },
     },
+    "HostingBucketName": {
+      "Description": "Frontend S3 Hosting Bucket Name",
+      "Value": {
+        "Ref": "FrontendFrontendBucket428B8C09",
+      },
+    },
     "TableName": {
       "Description": "DynamoDB table name",
       "Value": {
@@ -6731,6 +6744,23 @@ exports[`DriveLiteStack CDK Infrastructure > matches full CloudFormation templat
       "Description": "Cognito User Pool ID",
       "Value": {
         "Ref": "AuthUserPool8115E87F",
+      },
+    },
+    "WebsiteUrl": {
+      "Description": "Frontend Website URL",
+      "Value": {
+        "Fn::Join": [
+          "",
+          [
+            "https://",
+            {
+              "Fn::GetAtt": [
+                "FrontendDistributionC0C89627",
+                "DomainName",
+              ],
+            },
+          ],
+        ],
       },
     },
   },
@@ -6756,7 +6786,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches full CloudFormation templat
         },
         "Environment": {
           "Variables": {
-            "ALLOWED_ORIGINS": "http://localhost:4200",
+            "ALLOWED_ORIGINS": "*",
             "BUCKET_NAME": {
               "Ref": "StorageFilesBucket28699C44",
             },
@@ -6938,7 +6968,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches full CloudFormation templat
         },
         "Environment": {
           "Variables": {
-            "ALLOWED_ORIGINS": "http://localhost:4200",
+            "ALLOWED_ORIGINS": "*",
             "BUCKET_NAME": {
               "Ref": "StorageFilesBucket28699C44",
             },
@@ -7090,7 +7120,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches full CloudFormation templat
         },
         "Environment": {
           "Variables": {
-            "ALLOWED_ORIGINS": "http://localhost:4200",
+            "ALLOWED_ORIGINS": "*",
             "BUCKET_NAME": {
               "Ref": "StorageFilesBucket28699C44",
             },
@@ -7242,7 +7272,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches full CloudFormation templat
         },
         "Environment": {
           "Variables": {
-            "ALLOWED_ORIGINS": "http://localhost:4200",
+            "ALLOWED_ORIGINS": "*",
             "BUCKET_NAME": {
               "Ref": "StorageFilesBucket28699C44",
             },
@@ -7412,7 +7442,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches full CloudFormation templat
         },
         "Environment": {
           "Variables": {
-            "ALLOWED_ORIGINS": "http://localhost:4200",
+            "ALLOWED_ORIGINS": "*",
             "BUCKET_NAME": {
               "Ref": "StorageFilesBucket28699C44",
             },
@@ -7564,7 +7594,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches full CloudFormation templat
         },
         "Environment": {
           "Variables": {
-            "ALLOWED_ORIGINS": "http://localhost:4200",
+            "ALLOWED_ORIGINS": "*",
             "BUCKET_NAME": {
               "Ref": "StorageFilesBucket28699C44",
             },
@@ -7746,7 +7776,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches full CloudFormation templat
         },
         "Environment": {
           "Variables": {
-            "ALLOWED_ORIGINS": "http://localhost:4200",
+            "ALLOWED_ORIGINS": "*",
             "BUCKET_NAME": {
               "Ref": "StorageFilesBucket28699C44",
             },
@@ -7912,11 +7942,11 @@ exports[`DriveLiteStack CDK Infrastructure > matches full CloudFormation templat
           "S3Bucket": {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "527ae4818386c1de5db9a754641e6da0216d7baa349da05e638fa31a356fbc97.zip",
+          "S3Key": "148079db07b75f8072368fe9286c966f077699cb79104e4c7027970b521643a5.zip",
         },
         "Environment": {
           "Variables": {
-            "ALLOWED_ORIGINS": "http://localhost:4200",
+            "ALLOWED_ORIGINS": "*",
             "BUCKET_NAME": {
               "Ref": "StorageFilesBucket28699C44",
             },
@@ -8105,7 +8135,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches full CloudFormation templat
         },
         "Environment": {
           "Variables": {
-            "ALLOWED_ORIGINS": "http://localhost:4200",
+            "ALLOWED_ORIGINS": "*",
             "BUCKET_NAME": {
               "Ref": "StorageFilesBucket28699C44",
             },
@@ -8287,7 +8317,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches full CloudFormation templat
         },
         "Environment": {
           "Variables": {
-            "ALLOWED_ORIGINS": "http://localhost:4200",
+            "ALLOWED_ORIGINS": "*",
             "BUCKET_NAME": {
               "Ref": "StorageFilesBucket28699C44",
             },
@@ -8439,7 +8469,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches full CloudFormation templat
         },
         "Environment": {
           "Variables": {
-            "ALLOWED_ORIGINS": "http://localhost:4200",
+            "ALLOWED_ORIGINS": "*",
             "BUCKET_NAME": {
               "Ref": "StorageFilesBucket28699C44",
             },
@@ -8591,7 +8621,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches full CloudFormation templat
         },
         "Environment": {
           "Variables": {
-            "ALLOWED_ORIGINS": "http://localhost:4200",
+            "ALLOWED_ORIGINS": "*",
             "BUCKET_NAME": {
               "Ref": "StorageFilesBucket28699C44",
             },
@@ -8771,6 +8801,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches full CloudFormation templat
           ],
           "AllowOrigins": [
             "http://localhost:4200",
+            "*",
           ],
           "MaxAge": 3600,
         },
@@ -9205,6 +9236,10 @@ exports[`DriveLiteStack CDK Infrastructure > matches full CloudFormation templat
           "Ref": "ApiHttpApi4C294DC0",
         },
         "AutoDeploy": true,
+        "DefaultRouteSettings": {
+          "ThrottlingBurstLimit": 20,
+          "ThrottlingRateLimit": 10,
+        },
         "StageName": "$default",
       },
       "Type": "AWS::ApiGatewayV2::Stage",
@@ -10680,7 +10715,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches full CloudFormation templat
         },
         "Environment": {
           "Variables": {
-            "ALLOWED_ORIGINS": "http://localhost:4200",
+            "ALLOWED_ORIGINS": "*",
             "BUCKET_NAME": {
               "Ref": "StorageFilesBucket28699C44",
             },
@@ -10832,7 +10867,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches full CloudFormation templat
         },
         "Environment": {
           "Variables": {
-            "ALLOWED_ORIGINS": "http://localhost:4200",
+            "ALLOWED_ORIGINS": "*",
             "BUCKET_NAME": {
               "Ref": "StorageFilesBucket28699C44",
             },
@@ -10984,7 +11019,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches full CloudFormation templat
         },
         "Environment": {
           "Variables": {
-            "ALLOWED_ORIGINS": "http://localhost:4200",
+            "ALLOWED_ORIGINS": "*",
             "BUCKET_NAME": {
               "Ref": "StorageFilesBucket28699C44",
             },
@@ -11136,7 +11171,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches full CloudFormation templat
         },
         "Environment": {
           "Variables": {
-            "ALLOWED_ORIGINS": "http://localhost:4200",
+            "ALLOWED_ORIGINS": "*",
             "BUCKET_NAME": {
               "Ref": "StorageFilesBucket28699C44",
             },
@@ -11288,7 +11323,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches full CloudFormation templat
         },
         "Environment": {
           "Variables": {
-            "ALLOWED_ORIGINS": "http://localhost:4200",
+            "ALLOWED_ORIGINS": "*",
             "BUCKET_NAME": {
               "Ref": "StorageFilesBucket28699C44",
             },
@@ -11470,7 +11505,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches full CloudFormation templat
         },
         "Environment": {
           "Variables": {
-            "ALLOWED_ORIGINS": "http://localhost:4200",
+            "ALLOWED_ORIGINS": "*",
             "BUCKET_NAME": {
               "Ref": "StorageFilesBucket28699C44",
             },
@@ -11640,7 +11675,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches full CloudFormation templat
         },
         "Environment": {
           "Variables": {
-            "ALLOWED_ORIGINS": "http://localhost:4200",
+            "ALLOWED_ORIGINS": "*",
             "BUCKET_NAME": {
               "Ref": "StorageFilesBucket28699C44",
             },
@@ -11792,7 +11827,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches full CloudFormation templat
         },
         "Environment": {
           "Variables": {
-            "ALLOWED_ORIGINS": "http://localhost:4200",
+            "ALLOWED_ORIGINS": "*",
             "BUCKET_NAME": {
               "Ref": "StorageFilesBucket28699C44",
             },
@@ -11944,7 +11979,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches full CloudFormation templat
         },
         "Environment": {
           "Variables": {
-            "ALLOWED_ORIGINS": "http://localhost:4200",
+            "ALLOWED_ORIGINS": "*",
             "BUCKET_NAME": {
               "Ref": "StorageFilesBucket28699C44",
             },
@@ -12096,7 +12131,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches full CloudFormation templat
         },
         "Environment": {
           "Variables": {
-            "ALLOWED_ORIGINS": "http://localhost:4200",
+            "ALLOWED_ORIGINS": "*",
             "BUCKET_NAME": {
               "Ref": "StorageFilesBucket28699C44",
             },
@@ -12248,7 +12283,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches full CloudFormation templat
         },
         "Environment": {
           "Variables": {
-            "ALLOWED_ORIGINS": "http://localhost:4200",
+            "ALLOWED_ORIGINS": "*",
             "BUCKET_NAME": {
               "Ref": "StorageFilesBucket28699C44",
             },
@@ -12400,7 +12435,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches full CloudFormation templat
         },
         "Environment": {
           "Variables": {
-            "ALLOWED_ORIGINS": "http://localhost:4200",
+            "ALLOWED_ORIGINS": "*",
             "BUCKET_NAME": {
               "Ref": "StorageFilesBucket28699C44",
             },
@@ -12552,7 +12587,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches full CloudFormation templat
         },
         "Environment": {
           "Variables": {
-            "ALLOWED_ORIGINS": "http://localhost:4200",
+            "ALLOWED_ORIGINS": "*",
             "BUCKET_NAME": {
               "Ref": "StorageFilesBucket28699C44",
             },
@@ -12737,11 +12772,11 @@ exports[`DriveLiteStack CDK Infrastructure > matches full CloudFormation templat
           "S3Bucket": {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "27ebc68ff95826af76714c24e63cff5a653d259f61031a3abdb67c23e4dcbca8.zip",
+          "S3Key": "fe5ab75f0ea8a16492353d67809d933e96477e55901dd82d6cec63ed86bfd2ed.zip",
         },
         "Environment": {
           "Variables": {
-            "ALLOWED_ORIGINS": "http://localhost:4200",
+            "ALLOWED_ORIGINS": "*",
             "BUCKET_NAME": {
               "Ref": "StorageFilesBucket28699C44",
             },
@@ -13007,6 +13042,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches full CloudFormation templat
         ],
         "ClientName": "drive-lite-web-client",
         "ExplicitAuthFlows": [
+          "ALLOW_USER_PASSWORD_AUTH",
           "ALLOW_USER_SRP_AUTH",
           "ALLOW_REFRESH_TOKEN_AUTH",
         ],
@@ -13022,6 +13058,262 @@ exports[`DriveLiteStack CDK Infrastructure > matches full CloudFormation templat
         },
       },
       "Type": "AWS::Cognito::UserPoolClient",
+    },
+    "BudgetCostAlertTopic900F1F84": {
+      "Properties": {
+        "DisplayName": "Drive Lite Cost & Budget Alerts",
+      },
+      "Type": "AWS::SNS::Topic",
+    },
+    "BudgetCostAlertTopicPolicyB74258BC": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sns:Publish",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "budgets.amazonaws.com",
+              },
+              "Resource": {
+                "Ref": "BudgetCostAlertTopic900F1F84",
+              },
+              "Sid": "AllowBudgetsServiceToPublish",
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "Topics": [
+          {
+            "Ref": "BudgetCostAlertTopic900F1F84",
+          },
+        ],
+      },
+      "Type": "AWS::SNS::TopicPolicy",
+    },
+    "BudgetCostAlertTopiccarmine12328gmailcom4C685A7E": {
+      "Properties": {
+        "Endpoint": "carmine12328@gmail.com",
+        "Protocol": "email",
+        "TopicArn": {
+          "Ref": "BudgetCostAlertTopic900F1F84",
+        },
+      },
+      "Type": "AWS::SNS::Subscription",
+    },
+    "BudgetKillSwitchFn341554F8": {
+      "DependsOn": [
+        "BudgetKillSwitchFnServiceRoleDefaultPolicy24C51AE3",
+        "BudgetKillSwitchFnServiceRole993F07CA",
+      ],
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
+          },
+          "S3Key": "723552901b8d5cb9aa1d626f062e59faded42eb698a024b3e555fb1afd39af76.zip",
+        },
+        "Environment": {
+          "Variables": {
+            "REGION": {
+              "Ref": "AWS::Region",
+            },
+            "STACK_NAME": "TestDriveLiteStack",
+          },
+        },
+        "Handler": "index.handler",
+        "MemorySize": 256,
+        "Role": {
+          "Fn::GetAtt": [
+            "BudgetKillSwitchFnServiceRole993F07CA",
+            "Arn",
+          ],
+        },
+        "Runtime": "nodejs20.x",
+        "Timeout": 60,
+      },
+      "Type": "AWS::Lambda::Function",
+    },
+    "BudgetKillSwitchFnAllowInvokeTestDriveLiteStackBudgetCostAlertTopic237837D5D5E5E14B": {
+      "Properties": {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "BudgetKillSwitchFn341554F8",
+            "Arn",
+          ],
+        },
+        "Principal": "sns.amazonaws.com",
+        "SourceArn": {
+          "Ref": "BudgetCostAlertTopic900F1F84",
+        },
+      },
+      "Type": "AWS::Lambda::Permission",
+    },
+    "BudgetKillSwitchFnCostAlertTopic08E7FD1C": {
+      "Properties": {
+        "Endpoint": {
+          "Fn::GetAtt": [
+            "BudgetKillSwitchFn341554F8",
+            "Arn",
+          ],
+        },
+        "Protocol": "lambda",
+        "TopicArn": {
+          "Ref": "BudgetCostAlertTopic900F1F84",
+        },
+      },
+      "Type": "AWS::SNS::Subscription",
+    },
+    "BudgetKillSwitchFnServiceRole993F07CA": {
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "ManagedPolicyArns": [
+          {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition",
+                },
+                ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+              ],
+            ],
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "BudgetKillSwitchFnServiceRoleDefaultPolicy24C51AE3": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "cloudformation:DeleteStack",
+                "cloudformation:DescribeStacks",
+              ],
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition",
+                    },
+                    ":cloudformation:",
+                    {
+                      "Ref": "AWS::Region",
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId",
+                    },
+                    ":stack/TestDriveLiteStack/*",
+                  ],
+                ],
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "BudgetKillSwitchFnServiceRoleDefaultPolicy24C51AE3",
+        "Roles": [
+          {
+            "Ref": "BudgetKillSwitchFnServiceRole993F07CA",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "BudgetMonthlyBudget2091D726": {
+      "Properties": {
+        "Budget": {
+          "BudgetLimit": {
+            "Amount": 2.5,
+            "Unit": "USD",
+          },
+          "BudgetName": "TestDriveLiteStack-MonthlyBudget",
+          "BudgetType": "COST",
+          "TimeUnit": "MONTHLY",
+        },
+        "NotificationsWithSubscribers": [
+          {
+            "Notification": {
+              "ComparisonOperator": "GREATER_THAN",
+              "NotificationType": "ACTUAL",
+              "Threshold": 80,
+              "ThresholdType": "PERCENTAGE",
+            },
+            "Subscribers": [
+              {
+                "Address": "carmine12328@gmail.com",
+                "SubscriptionType": "EMAIL",
+              },
+              {
+                "Address": {
+                  "Ref": "BudgetCostAlertTopic900F1F84",
+                },
+                "SubscriptionType": "SNS",
+              },
+            ],
+          },
+          {
+            "Notification": {
+              "ComparisonOperator": "GREATER_THAN",
+              "NotificationType": "FORECASTED",
+              "Threshold": 100,
+              "ThresholdType": "PERCENTAGE",
+            },
+            "Subscribers": [
+              {
+                "Address": "carmine12328@gmail.com",
+                "SubscriptionType": "EMAIL",
+              },
+              {
+                "Address": {
+                  "Ref": "BudgetCostAlertTopic900F1F84",
+                },
+                "SubscriptionType": "SNS",
+              },
+            ],
+          },
+          {
+            "Notification": {
+              "ComparisonOperator": "GREATER_THAN",
+              "NotificationType": "ACTUAL",
+              "Threshold": 100,
+              "ThresholdType": "PERCENTAGE",
+            },
+            "Subscribers": [
+              {
+                "Address": "carmine12328@gmail.com",
+                "SubscriptionType": "EMAIL",
+              },
+              {
+                "Address": {
+                  "Ref": "BudgetCostAlertTopic900F1F84",
+                },
+                "SubscriptionType": "SNS",
+              },
+            ],
+          },
+        ],
+      },
+      "Type": "AWS::Budgets::Budget",
     },
     "FrontendDistributionC0C89627": {
       "Properties": {
@@ -13187,6 +13479,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches full CloudFormation templat
               ],
               "AllowedOrigins": [
                 "http://localhost:4200",
+                "*",
               ],
               "MaxAge": 3600,
             },

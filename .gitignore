@@ -17,6 +17,10 @@ cdk.out/
 .env
 .env.local
 .env.*.local
+frontend/src/environments/environment.aws.ts
+frontend/src/environments/environment.local.ts
+frontend/src/environments/*.aws.ts
+frontend/src/environments/*.local.ts
 
 # OS
 .DS_Store

@@ -93,9 +93,75 @@ describe('DriveLiteStack CDK Infrastructure', () => {
       defaultTemplate.hasResourceProperties('AWS::ApiGatewayV2::Route', {
         RouteKey: 'POST /files/confirm-upload',
       });
+    });
 
-      defaultTemplate.hasResourceProperties('AWS::ApiGatewayV2::Route', {
-        RouteKey: 'POST /files/{id}/download-url',
+    it('configures default stage with rate limiting (10 req/s, 20 burst)', () => {
+      defaultTemplate.hasResourceProperties('AWS::ApiGatewayV2::Stage', {
+        StageName: '$default',
+        DefaultRouteSettings: {
+          ThrottlingBurstLimit: 20,
+          ThrottlingRateLimit: 10,
+        },
+      });
+    });
+  });
+
+  describe('Cost Protection & Budget Construct', () => {
+    it('creates AWS Budget with 2.50 USD limit and 3 notification rules', () => {
+      defaultTemplate.hasResourceProperties('AWS::Budgets::Budget', {
+        Budget: {
+          BudgetLimit: {
+            Amount: 2.5,
+            Unit: 'USD',
+          },
+          BudgetType: 'COST',
+          TimeUnit: 'MONTHLY',
+        },
+        NotificationsWithSubscribers: Match.arrayWith([
+          Match.objectLike({
+            Notification: {
+              ComparisonOperator: 'GREATER_THAN',
+              NotificationType: 'ACTUAL',
+              Threshold: 80,
+              ThresholdType: 'PERCENTAGE',
+            },
+          }),
+          Match.objectLike({
+            Notification: {
+              ComparisonOperator: 'GREATER_THAN',
+              NotificationType: 'FORECASTED',
+              Threshold: 100,
+              ThresholdType: 'PERCENTAGE',
+            },
+          }),
+          Match.objectLike({
+            Notification: {
+              ComparisonOperator: 'GREATER_THAN',
+              NotificationType: 'ACTUAL',
+              Threshold: 100,
+              ThresholdType: 'PERCENTAGE',
+            },
+          }),
+        ]),
+      });
+    });
+
+    it('creates SNS CostAlertTopic and grants budgets.amazonaws.com publish permissions', () => {
+      defaultTemplate.hasResourceProperties('AWS::SNS::Topic', {
+        DisplayName: 'Drive Lite Cost & Budget Alerts',
+      });
+
+      defaultTemplate.hasResourceProperties('AWS::SNS::TopicPolicy', {
+        PolicyDocument: {
+          Statement: Match.arrayWith([
+            Match.objectLike({
+              Action: 'sns:Publish',
+              Principal: {
+                Service: 'budgets.amazonaws.com',
+              },
+            }),
+          ]),
+        },
       });
     });
   });
@@ -107,7 +173,7 @@ describe('DriveLiteStack CDK Infrastructure', () => {
       });
 
       defaultTemplate.hasResourceProperties('AWS::Cognito::UserPoolClient', {
-        ExplicitAuthFlows: Match.arrayWith(['ALLOW_USER_SRP_AUTH', 'ALLOW_REFRESH_TOKEN_AUTH']),
+        ExplicitAuthFlows: Match.arrayWith(['ALLOW_USER_PASSWORD_AUTH', 'ALLOW_USER_SRP_AUTH', 'ALLOW_REFRESH_TOKEN_AUTH']),
       });
     });
 

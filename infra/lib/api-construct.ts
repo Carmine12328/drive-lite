@@ -68,17 +68,27 @@ export class ApiConstruct extends Construct {
           CorsHttpMethod.PUT, CorsHttpMethod.PATCH,
           CorsHttpMethod.DELETE, CorsHttpMethod.OPTIONS,
         ],
-        allowOrigins: ['http://localhost:4200'],
+        allowOrigins: ['http://localhost:4200', '*'],
         maxAge: Duration.hours(1),
       },
     });
+
+    // Layer 1 Cost Protection: Default Stage Rate Limiting (10 req/s, 20 burst)
+    // Rejects excessive bot/spam requests at the edge with HTTP 429 for $0
+    const defaultStage = this.api.defaultStage?.node.defaultChild as { defaultRouteSettings?: Record<string, unknown> } | undefined;
+    if (defaultStage) {
+      defaultStage.defaultRouteSettings = {
+        throttlingBurstLimit: 20,
+        throttlingRateLimit: 10,
+      };
+    }
 
     // Shared Lambda environment
     const lambdaEnvironment: Record<string, string> = {
       TABLE_NAME: props.table.tableName,
       BUCKET_NAME: props.bucket.bucketName,
       REGION: Stack.of(this).region,
-      ALLOWED_ORIGINS: 'http://localhost:4200',
+      ALLOWED_ORIGINS: '*',
     };
 
     // Helper to create Lambda functions

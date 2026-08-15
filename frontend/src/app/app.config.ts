@@ -4,7 +4,12 @@ import {
   provideAppInitializer,
   inject,
 } from '@angular/core';
-import { provideRouter, withComponentInputBinding } from '@angular/router';
+import {
+  provideRouter,
+  withComponentInputBinding,
+  withPreloading,
+  PreloadAllModules,
+} from '@angular/router';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 
@@ -23,16 +28,20 @@ import { AuthService } from './core/auth/auth.service';
  * - `provideHttpClient` — configures HttpClient with the auth interceptor
  *   that attaches Bearer tokens and skips presigned S3 URLs.
  * - `provideRouter` — enables Angular's standalone router with
- *   component input binding for route parameter injection.
+ *   component input binding and PreloadAllModules for instant navigation.
  * - `provideAppInitializer` — restores authentication state from
- *   localStorage on app startup via AuthService.initAuth().
+ *   sessionStorage on app startup via AuthService.initAuth().
  */
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideAnimationsAsync(),
     provideHttpClient(withInterceptors([authInterceptor])),
-    provideRouter(routes, withComponentInputBinding()),
+    provideRouter(
+      routes,
+      withComponentInputBinding(),
+      withPreloading(PreloadAllModules),
+    ),
     provideAppInitializer(() => inject(AuthService).initAuth()),
   ],
 };

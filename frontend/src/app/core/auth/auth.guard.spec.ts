@@ -37,7 +37,7 @@ describe('authGuard', () => {
     expect(canActivate).toBe(true);
   });
 
-  it('blocks navigation and redirects to /auth/login when user is unauthenticated', () => {
+  it('blocks navigation and redirects to /auth/landing when user is unauthenticated', () => {
     authService.isAuthenticated.set(false);
     const navigateSpy = vi.spyOn(router, 'navigate').mockResolvedValue(true);
 
@@ -47,6 +47,6 @@ describe('authGuard', () => {
     const canActivate = TestBed.runInInjectionContext(() => authGuard(dummyRoute, dummyState));
 
     expect(canActivate).toBe(false);
-    expect(navigateSpy).toHaveBeenCalledWith(['/auth/login']);
+    expect(navigateSpy).toHaveBeenCalledWith(['/auth/landing']);
   });
 });

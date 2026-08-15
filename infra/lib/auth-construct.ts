@@ -61,6 +61,7 @@ export class AuthConstruct extends Construct {
       userPoolClientName: 'drive-lite-web-client',
       authFlows: {
         userSrp: true,
+        userPassword: true,
       },
       oAuth: {
         flows: {

@@ -1,24 +1,38 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { MatIcon } from '@angular/material/icon';
-import { MatIconButton } from '@angular/material/button';
+import { MatButton, MatIconButton } from '@angular/material/button';
+
+/** Feature category identifiers for the interactive showcase. */
+export type ShowcaseFeature = 'browser' | 'upload' | 'preview' | 'analytics' | 'sharing';
+
+/** Preview sub-tabs for the in-app preview showcase. */
+export type PreviewSubTab = 'code' | 'pdf' | 'image';
 
 /**
- * Landing page component serving as the application entry gateway.
+ * Landing page component serving as the application entry gateway
+ * and interactive portfolio showcase for recruiters and reviewers.
  */
 @Component({
   selector: 'app-landing',
   templateUrl: './landing.component.html',
   styleUrls: ['./landing.component.scss'],
-  imports: [MatIcon, MatIconButton]
+  imports: [MatIcon, MatIconButton, MatButton],
 })
 export class LandingComponent implements OnInit {
   private readonly router = inject(Router);
 
+  /** Theme signal (true = dark, false = light). */
   readonly isDarkTheme = signal(true);
 
+  /** Currently selected showcase feature in the interactive studio. */
+  readonly activeFeature = signal<ShowcaseFeature>('browser');
+
+  /** Currently selected preview sub-tab in the code/media showcase. */
+  readonly activePreviewTab = signal<PreviewSubTab>('code');
+
   /**
-   * Initializes theme on load.
+   * Initializes theme from localStorage or system preference.
    */
   ngOnInit(): void {
     const savedTheme = localStorage.getItem('drive-lite-theme');
@@ -26,14 +40,47 @@ export class LandingComponent implements OnInit {
       this.isDarkTheme.set(savedTheme === 'dark');
       document.documentElement.setAttribute('data-theme', savedTheme);
     } else {
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const prefersDark =
+        typeof window !== 'undefined' && typeof window.matchMedia === 'function'
+          ? window.matchMedia('(prefers-color-scheme: dark)').matches
+          : true;
       this.isDarkTheme.set(prefersDark);
       document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
     }
   }
 
   /**
-   * Toggles the application theme.
+   * Switches the active feature tab in the interactive studio.
+   *
+   * @param feature The feature tab to display.
+   */
+  selectFeature(feature: ShowcaseFeature): void {
+    this.activeFeature.set(feature);
+  }
+
+  /**
+   * Switches the active preview sub-tab.
+   *
+   * @param tab The media type sub-tab.
+   */
+  selectPreviewTab(tab: PreviewSubTab): void {
+    this.activePreviewTab.set(tab);
+  }
+
+  /**
+   * Smoothly scrolls to a target section by ID.
+   *
+   * @param elementId The HTML element ID to scroll to.
+   */
+  scrollToSection(elementId: string): void {
+    const el = document.getElementById(elementId);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
+
+  /**
+   * Toggles the application theme between dark and light modes.
    */
   toggleTheme(): void {
     const newTheme = !this.isDarkTheme();
@@ -43,16 +90,12 @@ export class LandingComponent implements OnInit {
     localStorage.setItem('drive-lite-theme', themeStr);
   }
 
-  /**
-   * Navigates to registration form.
-   */
+  /** Navigates to registration form. */
   navigateToRegister(): void {
     this.router.navigate(['/auth/register']);
   }
 
-  /**
-   * Navigates to sign in form.
-   */
+  /** Navigates to sign in form. */
   navigateToLogin(): void {
     this.router.navigate(['/auth/login']);
   }

@@ -5,7 +5,9 @@
     "ng": "ng",
     "start": "ng serve",
     "dev": "ng serve",
+    "dev:aws": "ng serve --configuration aws",
     "build": "ng build",
+    "build:aws": "ng build --configuration aws",
     "watch": "ng build --watch --configuration development",
     "test": "ng test --watch=false",
     "lint": "ng lint"

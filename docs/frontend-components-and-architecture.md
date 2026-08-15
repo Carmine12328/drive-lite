@@ -18,7 +18,7 @@ The application root configuration registers all global providers:
 - `provideBrowserGlobalErrorListeners()`: Captures unhandled browser errors and promise rejections.
 - `provideAnimationsAsync()`: Asynchronously loads Angular Material animations to reduce the initial bundle size.
 - `provideHttpClient(withInterceptors([authInterceptor]))`: Configures `HttpClient` and registers `authInterceptor` to attach Bearer tokens to outgoing API requests.
-- `provideRouter(routes, withComponentInputBinding())`: Registers the application route tree and enables route parameter binding directly to component inputs.
+- `provideRouter(routes, withComponentInputBinding(), withPreloading(PreloadAllModules))`: Registers the application route tree, enables route parameter binding directly to component inputs, and preloads all lazy route bundles in background idle time for instantaneous route transitions.
 - `provideAppInitializer(() => inject(AuthService).initAuth())`: Executes session restoration prior to initial component rendering by reading valid token sets from `sessionStorage`.
 
 ### Routing Architecture: `frontend/src/app/app.routes.ts`
@@ -43,6 +43,7 @@ export const routes: Routes = [
     loadComponent: () => import('./features/shell/shell.component').then(m => m.ShellComponent),
     canActivate: [authGuard],
     children: [
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', loadComponent: () => import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent), data: { animation: 'DashboardPage' } },
       { path: 'drive', loadComponent: () => import('./features/file-browser/file-browser.component').then(m => m.FileBrowserComponent), data: { animation: 'DrivePage' } },
       { path: 'drive/folder/:folderId', loadComponent: () => import('./features/file-browser/file-browser.component').then(m => m.FileBrowserComponent), data: { animation: 'DriveFolderPage' } },
@@ -158,7 +159,7 @@ Manages all user authentication, token storage, and session lifecycle. Uses `@aw
 Functional route guard (`CanActivateFn`):
 - Injects `AuthService` and `Router`.
 - Checks `authService.isAuthenticated()`.
-- If unauthenticated, navigates to `/auth/login` and returns `false`.
+- If unauthenticated, navigates to `/auth/landing` and returns `false`.
 - If authenticated, returns `true`.
 
 ### 3.3. `authInterceptor`: `frontend/src/app/core/auth/auth.interceptor.ts`

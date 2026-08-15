@@ -15,5 +15,5 @@ export const environment = {
   cognitoClientId: '',
   cognitoAuthDomain: '',
   s3Bucket: '',
-  s3Region: '',
+  s3Region: 'us-east-1',
 };

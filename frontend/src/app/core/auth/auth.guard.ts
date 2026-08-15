@@ -6,7 +6,7 @@ import { AuthService } from './auth.service';
  * Functional route guard that protects routes requiring authentication.
  * Checks whether the user is currently authenticated via AuthService.
  * If authenticated, permits navigation; otherwise, redirects the user
- * to `/auth/login` and blocks navigation.
+ * to `/auth/landing` and blocks navigation.
  *
  * @param route The activated route snapshot.
  * @param state The router state snapshot.
@@ -17,7 +17,7 @@ export const authGuard: CanActivateFn = () => {
   const router = inject(Router);
 
   if (!authService.isAuthenticated()) {
-    router.navigate(['/auth/login']);
+    router.navigate(['/auth/landing']);
     return false;
   }
 
