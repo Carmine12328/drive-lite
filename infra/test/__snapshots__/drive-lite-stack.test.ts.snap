@@ -69,7 +69,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches CloudFormation template sna
           "S3Bucket": {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "d3316607d0cd6e868306150f7539784a3624e352eb23c74040836eb6a6ceade1.zip",
+          "S3Key": "[ASSET_HASH].zip",
         },
         "Environment": {
           "Variables": {
@@ -251,7 +251,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches CloudFormation template sna
           "S3Bucket": {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "cd41a37a4ef725b83bf6e8fdd76497619928584f9872082bb4cfec6085ffa172.zip",
+          "S3Key": "[ASSET_HASH].zip",
         },
         "Environment": {
           "Variables": {
@@ -403,7 +403,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches CloudFormation template sna
           "S3Bucket": {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "77ea23cf4a0495729343728df3332b12ba172fa12987163c7d2a0ce4716d87c0.zip",
+          "S3Key": "[ASSET_HASH].zip",
         },
         "Environment": {
           "Variables": {
@@ -555,7 +555,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches CloudFormation template sna
           "S3Bucket": {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "484d5851733323007024912dccbcec893ebbf01d732b4167b096158edb94de54.zip",
+          "S3Key": "[ASSET_HASH].zip",
         },
         "Environment": {
           "Variables": {
@@ -725,7 +725,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches CloudFormation template sna
           "S3Bucket": {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "ded0d6f8c59d8c6d732d7918d4e5d4a87508c80214efae425aa9b0abeda69929.zip",
+          "S3Key": "[ASSET_HASH].zip",
         },
         "Environment": {
           "Variables": {
@@ -877,7 +877,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches CloudFormation template sna
           "S3Bucket": {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "4cd385756e7fc385d45c3530e30b46a65835579340f06fa0ebb3ebb1524abc6b.zip",
+          "S3Key": "[ASSET_HASH].zip",
         },
         "Environment": {
           "Variables": {
@@ -1059,7 +1059,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches CloudFormation template sna
           "S3Bucket": {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "f2f0e59ae5041822599e56a7395dc59869ff7f28e3524e341449d9c5634ab722.zip",
+          "S3Key": "[ASSET_HASH].zip",
         },
         "Environment": {
           "Variables": {
@@ -1229,7 +1229,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches CloudFormation template sna
           "S3Bucket": {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "148079db07b75f8072368fe9286c966f077699cb79104e4c7027970b521643a5.zip",
+          "S3Key": "[ASSET_HASH].zip",
         },
         "Environment": {
           "Variables": {
@@ -1418,7 +1418,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches CloudFormation template sna
           "S3Bucket": {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "cb8407c92ba02719398ba3536710450e0d37ab2648b5784b55148cb187b2e43e.zip",
+          "S3Key": "[ASSET_HASH].zip",
         },
         "Environment": {
           "Variables": {
@@ -1600,7 +1600,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches CloudFormation template sna
           "S3Bucket": {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "bc4cf1b2ddc5cb7193fc96694bc042e464807aa4c9bb86597d26822b0e3b7576.zip",
+          "S3Key": "[ASSET_HASH].zip",
         },
         "Environment": {
           "Variables": {
@@ -1752,7 +1752,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches CloudFormation template sna
           "S3Bucket": {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "156d7d74c5398e8ebbc71a7e1c7d41f551f625760a6aa0a6a44f3e6f703b441e.zip",
+          "S3Key": "[ASSET_HASH].zip",
         },
         "Environment": {
           "Variables": {
@@ -1904,7 +1904,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches CloudFormation template sna
           "S3Bucket": {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "5c3555b93134c2f78285bbae71fadf529a051179930826bb55cdc6283504dfbc.zip",
+          "S3Key": "[ASSET_HASH].zip",
         },
         "Environment": {
           "Variables": {
@@ -4075,7 +4075,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches CloudFormation template sna
           "S3Bucket": {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "910fa1c7576844f8742ba441737f66f12d54aa23e2cd319f263279e1e264b724.zip",
+          "S3Key": "[ASSET_HASH].zip",
         },
         "Environment": {
           "Variables": {
@@ -4227,7 +4227,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches CloudFormation template sna
           "S3Bucket": {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "a0046130c60c191e093dbf70f8b430dbc34957dc772484435375c3e424a6f986.zip",
+          "S3Key": "[ASSET_HASH].zip",
         },
         "Environment": {
           "Variables": {
@@ -4379,7 +4379,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches CloudFormation template sna
           "S3Bucket": {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "eb8bb6b82fbabf8ef4c350de364bdec8171d74df8758e6e26b2cb0a514170173.zip",
+          "S3Key": "[ASSET_HASH].zip",
         },
         "Environment": {
           "Variables": {
@@ -4531,7 +4531,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches CloudFormation template sna
           "S3Bucket": {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "a35df6ee8d370b5bc6b8b1128bff697e28c0ae079f50adb6a63b4d14561d7b9f.zip",
+          "S3Key": "[ASSET_HASH].zip",
         },
         "Environment": {
           "Variables": {
@@ -4683,7 +4683,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches CloudFormation template sna
           "S3Bucket": {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "7efabfe5c9d4a70046b4c2fdce05ad1b208f5157288675a2987026d20dd8f116.zip",
+          "S3Key": "[ASSET_HASH].zip",
         },
         "Environment": {
           "Variables": {
@@ -4835,7 +4835,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches CloudFormation template sna
           "S3Bucket": {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "8f706d5047236b6ecd6d6b52b4bf5f45c7a29910fbcf6cb5b412e2b6af68fbf9.zip",
+          "S3Key": "[ASSET_HASH].zip",
         },
         "Environment": {
           "Variables": {
@@ -5017,7 +5017,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches CloudFormation template sna
           "S3Bucket": {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "f93df71d40ca7cfae2e8902d56cd5cfb70d1fc205615b3c2c34e62620b6eafcc.zip",
+          "S3Key": "[ASSET_HASH].zip",
         },
         "Environment": {
           "Variables": {
@@ -5187,7 +5187,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches CloudFormation template sna
           "S3Bucket": {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "11d00d6d11828410ad96cc2597419f43d5f437ea43d27c886ee71b89abb32caf.zip",
+          "S3Key": "[ASSET_HASH].zip",
         },
         "Environment": {
           "Variables": {
@@ -5339,7 +5339,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches CloudFormation template sna
           "S3Bucket": {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "58e7dec44fcc52091331dbb14fbcd5b4e636c4f8baddd712c2860ff371d96c9e.zip",
+          "S3Key": "[ASSET_HASH].zip",
         },
         "Environment": {
           "Variables": {
@@ -5491,7 +5491,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches CloudFormation template sna
           "S3Bucket": {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "f68d099c76615f32c062334ca540998902c552049ad80a7905ccca0f429a2e45.zip",
+          "S3Key": "[ASSET_HASH].zip",
         },
         "Environment": {
           "Variables": {
@@ -5643,7 +5643,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches CloudFormation template sna
           "S3Bucket": {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "ca1934afcd91e9746f4577c5ddc3ae82268bdc4930345ca23b12524588334509.zip",
+          "S3Key": "[ASSET_HASH].zip",
         },
         "Environment": {
           "Variables": {
@@ -5795,7 +5795,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches CloudFormation template sna
           "S3Bucket": {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "bb82e30932a3defe45bbe7b82f94152595a3ab4b8d3ca8004a67b8d2ba3cd789.zip",
+          "S3Key": "[ASSET_HASH].zip",
         },
         "Environment": {
           "Variables": {
@@ -5947,7 +5947,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches CloudFormation template sna
           "S3Bucket": {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "11456c68efd5cad6f1d5ed302446fed35d19c4f74c1327da05af449ad7887814.zip",
+          "S3Key": "[ASSET_HASH].zip",
         },
         "Environment": {
           "Variables": {
@@ -6099,7 +6099,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches CloudFormation template sna
           "S3Bucket": {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "713c85e7ba31731375593bb46c02cbfe6387e9c660687682bbb76ee86c5a38eb.zip",
+          "S3Key": "[ASSET_HASH].zip",
         },
         "Environment": {
           "Variables": {
@@ -6288,7 +6288,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches CloudFormation template sna
           "S3Bucket": {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "13d3e5b0c2b2914b006c0b2a9d99554f1aba2c97aa469515ccd6da0b3a2ebe21.zip",
+          "S3Key": "[ASSET_HASH].zip",
         },
         "Environment": {
           "Variables": {
@@ -6584,7 +6584,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches CloudFormation template sna
           "S3Bucket": {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "faa95a81ae7d7373f3e1f242268f904eb748d8d0fdd306e8a6fe515a1905a7d6.zip",
+          "S3Key": "[ASSET_HASH].zip",
         },
         "Description": {
           "Fn::Join": [
@@ -6934,6 +6934,12 @@ exports[`DriveLiteStack CDK Infrastructure > matches full CloudFormation templat
         "Ref": "StorageFilesBucket28699C44",
       },
     },
+    "CloudFrontDistributionId": {
+      "Description": "CloudFront distribution ID",
+      "Value": {
+        "Ref": "FrontendDistributionC0C89627",
+      },
+    },
     "CloudFrontUrl": {
       "Description": "CloudFront distribution URL",
       "Value": {
@@ -7011,7 +7017,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches full CloudFormation templat
           "S3Bucket": {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "d3316607d0cd6e868306150f7539784a3624e352eb23c74040836eb6a6ceade1.zip",
+          "S3Key": "[ASSET_HASH].zip",
         },
         "Environment": {
           "Variables": {
@@ -7193,7 +7199,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches full CloudFormation templat
           "S3Bucket": {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "cd41a37a4ef725b83bf6e8fdd76497619928584f9872082bb4cfec6085ffa172.zip",
+          "S3Key": "[ASSET_HASH].zip",
         },
         "Environment": {
           "Variables": {
@@ -7345,7 +7351,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches full CloudFormation templat
           "S3Bucket": {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "77ea23cf4a0495729343728df3332b12ba172fa12987163c7d2a0ce4716d87c0.zip",
+          "S3Key": "[ASSET_HASH].zip",
         },
         "Environment": {
           "Variables": {
@@ -7497,7 +7503,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches full CloudFormation templat
           "S3Bucket": {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "484d5851733323007024912dccbcec893ebbf01d732b4167b096158edb94de54.zip",
+          "S3Key": "[ASSET_HASH].zip",
         },
         "Environment": {
           "Variables": {
@@ -7667,7 +7673,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches full CloudFormation templat
           "S3Bucket": {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "ded0d6f8c59d8c6d732d7918d4e5d4a87508c80214efae425aa9b0abeda69929.zip",
+          "S3Key": "[ASSET_HASH].zip",
         },
         "Environment": {
           "Variables": {
@@ -7819,7 +7825,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches full CloudFormation templat
           "S3Bucket": {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "4cd385756e7fc385d45c3530e30b46a65835579340f06fa0ebb3ebb1524abc6b.zip",
+          "S3Key": "[ASSET_HASH].zip",
         },
         "Environment": {
           "Variables": {
@@ -8001,7 +8007,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches full CloudFormation templat
           "S3Bucket": {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "f2f0e59ae5041822599e56a7395dc59869ff7f28e3524e341449d9c5634ab722.zip",
+          "S3Key": "[ASSET_HASH].zip",
         },
         "Environment": {
           "Variables": {
@@ -8171,7 +8177,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches full CloudFormation templat
           "S3Bucket": {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "148079db07b75f8072368fe9286c966f077699cb79104e4c7027970b521643a5.zip",
+          "S3Key": "[ASSET_HASH].zip",
         },
         "Environment": {
           "Variables": {
@@ -8360,7 +8366,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches full CloudFormation templat
           "S3Bucket": {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "cb8407c92ba02719398ba3536710450e0d37ab2648b5784b55148cb187b2e43e.zip",
+          "S3Key": "[ASSET_HASH].zip",
         },
         "Environment": {
           "Variables": {
@@ -8542,7 +8548,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches full CloudFormation templat
           "S3Bucket": {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "bc4cf1b2ddc5cb7193fc96694bc042e464807aa4c9bb86597d26822b0e3b7576.zip",
+          "S3Key": "[ASSET_HASH].zip",
         },
         "Environment": {
           "Variables": {
@@ -8694,7 +8700,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches full CloudFormation templat
           "S3Bucket": {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "156d7d74c5398e8ebbc71a7e1c7d41f551f625760a6aa0a6a44f3e6f703b441e.zip",
+          "S3Key": "[ASSET_HASH].zip",
         },
         "Environment": {
           "Variables": {
@@ -8846,7 +8852,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches full CloudFormation templat
           "S3Bucket": {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "5c3555b93134c2f78285bbae71fadf529a051179930826bb55cdc6283504dfbc.zip",
+          "S3Key": "[ASSET_HASH].zip",
         },
         "Environment": {
           "Variables": {
@@ -11017,7 +11023,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches full CloudFormation templat
           "S3Bucket": {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "910fa1c7576844f8742ba441737f66f12d54aa23e2cd319f263279e1e264b724.zip",
+          "S3Key": "[ASSET_HASH].zip",
         },
         "Environment": {
           "Variables": {
@@ -11169,7 +11175,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches full CloudFormation templat
           "S3Bucket": {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "a0046130c60c191e093dbf70f8b430dbc34957dc772484435375c3e424a6f986.zip",
+          "S3Key": "[ASSET_HASH].zip",
         },
         "Environment": {
           "Variables": {
@@ -11321,7 +11327,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches full CloudFormation templat
           "S3Bucket": {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "eb8bb6b82fbabf8ef4c350de364bdec8171d74df8758e6e26b2cb0a514170173.zip",
+          "S3Key": "[ASSET_HASH].zip",
         },
         "Environment": {
           "Variables": {
@@ -11473,7 +11479,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches full CloudFormation templat
           "S3Bucket": {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "a35df6ee8d370b5bc6b8b1128bff697e28c0ae079f50adb6a63b4d14561d7b9f.zip",
+          "S3Key": "[ASSET_HASH].zip",
         },
         "Environment": {
           "Variables": {
@@ -11625,7 +11631,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches full CloudFormation templat
           "S3Bucket": {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "7efabfe5c9d4a70046b4c2fdce05ad1b208f5157288675a2987026d20dd8f116.zip",
+          "S3Key": "[ASSET_HASH].zip",
         },
         "Environment": {
           "Variables": {
@@ -11777,7 +11783,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches full CloudFormation templat
           "S3Bucket": {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "8f706d5047236b6ecd6d6b52b4bf5f45c7a29910fbcf6cb5b412e2b6af68fbf9.zip",
+          "S3Key": "[ASSET_HASH].zip",
         },
         "Environment": {
           "Variables": {
@@ -11959,7 +11965,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches full CloudFormation templat
           "S3Bucket": {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "f93df71d40ca7cfae2e8902d56cd5cfb70d1fc205615b3c2c34e62620b6eafcc.zip",
+          "S3Key": "[ASSET_HASH].zip",
         },
         "Environment": {
           "Variables": {
@@ -12129,7 +12135,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches full CloudFormation templat
           "S3Bucket": {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "11d00d6d11828410ad96cc2597419f43d5f437ea43d27c886ee71b89abb32caf.zip",
+          "S3Key": "[ASSET_HASH].zip",
         },
         "Environment": {
           "Variables": {
@@ -12281,7 +12287,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches full CloudFormation templat
           "S3Bucket": {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "58e7dec44fcc52091331dbb14fbcd5b4e636c4f8baddd712c2860ff371d96c9e.zip",
+          "S3Key": "[ASSET_HASH].zip",
         },
         "Environment": {
           "Variables": {
@@ -12433,7 +12439,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches full CloudFormation templat
           "S3Bucket": {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "f68d099c76615f32c062334ca540998902c552049ad80a7905ccca0f429a2e45.zip",
+          "S3Key": "[ASSET_HASH].zip",
         },
         "Environment": {
           "Variables": {
@@ -12585,7 +12591,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches full CloudFormation templat
           "S3Bucket": {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "ca1934afcd91e9746f4577c5ddc3ae82268bdc4930345ca23b12524588334509.zip",
+          "S3Key": "[ASSET_HASH].zip",
         },
         "Environment": {
           "Variables": {
@@ -12737,7 +12743,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches full CloudFormation templat
           "S3Bucket": {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "bb82e30932a3defe45bbe7b82f94152595a3ab4b8d3ca8004a67b8d2ba3cd789.zip",
+          "S3Key": "[ASSET_HASH].zip",
         },
         "Environment": {
           "Variables": {
@@ -12889,7 +12895,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches full CloudFormation templat
           "S3Bucket": {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "11456c68efd5cad6f1d5ed302446fed35d19c4f74c1327da05af449ad7887814.zip",
+          "S3Key": "[ASSET_HASH].zip",
         },
         "Environment": {
           "Variables": {
@@ -13041,7 +13047,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches full CloudFormation templat
           "S3Bucket": {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "713c85e7ba31731375593bb46c02cbfe6387e9c660687682bbb76ee86c5a38eb.zip",
+          "S3Key": "[ASSET_HASH].zip",
         },
         "Environment": {
           "Variables": {
@@ -13230,7 +13236,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches full CloudFormation templat
           "S3Bucket": {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "13d3e5b0c2b2914b006c0b2a9d99554f1aba2c97aa469515ccd6da0b3a2ebe21.zip",
+          "S3Key": "[ASSET_HASH].zip",
         },
         "Environment": {
           "Variables": {
@@ -13569,7 +13575,7 @@ exports[`DriveLiteStack CDK Infrastructure > matches full CloudFormation templat
           "S3Bucket": {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "723552901b8d5cb9aa1d626f062e59faded42eb698a024b3e555fb1afd39af76.zip",
+          "S3Key": "[ASSET_HASH].zip",
         },
         "Environment": {
           "Variables": {

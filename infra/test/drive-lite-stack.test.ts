@@ -6,6 +6,16 @@ import { DriveLiteStack } from '../lib/drive-lite-stack';
 /**
  * Snapshot and assertion tests for DriveLiteStack infrastructure.
  */
+/**
+ * Normalizes template JSON by replacing dynamic Lambda asset zip hashes
+ * to ensure deterministic snapshot comparison across operating systems (Linux vs Windows).
+ */
+function sanitizeTemplate(template: Record<string, unknown>): Record<string, unknown> {
+  const json = JSON.stringify(template);
+  const sanitized = json.replace(/[a-f0-9]{64}\.zip/g, '[ASSET_HASH].zip');
+  return JSON.parse(sanitized);
+}
+
 describe('DriveLiteStack CDK Infrastructure', () => {
   let defaultTemplate: Template;
 
@@ -16,7 +26,7 @@ describe('DriveLiteStack CDK Infrastructure', () => {
   });
 
   it('matches full CloudFormation template snapshot (default environment)', () => {
-    expect(defaultTemplate.toJSON()).toMatchSnapshot();
+    expect(sanitizeTemplate(defaultTemplate.toJSON())).toMatchSnapshot();
   });
 
   it('matches CloudFormation template snapshot for LocalStack context', () => {
@@ -28,7 +38,7 @@ describe('DriveLiteStack CDK Infrastructure', () => {
     const stack = new DriveLiteStack(app, 'TestLocalStack');
     const localTemplate = Template.fromStack(stack);
 
-    expect(localTemplate.toJSON()).toMatchSnapshot();
+    expect(sanitizeTemplate(localTemplate.toJSON())).toMatchSnapshot();
   });
 
   describe('Storage & S3 Construct', () => {
