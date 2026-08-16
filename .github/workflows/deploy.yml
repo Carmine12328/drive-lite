@@ -1,0 +1,184 @@
+name: CD - Deploy to AWS
+
+on:
+  workflow_dispatch:
+    inputs:
+      skip_cloudfront:
+        description: 'Skip CloudFront provisioning (use S3 static website hosting)'
+        type: boolean
+        default: false
+        required: false
+      is_dev:
+        description: 'Dev environment mode (RemovalPolicy.DESTROY on storage)'
+        type: boolean
+        default: true
+        required: false
+      deploy_infra:
+        description: 'Deploy CDK infrastructure'
+        type: boolean
+        default: true
+        required: false
+      deploy_frontend:
+        description: 'Build & Deploy Angular frontend'
+        type: boolean
+        default: true
+        required: false
+  # Uncomment the lines below to auto-deploy to AWS on push to main once AWS secrets are added:
+  # push:
+  #   branches: [main]
+
+permissions:
+  id-token: write # Required for AWS OIDC authentication
+  contents: read
+
+concurrency:
+  group: aws-deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  test:
+    name: Run Test Suite
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 22.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run linter
+        run: npm run lint
+
+      - name: Run backend unit tests
+        run: npm run test -w @drive-lite/backend
+
+      - name: Run CDK snapshot tests
+        run: npm run test -w @drive-lite/infra
+
+  deploy:
+    name: Deploy to AWS
+    needs: test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 22.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Restore Angular build cache (.angular/cache)
+        uses: actions/cache@v4
+        with:
+          path: .angular/cache
+          key: ${{ runner.os }}-angular-cache-${{ hashFiles('**/package-lock.json') }}-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-angular-cache-${{ hashFiles('**/package-lock.json') }}-
+            ${{ runner.os }}-angular-cache-
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Configure AWS Credentials (OIDC Role or IAM Keys)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION || 'us-east-1' }}
+          role-session-name: DriveLiteGitHubActionsDeploy
+
+      - name: Deploy CDK Infrastructure Stack
+        if: ${{ github.event_name == 'push' || inputs.deploy_infra != false }}
+        run: |
+          npx --prefix infra cdk deploy DriveLiteStack \
+            --context dev=${{ inputs.is_dev != '' && inputs.is_dev || 'true' }} \
+            --context skipCloudFront=${{ inputs.skip_cloudfront != '' && inputs.skip_cloudfront || 'false' }} \
+            --require-approval never \
+            --outputs-file ../cdk-outputs.json
+
+      - name: Configure Angular Production Environment
+        run: node scripts/configure-environment.mjs cdk-outputs.json
+
+      - name: Build Angular Frontend SPA
+        if: ${{ github.event_name == 'push' || inputs.deploy_frontend != false }}
+        run: npm run build -w frontend
+
+      - name: Deploy Frontend to S3 & Invalidate CloudFront
+        if: ${{ github.event_name == 'push' || inputs.deploy_frontend != false }}
+        run: |
+          HOSTING_BUCKET=$(node -e "
+            const fs = require('fs');
+            const outputs = JSON.parse(fs.readFileSync('cdk-outputs.json', 'utf8'));
+            const stack = outputs.DriveLiteStack || outputs[Object.keys(outputs)[0]];
+            console.log(stack.HostingBucketName || '');
+          ")
+
+          DISTRIBUTION_ID=$(node -e "
+            const fs = require('fs');
+            const outputs = JSON.parse(fs.readFileSync('cdk-outputs.json', 'utf8'));
+            const stack = outputs.DriveLiteStack || outputs[Object.keys(outputs)[0]];
+            console.log(stack.CloudFrontDistributionId || '');
+          ")
+
+          if [ -z "$HOSTING_BUCKET" ]; then
+            echo "❌ Error: Could not determine HostingBucketName from cdk-outputs.json."
+            exit 1
+          fi
+
+          echo "🚀 Deploying static assets to S3 bucket: $HOSTING_BUCKET"
+          # Sync hashed assets with immutable long-term caching
+          aws s3 sync frontend/dist/drive-lite/browser/ s3://$HOSTING_BUCKET \
+            --delete \
+            --exclude "index.html" \
+            --cache-control "public, max-age=31536000, immutable"
+
+          # Upload index.html with no-cache so users always receive latest SPA entrypoint
+          aws s3 cp frontend/dist/drive-lite/browser/index.html s3://$HOSTING_BUCKET/index.html \
+            --cache-control "no-cache, no-store, must-revalidate"
+
+          echo "✨ S3 asset sync complete."
+
+          if [ -n "$DISTRIBUTION_ID" ]; then
+            echo "⚡ Invalidating CloudFront cache for distribution: $DISTRIBUTION_ID"
+            aws cloudfront create-invalidation --distribution-id "$DISTRIBUTION_ID" --paths "/*"
+            echo "✨ CloudFront cache invalidation created."
+          fi
+
+      - name: Publish Deployment Summary
+        run: |
+          node -e "
+            const fs = require('fs');
+            let summary = '### 🚀 Drive Lite AWS Deployment Summary\n\n';
+            try {
+              const outputs = JSON.parse(fs.readFileSync('cdk-outputs.json', 'utf8'));
+              const stack = outputs.DriveLiteStack || outputs[Object.keys(outputs)[0]];
+              summary += '| Resource | Value |\n';
+              summary += '|:---|:---|\n';
+              summary += '| **API Gateway URL** | \`' + (stack.ApiUrl || 'N/A') + '\` |\n';
+              summary += '| **Cognito User Pool ID** | \`' + (stack.UserPoolId || 'N/A') + '\` |\n';
+              summary += '| **Cognito Client ID** | \`' + (stack.UserPoolClientId || 'N/A') + '\` |\n';
+              summary += '| **S3 Files Bucket** | \`' + (stack.BucketName || 'N/A') + '\` |\n';
+              summary += '| **S3 Hosting Bucket** | \`' + (stack.HostingBucketName || 'N/A') + '\` |\n';
+              if (stack.WebsiteUrl) {
+                summary += '| **Website URL** | [' + stack.WebsiteUrl + '](' + stack.WebsiteUrl + ') |\n';
+              }
+              if (stack.CloudFrontUrl) {
+                summary += '| **CloudFront CDN** | [' + stack.CloudFrontUrl + '](' + stack.CloudFrontUrl + ') |\n';
+              }
+              summary += '\n*Deployment completed successfully at ' + new Date().toISOString() + '*\n';
+            } catch (err) {
+              summary += 'Deployment completed, but outputs file could not be parsed: ' + err.message + '\n';
+            }
+            fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, summary);
+          "

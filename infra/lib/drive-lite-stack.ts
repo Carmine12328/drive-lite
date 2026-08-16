@@ -103,6 +103,10 @@ export class DriveLiteStack extends Stack {
           value: `https://${frontend.distribution.distributionDomainName}`,
           description: 'CloudFront distribution URL',
         });
+        new CfnOutput(this, 'CloudFrontDistributionId', {
+          value: frontend.distribution.distributionId,
+          description: 'CloudFront distribution ID',
+        });
       }
     }
   }

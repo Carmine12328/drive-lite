@@ -106,8 +106,7 @@
 | Dashboard (stats, recent files) | `frontend/src/app/features/dashboard/dashboard.component.ts` |
 | Design system (CSS custom properties, themes) | `frontend/src/styles.scss` |
 
-### Infrastructure
-
+### Infrastructure & CI/CD
 | Concept | File |
 |:--------|:-----|
 | CDK stack entry point | `infra/bin/` |
@@ -116,6 +115,10 @@
 | DynamoDB table + S3 bucket | `infra/lib/storage-construct.ts` |
 | Cognito User Pool + Hosted UI | `infra/lib/auth-construct.ts` |
 | CloudFront + S3 frontend hosting | `infra/lib/frontend-construct.ts` |
+| GitHub Actions PR CI workflow | `.github/workflows/ci.yml` |
+| GitHub Actions AWS CD workflow | `.github/workflows/deploy.yml` |
+| CDK output & environment configurator | `scripts/configure-environment.mjs` |
+| Frontend manual deploy script | `scripts/deploy-frontend.mjs` |
 
 ### Backend Utilities
 

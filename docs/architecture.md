@@ -110,11 +110,30 @@ Composes all constructs in strict dependency order:
 | `UserPoolClientId` | `auth.userPoolClient.userPoolClientId` | Cognito App Client ID |
 | `TableName` | `storage.table.tableName` | Metadata DynamoDB table name |
 | `BucketName` | `storage.bucket.bucketName` | Binary storage S3 bucket name |
+| `HostingBucketName` | `frontend.hostingBucket.bucketName` | Frontend S3 hosting bucket name |
+| `WebsiteUrl` | `frontend.websiteUrl` | Public website URL (S3 website endpoint or CloudFront) |
 | `CloudFrontUrl` | `https://${frontend.distribution.distributionDomainName}` | Public CloudFront CDN domain URL |
+| `CloudFrontDistributionId` | `frontend.distribution.distributionId` | CloudFront distribution ID for cache invalidation |
 
 ---
 
-### 2.2. Storage Construct: `StorageConstruct` (`infra/lib/storage-construct.ts`)
+### 2.2. CI/CD Pipeline Automation (GitHub Actions)
+
+Drive Lite uses a dual GitHub Actions workflow architecture in `.github/workflows/`:
+
+1. **Pull Request & Branch Validation (`ci.yml`)**:
+   - Triggers on pull requests targeting `main` and pushes to feature branches.
+   - Executes `npm ci` with npm cache, `.angular/cache` zstd build cache, workspace linting, Vitest backend unit tests, CDK infrastructure snapshot tests, and full Angular production build verification.
+2. **Continuous Deployment (`deploy.yml`)**:
+   - Triggers on direct push to `main` and manual `workflow_dispatch`.
+   - Authenticates to AWS via **AWS OIDC Role assumption** (`role-to-assume: ${{ secrets.AWS_ROLE_ARN }}`) or standard IAM Access Keys.
+   - Provisions CDK infrastructure via `cdk deploy DriveLiteStack --outputs-file cdk-outputs.json`.
+   - Runs `scripts/configure-environment.mjs` to dynamically inject stack outputs into `frontend/src/environments/environment.prod.ts`.
+   - Compiles Angular SPA and syncs static assets to S3 hosting bucket with differential caching (`max-age=31536000, immutable` on hashed chunks, `no-cache` on `index.html`).
+   - Automatically invalidates CloudFront CDN cache upon completion.
+   - Publishes a deployment summary to GitHub Actions `$GITHUB_STEP_SUMMARY`.
+
+### 2.3. Storage Construct: `StorageConstruct` (`infra/lib/storage-construct.ts`)
 
 #### S3 Files Bucket (`FilesBucket`)
 - **Access**: `BlockPublicAccess.BLOCK_ALL` (all public read/write blocked).
@@ -144,7 +163,7 @@ Composes all constructs in strict dependency order:
 
 ---
 
-### 2.3. Authentication Construct: `AuthConstruct` (`infra/lib/auth-construct.ts`)
+### 2.4. Authentication Construct: `AuthConstruct` (`infra/lib/auth-construct.ts`)
 
 #### Cognito User Pool (`drive-lite-user-pool`)
 - **Sign-In / Sign-Up**: `selfSignUpEnabled: true`, `signInAliases: { email: true }`, `autoVerify: { email: true }`.
@@ -165,7 +184,7 @@ Composes all constructs in strict dependency order:
 
 ---
 
-### 2.4. API Gateway Construct: `ApiConstruct` (`infra/lib/api-construct.ts`)
+### 2.5. API Gateway Construct: `ApiConstruct` (`infra/lib/api-construct.ts`)
 
 #### HTTP API Gateway (`drive-lite-api`)
 - **CORS Preflight**:
@@ -214,7 +233,7 @@ Composes all constructs in strict dependency order:
 
 ---
 
-### 2.5. Frontend Construct: `FrontendConstruct` (`infra/lib/frontend-construct.ts`)
+### 2.6. Frontend Construct: `FrontendConstruct` (`infra/lib/frontend-construct.ts`)
 
 - **Hosting Bucket (`FrontendBucket`)**: Private S3 bucket with `BlockPublicAccess.BLOCK_ALL` and `S3_MANAGED` encryption.
 - **CloudFront Distribution**:

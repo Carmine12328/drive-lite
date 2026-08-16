@@ -36,7 +36,10 @@ export const handler = async (event: APIGatewayProxyEventV2): Promise<APIGateway
       return error(400, 'User ID is required');
     }
 
-    let email = (event.requestContext?.authorizer?.jwt?.claims?.['email'] as string) ?? '';
+    const requestContext = event.requestContext as unknown as {
+      authorizer?: { jwt?: { claims?: Record<string, string> } };
+    };
+    let email = (requestContext?.authorizer?.jwt?.claims?.['email'] as string) ?? '';
     if (!email && event.body) {
       try {
         const parsed = JSON.parse(event.body);

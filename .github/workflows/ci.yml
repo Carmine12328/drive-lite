@@ -1,0 +1,53 @@
+name: CI - Lint, Test & Build
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  validate:
+    name: Lint, Test & Build Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 22.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Restore Angular build cache (.angular/cache)
+        uses: actions/cache@v4
+        with:
+          path: .angular/cache
+          key: ${{ runner.os }}-angular-cache-${{ hashFiles('**/package-lock.json') }}-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-angular-cache-${{ hashFiles('**/package-lock.json') }}-
+            ${{ runner.os }}-angular-cache-
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run linter across all workspaces
+        run: npm run lint
+
+      - name: Run backend unit tests (Vitest)
+        run: npm run test -w @drive-lite/backend
+
+      - name: Run infrastructure snapshot tests (CDK Vitest)
+        run: npm run test -w @drive-lite/infra
+
+      - name: Build frontend application (Angular 22)
+        run: npm run build -w frontend
+
+      - name: Build backend Lambda functions (TypeScript)
+        run: npm run build -w @drive-lite/backend
+
+      - name: Build infrastructure code (TypeScript)
+        run: npm run build -w @drive-lite/infra
