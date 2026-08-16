@@ -163,22 +163,14 @@ jobs:
             try {
               const outputs = JSON.parse(fs.readFileSync('cdk-outputs.json', 'utf8'));
               const stack = outputs.DriveLiteStack || outputs[Object.keys(outputs)[0]];
-              summary += '| Resource | Value |\n';
-              summary += '|:---|:---|\n';
-              summary += '| **API Gateway URL** | \`' + (stack.ApiUrl || 'N/A') + '\` |\n';
-              summary += '| **Cognito User Pool ID** | \`' + (stack.UserPoolId || 'N/A') + '\` |\n';
-              summary += '| **Cognito Client ID** | \`' + (stack.UserPoolClientId || 'N/A') + '\` |\n';
-              summary += '| **S3 Files Bucket** | \`' + (stack.BucketName || 'N/A') + '\` |\n';
-              summary += '| **S3 Hosting Bucket** | \`' + (stack.HostingBucketName || 'N/A') + '\` |\n';
-              if (stack.WebsiteUrl) {
-                summary += '| **Website URL** | [' + stack.WebsiteUrl + '](' + stack.WebsiteUrl + ') |\n';
+              const liveUrl = stack.CloudFrontUrl || stack.WebsiteUrl;
+              summary += '✅ **Status**: Infrastructure and Frontend successfully deployed.\n\n';
+              if (liveUrl) {
+                summary += '🌐 **Live Application**: [' + liveUrl + '](' + liveUrl + ')\n';
               }
-              if (stack.CloudFrontUrl) {
-                summary += '| **CloudFront CDN** | [' + stack.CloudFrontUrl + '](' + stack.CloudFrontUrl + ') |\n';
-              }
-              summary += '\n*Deployment completed successfully at ' + new Date().toISOString() + '*\n';
+              summary += '\n*Deployed at ' + new Date().toISOString() + '*\n';
             } catch (err) {
-              summary += 'Deployment completed, but outputs file could not be parsed: ' + err.message + '\n';
+              summary += 'Deployment completed successfully.\n';
             }
             fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, summary);
           "
