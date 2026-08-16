@@ -206,6 +206,7 @@ order**. Do NOT skip steps. Do NOT auto-commit.
   - Update `docs/backend-handlers-and-architecture.md` for backend changes.
   - Update `docs/frontend-components-and-architecture.md` for frontend changes.
   - Update `docs/api-routes-and-communication-matrix.md` for API route / integration changes.
+- **Update Repowise Index**: Run `repowise update` in the repo root whenever files, symbols, or modules are added, modified, or deleted to keep the vector and symbol intelligence index synchronized with the latest code state.
 - **Update plan files**: Mark completed tasks as `[x]` in `FE_IMPLEMENTATION_PLAN.md`
   (or `IMPLEMENTATION_PLAN.md`) and update the "Current state" header.
 - **Create or update walkthrough**: Summarize changes, what was tested, and

@@ -412,10 +412,10 @@ Manages expiring public share links.
   - Collapsible metadata sidebar displaying file name, size, MIME type, folder ID, creation date, and last modified date.
 
 ### 4.9. Authentication Feature Components
-- **`LandingComponent` (`frontend/src/app/features/auth/landing/landing.component.ts`)**: Product hero, feature showcase, theme toggle, and CTAs navigating to `/auth/login` and `/auth/register`.
-- **`LoginComponent` (`frontend/src/app/features/auth/login/login.component.ts`)**: Reactive form (`email`, `password`, `rememberMe`) with validation; invokes `AuthService.signIn()`.
+- **`LandingComponent` (`frontend/src/app/features/auth/landing/landing.component.ts`)**: Developer portfolio entry gateway and architecture showcase featuring interactive system design walkthroughs, 3-phase S3 upload flows, single-table DynamoDB insights, dark/light theme toggle, and live demo access via `/auth/login` and `/auth/register`.
+- **`LoginComponent` (`frontend/src/app/features/auth/login/login.component.ts`)**: Modern SaaS authentication form (`email`, `password`, `rememberMe`) with validation and error feedback; invokes `AuthService.signIn()`.
 - **`RegisterComponent` (`frontend/src/app/features/auth/register/register.component.ts`)**:
-  - **Step 1**: Email and password input with real-time password strength meter (`passwordCriteria` verifying length &ge; 8, uppercase, lowercase, numbers, special characters) and custom `passwordMatchValidator`.
+  - **Step 1**: Email and password input with streamlined password strength feedback (`passwordCriteria` verifying length &ge; 8, uppercase, lowercase, numbers, special characters) and custom `passwordMatchValidator`.
   - **Step 2**: 6 individual digit input fields with automatic focus advancement, backspace retreat, clipboard paste parsing, and 60-second cooldown timer for `resendCode()`.
 - **`CognitoCallbackComponent` (`frontend/src/app/features/auth/cognito-callback/cognito-callback.component.ts`)**: Spinner and callback handler for OAuth redirect flows.
 

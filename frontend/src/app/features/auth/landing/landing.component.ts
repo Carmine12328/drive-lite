@@ -10,8 +10,8 @@ export type ShowcaseFeature = 'browser' | 'upload' | 'preview' | 'analytics' | '
 export type PreviewSubTab = 'code' | 'pdf' | 'image';
 
 /**
- * Landing page component serving as the application entry gateway
- * and interactive portfolio showcase for recruiters and reviewers.
+ * Landing page component serving as the application entry gateway,
+ * highlighting core features, direct-to-S3 capabilities, and system architecture.
  */
 @Component({
   selector: 'app-landing',
@@ -25,7 +25,7 @@ export class LandingComponent implements OnInit {
   /** Theme signal (true = dark, false = light). */
   readonly isDarkTheme = signal(true);
 
-  /** Currently selected showcase feature in the interactive studio. */
+  /** Currently selected showcase feature. */
   readonly activeFeature = signal<ShowcaseFeature>('browser');
 
   /** Currently selected preview sub-tab in the code/media showcase. */
@@ -50,7 +50,7 @@ export class LandingComponent implements OnInit {
   }
 
   /**
-   * Switches the active feature tab in the interactive studio.
+   * Switches the active feature tab in the showcase.
    *
    * @param feature The feature tab to display.
    */

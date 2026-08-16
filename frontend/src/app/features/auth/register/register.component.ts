@@ -1,4 +1,5 @@
 import { Component, inject, signal, computed, ElementRef, viewChildren, OnInit, OnDestroy } from '@angular/core';
+import { NgClass } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { FormGroup, FormControl, FormGroupDirective, NgForm, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors } from '@angular/forms';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -37,6 +38,7 @@ export class ConfirmPasswordErrorStateMatcher implements ErrorStateMatcher {
 @Component({
   selector: 'app-register',
   imports: [
+    NgClass,
     ReactiveFormsModule,
     RouterLink,
     MatFormField,

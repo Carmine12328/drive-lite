@@ -1,21 +1,22 @@
-<div class="login-container fade-in">
+<div class="login-container">
   <!-- Theme Toggle -->
-  <button mat-icon-button class="theme-toggle" (click)="toggleTheme()" aria-label="Toggle theme">
+  <button mat-icon-button class="theme-toggle" (click)="toggleTheme()" [attr.aria-label]="isDarkTheme() ? 'Switch to light theme' : 'Switch to dark theme'">
     <mat-icon>{{ isDarkTheme() ? 'light_mode' : 'dark_mode' }}</mat-icon>
   </button>
 
-  <div class="glass-panel login-card slide-up">
+  <div class="login-card">
     <div class="login-header">
-      <div class="logo-placeholder">
-        <span class="gradient-text logo-text">Drive Lite</span>
-      </div>
-      <h2>Welcome Back</h2>
+      <a routerLink="/" class="brand-link">
+        <mat-icon class="brand-icon">cloud</mat-icon>
+        <span class="brand-name">Drive<span class="brand-highlight">Lite</span></span>
+      </a>
+      <h2>Welcome back</h2>
       <p class="subtitle">Enter your credentials to access your files</p>
     </div>
 
     <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
       <mat-form-field appearance="outline" class="form-field">
-        <mat-label>Email Address</mat-label>
+        <mat-label>Email address</mat-label>
         <input matInput formControlName="email" type="email" placeholder="name@example.com" autocomplete="email">
         @if (loginForm.get('email')?.hasError('required') && loginForm.get('email')?.touched) {
           <mat-error>Email is required</mat-error>
@@ -38,7 +39,7 @@
 
       <div class="form-options">
         <mat-checkbox formControlName="rememberMe">Remember me</mat-checkbox>
-        <a href="javascript:void(0)" class="forgot-link">Forgot Password?</a>
+        <a href="javascript:void(0)" class="forgot-link">Forgot password?</a>
       </div>
 
       @if (errorMessage()) {
@@ -49,9 +50,9 @@
       }
 
       <div class="actions">
-        <button mat-flat-button class="btn-accent submit-btn" type="submit" [disabled]="loginForm.invalid || isLoading()">
+        <button mat-flat-button class="submit-btn" type="submit" [disabled]="loginForm.invalid || isLoading()">
           @if (isLoading()) {
-            <mat-spinner diameter="24" class="spinner"></mat-spinner>
+            <mat-spinner diameter="20" class="spinner"></mat-spinner>
           } @else {
             Sign In
           }
@@ -59,7 +60,7 @@
       </div>
 
       <div class="register-prompt">
-        Don't have an account? <a routerLink="/auth/register">Sign Up</a>
+        Don't have an account? <a routerLink="/auth/register">Create one</a>
       </div>
     </form>
   </div>

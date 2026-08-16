@@ -1,12 +1,16 @@
 <div class="background">
-  <button mat-icon-button class="theme-toggle" (click)="toggleTheme()" aria-label="Toggle theme">
+  <button mat-icon-button class="theme-toggle" (click)="toggleTheme()" [attr.aria-label]="isDarkMode() ? 'Switch to light theme' : 'Switch to dark theme'">
     <mat-icon>{{ isDarkMode() ? 'light_mode' : 'dark_mode' }}</mat-icon>
   </button>
 
-  <div class="glass-panel register-card fade-in">
+  <div class="register-card">
     <div class="card-header">
-      <h1 class="gradient-text">Create Account</h1>
-      <p class="subtitle">Join Drive Lite today</p>
+      <a routerLink="/" class="brand-link">
+        <mat-icon class="brand-icon">cloud</mat-icon>
+        <span class="brand-name">Drive<span class="brand-highlight">Lite</span></span>
+      </a>
+      <h1>Create your account</h1>
+      <p class="subtitle">Get started with fast, serverless cloud storage</p>
     </div>
 
     <div class="steps-container">
@@ -16,8 +20,8 @@
         <div class="step">
           <form [formGroup]="registerForm" (ngSubmit)="onRegisterSubmit()" class="register-form">
             <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Email</mat-label>
-              <input matInput type="email" formControlName="email" placeholder="name@example.com">
+              <mat-label>Email address</mat-label>
+              <input matInput type="email" formControlName="email" placeholder="name@example.com" autocomplete="email">
               @if (registerForm.controls.email.hasError('required')) {
                 <mat-error>Email is required</mat-error>
               }
@@ -28,8 +32,8 @@
 
             <mat-form-field appearance="outline" class="full-width">
               <mat-label>Password</mat-label>
-              <input matInput [type]="hidePassword() ? 'password' : 'text'" formControlName="password">
-              <button mat-icon-button matSuffix type="button" (click)="togglePasswordVisibility()">
+              <input matInput [type]="hidePassword() ? 'password' : 'text'" formControlName="password" autocomplete="new-password">
+              <button mat-icon-button matSuffix type="button" (click)="togglePasswordVisibility()" aria-label="Toggle password visibility">
                 <mat-icon>{{ hidePassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
               </button>
               @if (registerForm.controls.password.hasError('required')) {
@@ -37,7 +41,7 @@
               }
             </mat-form-field>
 
-            <!-- Password Strength Indicator -->
+            <!-- Compact Password Strength Indicator -->
             <div class="password-strength">
               <div class="strength-bars">
                 <div class="bar" [class.active]="passwordStrength() >= 1" [class.weak]="passwordStrength() === 1" [class.fair]="passwordStrength() === 2" [class.good]="passwordStrength() === 3" [class.strong]="passwordStrength() === 4"></div>
@@ -45,38 +49,30 @@
                 <div class="bar" [class.active]="passwordStrength() >= 3" [class.good]="passwordStrength() === 3" [class.strong]="passwordStrength() === 4"></div>
                 <div class="bar" [class.active]="passwordStrength() >= 4" [class.strong]="passwordStrength() === 4"></div>
               </div>
-              <div class="strength-text">
-                @switch (passwordStrength()) {
-                  @case (0) { <span>Enter a password</span> }
-                  @case (1) { <span class="weak-text">Weak</span> }
-                  @case (2) { <span class="fair-text">Fair</span> }
-                  @case (3) { <span class="good-text">Good</span> }
-                  @case (4) { <span class="strong-text">Strong</span> }
+              <div class="strength-meta">
+                <span class="hint-text">Minimum 8 characters with mixed case, numbers, and symbols</span>
+                @if (passwordValue()) {
+                  <span class="strength-label" [ngClass]="{
+                    'weak': passwordStrength() === 1,
+                    'fair': passwordStrength() === 2,
+                    'good': passwordStrength() === 3,
+                    'strong': passwordStrength() === 4
+                  }">
+                    @switch (passwordStrength()) {
+                      @case (1) { Weak }
+                      @case (2) { Fair }
+                      @case (3) { Good }
+                      @case (4) { Strong }
+                    }
+                  </span>
                 }
-              </div>
-              <div class="criteria-checklist">
-                <div class="criterion" [class.met]="passwordCriteria().length">
-                  <mat-icon>{{ passwordCriteria().length ? 'check_circle' : 'cancel' }}</mat-icon> 8+ characters
-                </div>
-                <div class="criterion" [class.met]="passwordCriteria().uppercase">
-                  <mat-icon>{{ passwordCriteria().uppercase ? 'check_circle' : 'cancel' }}</mat-icon> Uppercase letter
-                </div>
-                <div class="criterion" [class.met]="passwordCriteria().lowercase">
-                  <mat-icon>{{ passwordCriteria().lowercase ? 'check_circle' : 'cancel' }}</mat-icon> Lowercase letter
-                </div>
-                <div class="criterion" [class.met]="passwordCriteria().number">
-                  <mat-icon>{{ passwordCriteria().number ? 'check_circle' : 'cancel' }}</mat-icon> Number
-                </div>
-                <div class="criterion" [class.met]="passwordCriteria().special">
-                  <mat-icon>{{ passwordCriteria().special ? 'check_circle' : 'cancel' }}</mat-icon> Special character
-                </div>
               </div>
             </div>
 
             <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Confirm Password</mat-label>
-              <input matInput [type]="hideConfirmPassword() ? 'password' : 'text'" formControlName="confirmPassword" [errorStateMatcher]="confirmPasswordMatcher">
-              <button mat-icon-button matSuffix type="button" (click)="toggleConfirmPasswordVisibility()">
+              <mat-label>Confirm password</mat-label>
+              <input matInput [type]="hideConfirmPassword() ? 'password' : 'text'" formControlName="confirmPassword" [errorStateMatcher]="confirmPasswordMatcher" autocomplete="new-password">
+              <button mat-icon-button matSuffix type="button" (click)="toggleConfirmPasswordVisibility()" aria-label="Toggle confirm password visibility">
                 <mat-icon>{{ hideConfirmPassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
               </button>
               @if (registerForm.hasError('mismatch') && registerForm.controls.confirmPassword.touched) {
@@ -94,9 +90,9 @@
               </div>
             }
 
-            <button mat-flat-button class="btn-accent submit-btn" type="submit" [disabled]="isLoading()">
+            <button mat-flat-button class="submit-btn" type="submit" [disabled]="isLoading() || registerForm.invalid">
               @if (isLoading()) {
-                <mat-spinner diameter="24"></mat-spinner>
+                <mat-spinner diameter="20"></mat-spinner>
               } @else {
                 Continue
               }
@@ -108,7 +104,7 @@
         <div class="step verification-step">
           <div class="verification-header">
             <h3>Verify your email</h3>
-            <p>We've sent a 6-digit code to <br> <strong>{{ registerForm.value.email || 'your email' }}</strong></p>
+            <p>We've sent a 6-digit verification code to <br> <strong>{{ registerForm.value.email || 'your email' }}</strong></p>
           </div>
 
           <div class="code-inputs-container">
@@ -122,6 +118,7 @@
                 (input)="onCodeInput($event, i)"
                 (keydown)="onCodeKeydown($event, i)"
                 (paste)="onCodePaste($event)"
+                aria-label="Digit"
               >
             }
           </div>
@@ -133,17 +130,17 @@
             </div>
           }
           
-          <button mat-flat-button class="btn-accent submit-btn" (click)="onCodeSubmit()" [disabled]="isLoading()">
+          <button mat-flat-button class="submit-btn" (click)="onCodeSubmit()" [disabled]="isLoading()">
             @if (isLoading()) {
-              <mat-spinner diameter="24"></mat-spinner>
+              <mat-spinner diameter="20"></mat-spinner>
             } @else {
-              Verify & Register
+              Verify & Complete Registration
             }
           </button>
 
           <div class="resend-container">
             <button mat-button type="button" (click)="resendCode()" [disabled]="resendCooldown() > 0 || isLoading()">
-              Resend Code {{ resendCooldown() > 0 ? '(' + resendCooldown() + 's)' : '' }}
+              Resend code {{ resendCooldown() > 0 ? '(' + resendCooldown() + 's)' : '' }}
             </button>
           </div>
         </div>
